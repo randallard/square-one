@@ -1,7 +1,7 @@
 # ADR-0000: Record architecture decisions (use ADRs)
 - Status: Accepted
-- Date: <YYYY-MM-DD>
-- Deciders: <names>
+- Date: 2026-07-24
+- Deciders: Ryan
 
 ## Context
 Decisions with long-lived consequences — language, architecture, storage model, rigor tier,

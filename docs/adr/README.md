@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADRs)
 
-Significant decisions for **<PROJECT>**, one file per decision, with the context and
+Significant decisions for **square-one**, one file per decision, with the context and
 consequences — so the *why* survives, not just the *what*.
 
 The recognized practice is the **ADR** (Michael Nygard, 2011), commonly written with the
@@ -79,3 +79,6 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | ADR | Title | Status |
 |-----|-------|--------|
 | [0000](0000-record-architecture-decisions.md) | Record architecture decisions (use ADRs) | Accepted |
+| [0001](0001-typescript-provable-lite.md) | TypeScript at the provable-lite tier | Accepted |
+| [0002](0002-pure-library-no-storage-no-ui.md) | Pure library — no storage, no UI, no IO | Accepted |
+| [0003](0003-roles-boy-girl-with-alternative-labels.md) | Model roles as boy/girl, with pluggable alternative labels | Accepted |
