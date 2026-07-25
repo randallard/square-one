@@ -1,6 +1,6 @@
 # Progress & Status
 
-_Last updated: 2026-07-24_
+_Last updated: 2026-07-25_
 
 ## Status / next
 
@@ -14,19 +14,34 @@ Reference PDFs are local (git-ignored, mapped in
 [`spec/reference-sources.md`](spec/reference-sources.md)). No source code yet;
 `package.json` doesn't exist, so CI's language jobs self-skip.
 
-**Next:** Ryan reviews the **Allemande Left** spec
-([`spec/calls/allemande-left.md`](spec/calls/allemande-left.md)) and the
-[`arm-turn`](spec/blocks/arm-turn.md) block — the catalog's first rotating,
-hands-engaged block (exit parameter `step-out | hold` per Ryan's call; left =
-CCW; fraction table from the chart; carries an open **F4 nuance**: anchored
-rotation should weight lighter than free-body rotation, accumulation counted
-across transitions). Then, talk-first per the working cadence, the next move:
-**Right and Left Grand** — introduces `pull-by` and the **first 8-dancer circle
-frame**. Remaining after that: Promenade (`promenade-step`), Square Thru
-(`face-turn` + reuse), Partner Trade (`arc-walk`), California Twirl + Star Thru
-(`twirl-arch`; first role-dependent). Then core types + property seeds (chaining
-checks, the performance anchor invariant). Call-model review still open: Layer-4
-v1 scope, two-couple-safe types, concepts.
+**Course change (2026-07-25): call specs pause at three; code starts now.** The
+planning effort's [ADR-0005](../../work/square-dance-planning/adr/0005-integration-first-cut-to-code-at-three-calls.md)
+stops the talk-first call cadence at Dosado / Pass Thru / Allemande Left and puts
+the engine core + the townage choreography adapter next, because the waypoint
+tables are marked "provisional until rendered" and only a consumer can validate
+them. [ADR-0007](adr/0007-stepper-primary-ideal-paths-derived.md) settles what the
+engine hands over: the **performance stepper** is the primary interface (any dancer
+can be externally driven — the player), and ADR-0004 path data is what the stepper
+produces with every coefficient off.
+
+The **Allemande Left** spec ([`spec/calls/allemande-left.md`](spec/calls/allemande-left.md))
+and the [`arm-turn`](spec/blocks/arm-turn.md) block landed in `490fb2d` — that's the
+catalog's first rotating, hands-engaged block (exit parameter `step-out | hold`;
+left = CCW; fraction table from the chart), and it carries an open **F4 nuance**:
+anchored rotation should weight lighter than free-body rotation, accumulation
+counted across transitions.
+
+**Next:** Ryan verifies ADR-0007 and these PROGRESS edits. Then **engine core**:
+`package.json`, core types (two-couple-safe), the three specced blocks as runtime
+data, composition, and the degenerate stepper that yields ideal paths — scoped to
+what three calls need, not nine. Property seeds first: the ADR-0006 anchor
+invariant, timing sums, Dosado identity.
+
+Deferred to after the first render (planning M6): **Right and Left Grand**
+(`pull-by` + the first 8-dancer circle frame), Promenade (`promenade-step`), Square
+Thru (`face-turn` + reuse), Partner Trade (`arc-walk`), California Twirl + Star Thru
+(`twirl-arch`; first role-dependent). Call-model review still open: Layer-4 v1
+scope, two-couple-safe types, concepts.
 
 ## Architecture
 
@@ -37,10 +52,16 @@ the paths-as-data seam). This repo's own decisions:
 - Rigor tier: provable-lite, TypeScript — [ADR-0001](adr/0001-typescript-provable-lite.md)
 - Storage: none — pure library; consumers own persistence — [ADR-0002](adr/0002-pure-library-no-storage-no-ui.md)
 - Roles: boy/girl canonical, pluggable presentation labels — [ADR-0003](adr/0003-roles-boy-girl-with-alternative-labels.md)
+- Public interface: the performance stepper is primary, ideal paths derive from it — [ADR-0007](adr/0007-stepper-primary-ideal-paths-derived.md)
+- Distribution: consumers take a **pinned git dependency** (local link during
+  co-development) — planning [ADR-0006](../../work/square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md)
 
 ## Provability
 
-Nothing verified yet — no code. The property-test targets are already named in
+Nothing verified yet — no code. Note that under ADR-0007 the ADR-0006 anchor
+invariant (all coefficients off ⇒ ideal paths) changes character: it's no longer two
+implementations agreeing, it's one stepper degenerating correctly. Still tested,
+but it can't silently diverge. The property-test targets are already named in
 [`spec/call-model.md`](spec/call-model.md) (collision-freedom, path/formation
 round-trips, timing sums, roll/sweep derivation consistency, symmetry preservation,
 zero-module identity, breathing bounds) so the invariants precede the implementation.
@@ -49,21 +70,34 @@ zero-module identity, breathing bounds) so the invariants precede the implementa
 
 1. ~~Pick the starter scope~~ — **done 2026-07-24**: the Zero Box triple + Square
    Thru equivalence set, nine Basic calls (ADR-0004, [`spec/starter-set.md`](spec/starter-set.md)).
-2. Migrate the nine starter calls from `mix-a-hoot-n-hollar/docs/moves.md` →
-   per-call specs under `docs/spec/` (Layer-3 fields: timing, paths, roll/sweep,
-   hands, parts, standard applications; role tokens per ADR-0003). Partner Trade is
-   net-new. Track in the starter-set status table.
+2. **Partially done, then paused by ADR-0005.** Migrate starter calls from
+   `mix-a-hoot-n-hollar/docs/moves.md` → per-call specs under `docs/spec/` (Layer-3
+   fields: timing, paths, roll/sweep, hands, parts, standard applications; role
+   tokens per ADR-0003). **Three of nine done** — Dosado, Pass Thru, Allemande Left.
+   The remaining six resume after the first render (planning M6), so they're
+   written against visual feedback. Partner Trade is net-new. Track in the
+   starter-set status table.
 3. Core types: dancer, formation, FASR, call record — two-couple-safe (don't
-   hard-code 8 dancers).
+   hard-code 8 dancers). **Now next**, scoped to what the three specced calls need.
+3b. The three specced blocks (`pass`, `slide`, `arm-turn`) as runtime data +
+   composition, so `applyCall` works for those three. Forces the spec-as-source vs
+   spec-as-documentation question below.
+3c. The **stepper** (ADR-0007), degenerate first: no coefficients, no externally
+   driven dancers — which by construction yields ADR-0004 ideal path data. The
+   externally-driven-dancer port (for the player) lands with the townage adapter.
+3d. Consumable build: real `package.json` with `exports` and built types, plus a v0
+   tag, so townage can install it (planning ADR-0006).
 4. Formation recognition + call application for the starter formations (static
    square, facing/back-to-back couples, eight-chain-thru, R&L-grand circle,
-   promenade).
+   promenade). Only the ones the three calls touch are needed for the first render.
 5. Property-test harness (`fast-check`) seeded with the starter-set vectors
    (Dosado identity, the equivalences, working-zero classification, triple-ends-home)
    plus the published flow vectors in [`spec/flow-and-variety.md`](spec/flow-and-variety.md)
    (Dosado scores clean on rotation rules; the Guidelines' 540° example trips
    overflow for heads only; `Star Thru → R&L Thru` passes hand availability while
-   the reverse order fails).
+   the reverse order fails). The ADR-0006 anchor invariant is now *structural* under
+   ADR-0007 — it tests one code path degenerating, not two agreeing — but still gets
+   a property test.
 5b. Path representation must support signed-rotation accounting and
    rotation-center classification (flow/variety needs them — design in from the
    start, per `flow-and-variety.md` consequence 3).
@@ -83,12 +117,13 @@ CALLERLAB membership needed; all documents verified publicly downloadable 2026-0
 
 ## Open questions
 
-- **Distribution**: how the-lot and hash-n-patter consume square-one — published npm
-  package, git dependency, or pnpm workspace. Deliberately undecided until
-  hash-n-patter exists; a git dependency is the likely v1.
+- ~~**Distribution**~~ — **decided 2026-07-25**: pinned git dependency, local link
+  during co-development (planning
+  [ADR-0006](../../work/square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md)).
+  Revisit when hash-n-patter arrives as a second consumer.
 - The four model questions listed at the end of [`spec/call-model.md`](spec/call-model.md).
 - Whether `docs/spec/` call files or generated JSON become the runtime call data
-  (spec-as-source vs spec-as-documentation).
+  (spec-as-source vs spec-as-documentation) — **now due**: worklist item 3b forces it.
 - **Database / backend: deliberately not yet.** The engine never touches storage
   (ADR-0002); custom-move building runs client-side with file/URL sharing under
   the template's browser-storage default. The **named trigger** for the backend
@@ -123,3 +158,10 @@ and [`reviews/`](reviews/README.md) for stance reviews._
   Dunning-Kruger helper; demeanor deferred). Re-centering settled via `pass`'s
   `exit` parameter; **Pass Thru specced** as the first pure-reuse composition.
   See [`spec/performance-model.md`](spec/performance-model.md).
+- **2026-07-25** — ADR-0007: the performance stepper becomes the primary interface,
+  ideal path data derives from it. Forced by the townage integration plan — a player
+  dancing inside a square can't be precomputed, and square-frame re-fitting /
+  corner-rounding / helping all react to actual positions. Distribution settled
+  (pinned git dep) and call speccing paused at three so the engine core and the
+  townage renderer can validate the provisional waypoints. See
+  [`journal/2026-07-25-integration-path-7.md`](journal/2026-07-25-integration-path-7.md).
