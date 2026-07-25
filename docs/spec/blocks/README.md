@@ -33,6 +33,27 @@ A **block** is the smallest named unit of dance motion, defined by:
    Serialization is versioned plain data (blocks referenced by name + params), so
    custom moves are shareable as files from day one.
 
+## Waypoint-table convention (load-bearing — [ADR-0009](../../adr/0009-spec-markdown-is-the-conformance-fixture.md))
+
+The worked examples in these specs are the engine's **conformance fixtures**: the
+test suite parses them and asserts the implementation reproduces them exactly. So
+the format is not cosmetic. Every waypoint table must be preceded by a signature
+line of exactly this shape:
+
+```
+`blockname(arg, arg, …)` — N beats[; any extra notes]:
+```
+
+followed by a blank line and a table whose header is `| Beat | x | y | Doing |`,
+or `| Beat | x | y | Facing | Doing |` where facing varies. The `Doing` column is
+free prose and is ignored by the loader.
+
+Remember these files show **worked instantiations, not the whole parameter space**
+— the general rule (mirroring, direction negation, fraction truncation) lives in
+the prose beneath each table and is implemented in the generator, per
+[ADR-0008](../../adr/0008-runtime-data-is-code-and-plain-data-not-spec-markdown.md).
+Add a table when it pins down something a rule alone wouldn't.
+
 ## Catalog
 
 | Block | Parameters | First used by | Spec |

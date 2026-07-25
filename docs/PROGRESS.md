@@ -79,9 +79,15 @@ zero-module identity, breathing bounds) so the invariants precede the implementa
    starter-set status table.
 3. Core types: dancer, formation, FASR, call record — two-couple-safe (don't
    hard-code 8 dancers). **Now next**, scoped to what the three specced calls need.
-3b. The three specced blocks (`pass`, `slide`, `arm-turn`) as runtime data +
-   composition, so `applyCall` works for those three. Forces the spec-as-source vs
-   spec-as-documentation question below.
+3b. The three specced blocks (`pass`, `slide`, `arm-turn`) as **parameterized
+   generator functions**, and the three calls as **JSON-serializable block chains**,
+   so `applyCall` works for those three (ADR-0008). Two of the three calls are pure
+   reuse and carry no geometry of their own.
+3b-i. The **spec-conformance loader** (test-only): parse `docs/spec/**/*.md`, key
+   each waypoint table off its `` `block(args)` — N beats: `` signature line, assert
+   the generators reproduce it; fail loudly on any table that doesn't match the
+   convention (ADR-0009). Dosado's derived table becomes a composition property —
+   compose the chain, embed in the pair frame, assert it matches. Beat sums too.
 3c. The **stepper** (ADR-0007), degenerate first: no coefficients, no externally
    driven dancers — which by construction yields ADR-0004 ideal path data. The
    externally-driven-dancer port (for the player) lands with the townage adapter.
@@ -122,8 +128,15 @@ CALLERLAB membership needed; all documents verified publicly downloadable 2026-0
   [ADR-0006](../../work/square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md)).
   Revisit when hash-n-patter arrives as a second consumer.
 - The four model questions listed at the end of [`spec/call-model.md`](spec/call-model.md).
-- Whether `docs/spec/` call files or generated JSON become the runtime call data
-  (spec-as-source vs spec-as-documentation) — **now due**: worklist item 3b forces it.
+- ~~Whether `docs/spec/` call files or generated JSON become the runtime call data
+  (spec-as-source vs spec-as-documentation)~~ — **decided 2026-07-25, and the binary
+  was false**. The markdown was never a candidate source: blocks are parameterized
+  generators whose specs hold only worked instantiations (`pass` shows 2 of 8
+  combinations, `arm-turn` 1 of 12+), with the general rule written as prose; two of
+  three call specs contain no geometry at all. Blocks are code, calls are
+  JSON-serializable block chains ([ADR-0008](adr/0008-runtime-data-is-code-and-plain-data-not-spec-markdown.md)),
+  and the markdown's worked examples become conformance fixtures parsed by the test
+  suite ([ADR-0009](adr/0009-spec-markdown-is-the-conformance-fixture.md)).
 - **Database / backend: deliberately not yet.** The engine never touches storage
   (ADR-0002); custom-move building runs client-side with file/URL sharing under
   the template's browser-storage default. The **named trigger** for the backend
@@ -165,3 +178,7 @@ and [`reviews/`](reviews/README.md) for stance reviews._
   (pinned git dep) and call speccing paused at three so the engine core and the
   townage renderer can validate the provisional waypoints. See
   [`journal/2026-07-25-integration-path-7.md`](journal/2026-07-25-integration-path-7.md).
+- **2026-07-25** — ADR-0008 + ADR-0009 close the spec-as-source question: blocks are
+  code, calls are plain-data block chains, and the specs' worked examples become
+  test-parsed conformance fixtures. See
+  [`journal/2026-07-25-spec-as-fixture-8.md`](journal/2026-07-25-spec-as-fixture-8.md).

@@ -86,3 +86,5 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0005](0005-building-blocks-first-class.md) | Calls are compositions of first-class building blocks | Accepted |
 | [0006](0006-two-layer-choreography.md) | Two-layer choreography — ideal paths, pursued by simulated dancers | Accepted |
 | [0007](0007-stepper-primary-ideal-paths-derived.md) | The performance stepper is the primary interface; path data is derived from it | Accepted |
+| [0008](0008-runtime-data-is-code-and-plain-data-not-spec-markdown.md) | Runtime call data is code plus plain data — the spec markdown is not a source | Accepted |
+| [0009](0009-spec-markdown-is-the-conformance-fixture.md) | The spec markdown's worked examples are conformance fixtures, parsed by the test suite | Accepted |
