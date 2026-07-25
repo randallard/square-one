@@ -42,17 +42,26 @@ Second-tier additions from the same sources, once the triple runs:
 
 ## Per-call migration status
 
+Timing values from the CALLERLAB Basic/Mainstream timing chart (rev. 2023-02-15;
+from point of contact). Reprinted with permission of CALLERLAB.
+
 | Call | In `moves.md`? | Timing (chart) | Spec file | Paths authored |
 |---|---|---|---|---|
-| Dosado | ✅ (`dsd`) | tbd | — | — |
-| Square Thru (2/3/4) | ✅ (`sqth`) | tbd | — | — |
-| Allemande Left | ✅ (`al`) | tbd | — | — |
-| Right and Left Grand | ✅ (`rlg`) | tbd | — | — |
-| Promenade | ✅ (`prom`) | tbd | — | — |
-| Star Thru | ✅ (`st`) | tbd | — | — |
-| Pass Thru | ✅ (`pt`) | tbd | — | — |
-| California Twirl | ✅ (`catw`) | tbd | — | — |
-| Partner Trade | ❌ **new** | tbd | — | — |
+| Dosado | ✅ (`dsd`) | 6 (SS across set: 8) | [calls/dosado.md](calls/dosado.md) | draft |
+| Square Thru (2/3/4) | ✅ (`sqth`) | FC: 5 / 7 / 10 (SS: +2) | — | — |
+| Allemande Left | ✅ (`al`) | 4–8 by arm-turn fraction (full: 8) | — | — |
+| Right and Left Grand | ✅ (`rlg`) | 10 | — | — |
+| Promenade | ✅ (`prom`) | ¼: 4 · ½: 8 · ¾: 12 · full: 16 | — | — |
+| Star Thru | ✅ (`st`) | 4 | — | — |
+| Pass Thru | ✅ (`pt`) | 2 (SS heads/sides: 4) | — | — |
+| California Twirl | ✅ (`catw`) | 4 | — | — |
+| Partner Trade | ❌ **new** | 4 | — | — |
+
+**Workflow (per ADR-0005):** each call's spec is written blocks-first — spec any
+new [building blocks](blocks/README.md) it needs, then the call as a composition
+referencing them (Dosado is the worked example: `pass` + `slide`). Anticipated
+new blocks across the remaining eight: `arm-turn`, `pull-by`, `face-turn`,
+`courtesy-turn-half`, `promenade-step`.
 
 Formations the set requires the engine to know: static square, facing couples,
 back-to-back couples, eight-chain-thru (Zero Box), right-and-left-grand circle,

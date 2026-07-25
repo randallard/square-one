@@ -83,3 +83,4 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0002](0002-pure-library-no-storage-no-ui.md) | Pure library — no storage, no UI, no IO | Accepted |
 | [0003](0003-roles-boy-girl-with-alternative-labels.md) | Model roles as boy/girl, with pluggable alternative labels | Accepted |
 | [0004](0004-starter-scope-zero-box-triple.md) | Starter scope — the Zero Box module triple plus the Square Thru equivalence set | Accepted |
+| [0005](0005-building-blocks-first-class.md) | Calls are compositions of first-class building blocks | Accepted |

@@ -68,7 +68,8 @@ styling, comments) plus animation and game metadata.
 | **Ending formation** | Per starting formation | State transition |
 | **Timing** | Beats, per starting formation where it differs (CALLERLAB timing charts) | ADR-0004 paths carry it; sequence timing totals need it |
 | **Dance action** | The definition prose, per part | Teaching content; the authority the animation must match |
-| **Parts / fractionalization** | The call's parts, and whether CALLERLAB allows fractions ("half of a…", "interrupt", "finish") | Fraction calls are real calls; parts are also the natural unit for teaching-by-building-blocks in townage |
+| **Block composition** | The ordered, parameterized [building blocks](blocks/README.md) the call chains (ADR-0005); bespoke fragments are themselves cataloged blocks | Custom-move building, townage's teach-by-parts arc, and left/mirror variants (free via the mirror transform) all hang off this |
+| **Parts / fractionalization** | The call's parts — named subsequences of the block chain — and whether CALLERLAB allows fractions ("half of a…", "interrupt", "finish") | Fraction calls are real calls; parts are the coarser, CALLERLAB-recognized layer above blocks |
 | **Roll direction per dancer** | The turning direction (or none) each dancer's path ends with | Derivable from the path's final rotation (Taminations derives it this way) but must be verified per call — it feeds Layer 1's roll state |
 | **Sweep direction** | Circling direction (or none) couples end with | Feeds Layer 1's sweep state |
 | **Hands** | Handhold/grip per movement segment (right, left, both, star grip, none…) | Styling, hand-availability tracking, and animation |
@@ -76,7 +77,7 @@ styling, comments) plus animation and game metadata.
 | **Shoulder-pass rule** | Right-shoulder default; left for "Left" calls; same-spot passing rule | Collision resolution in path generation |
 | **Rule applicability** | Whether the **Facing Couples Rule** / **Ocean Wave Rule** applies (wave-defined calls danceable from facing couples by stepping to a wave, and vice versa) | Doubles the effective legality table without duplicating definitions |
 | **Variants** | Left/mirror variant, "Reverse" variant, role-dependence flag | Mirror paths are derivable; role-dependent calls (Star Thru) are not symmetric |
-| **Game metadata** *(ours, not CALLERLAB's)* | Which townage building-block gestures compose the call; which NPC can teach it; unlock prerequisites | The teaching arc — the whole point of the game |
+| **Game metadata** *(ours, not CALLERLAB's)* | Which NPC can teach it; unlock prerequisites; taught-gesture mapping (townage gestures live in the same block catalog) | The teaching arc — the whole point of the game |
 
 ## Layer 4 — Sequence-level evaluation
 

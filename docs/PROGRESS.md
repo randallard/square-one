@@ -14,15 +14,17 @@ Reference PDFs are local (git-ignored, mapped in
 [`spec/reference-sources.md`](spec/reference-sources.md)). No source code yet;
 `package.json` doesn't exist, so CI's language jobs self-skip.
 
-**Next:** Migrate the nine starter calls
-([ADR-0004](adr/0004-starter-scope-zero-box-triple.md),
-[`spec/starter-set.md`](spec/starter-set.md)) from
-`~/Development/mix-a-hoot-n-hollar/docs/moves.md` into per-call spec files with the
-Layer-3 fields (timing from the charts in `reference/`, waypoint paths, roll/sweep,
-hands, role tokens per ADR-0003) — Partner Trade is the one net-new call. Then design
-the core types from the model and build toward the triple's property-test seeds.
-Call-model review: roles settled (ADR-0003); still open: Layer-4 v1 scope,
-two-couple-safe types, concepts out of scope.
+**Next:** Ryan reviews the **building-block layer** (ADR-0005,
+[`spec/blocks/`](spec/blocks/README.md)) together with the reworked
+[`spec/calls/dosado.md`](spec/calls/dosado.md): Dosado is now a four-block chain —
+`pass(forward,right) · slide(right) · pass(backward,left) · slide(left)` — whose
+beats sum to the chart's 6 and whose mirror is Left Dosado for free. The per-call
+workflow is now **blocks-first** (spec new blocks, then the call as a composition).
+Once the shape holds, replicate for the other eight starter calls
+([`spec/starter-set.md`](spec/starter-set.md); anticipated new blocks: `arm-turn`,
+`pull-by`, `face-turn`, `courtesy-turn-half`, `promenade-step`). Then core types
+and the property-test seeds (now including chaining checks). Call-model review
+still open: Layer-4 v1 scope, two-couple-safe types, concepts out of scope.
 
 ## Architecture
 
@@ -85,6 +87,13 @@ CALLERLAB membership needed; all documents verified publicly downloadable 2026-0
 - The four model questions listed at the end of [`spec/call-model.md`](spec/call-model.md).
 - Whether `docs/spec/` call files or generated JSON become the runtime call data
   (spec-as-source vs spec-as-documentation).
+- **Database / backend: deliberately not yet.** The engine never touches storage
+  (ADR-0002); custom-move building runs client-side with file/URL sharing under
+  the template's browser-storage default. The **named trigger** for the backend
+  deliberation is the social layer — sharing/discovery/review of custom moves,
+  sequences, and tips *between people* (the template's own threshold). The
+  constraint honored *now* so that graduation needs no redesign: blocks, moves,
+  sequences, and tips serialize as versioned plain data (ADR-0005 consequence).
 
 ---
 
