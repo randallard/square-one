@@ -64,6 +64,11 @@ is a drill-game goldmine for hash-n-patter (calling on the right beat is a skill
 
 ## Design consequences
 
+0. **Flow costs are eventually *felt*.** Under the performance model
+   ([performance-model.md](performance-model.md), ADR-0006), F-rule violations
+   consume real pursuit beats — a momentum reversal or unavailable hand makes
+   simulated dancers lag, and lagging squares break. The static F-score is the
+   prediction; the simulation is the demonstration.
 1. **Two axes, reported separately.** A sequence gets a flow report (F1–F7
    violations, per transition, per dancer) and a variety report (V1–V6 scores per
    window). Deliberate flow violations are legitimate caller choices (surprise,

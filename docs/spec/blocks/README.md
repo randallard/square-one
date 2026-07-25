@@ -37,7 +37,7 @@ A **block** is the smallest named unit of dance motion, defined by:
 
 | Block | Parameters | First used by | Spec |
 |---|---|---|---|
-| `pass` | direction (forward/backward), shoulder (right/left) | Dosado; most of Pass Thru | [pass.md](pass.md) |
+| `pass` | direction (forward/backward), shoulder (right/left), exit (lane/centered) | Dosado; Pass Thru | [pass.md](pass.md) |
 | `slide` | side (right/left) | Dosado | [slide.md](slide.md) |
 
 Anticipated from the remaining starter calls (specced when their call is):

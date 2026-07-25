@@ -51,9 +51,9 @@ Dosado is a four-block chain from the [block catalog](../blocks/README.md)
 
 | # | Block | Beats | Exit |
 |---|---|---|---|
-| 1 | [`pass`](../blocks/pass.md)`(forward, right)` | 2 | past the counterpart, own-left lane |
+| 1 | [`pass`](../blocks/pass.md)`(forward, right, lane)` | 2 | past the counterpart, own-left lane |
 | 2 | [`slide`](../blocks/slide.md)`(right)` | 1 | crossed behind them to the other lane |
-| 3 | [`pass`](../blocks/pass.md)`(backward, left)` | 2 | backed past, original side |
+| 3 | [`pass`](../blocks/pass.md)`(backward, left, lane)` | 2 | backed past, original side |
 | 4 | [`slide`](../blocks/slide.md)`(left)` | 1 | home |
 
 Beats sum to the chart's 6 ✓. Each exit pose satisfies the next entry contract

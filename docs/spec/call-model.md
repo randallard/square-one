@@ -31,6 +31,11 @@ What each of the 8 dancers carries at every point in a sequence.
 | **Hand availability / last hand used** | Which hand finished the last action (and whether it has released); current handhold (mini-wave hand, couple hold, star grip…) | CALLERLAB's refined rule: the hand needed next must be *available* at the completion of the preceding action — this supersedes naive hand-alternation (see [flow-and-variety.md](flow-and-variety.md) F2); styling; Taminations tracks a `hands` value per movement for exactly this |
 | **Derived positional roles** | Beau/belle, leader/trailer, center/end, very centers, points, in-facing/out-facing, head-position/side-position | Not stored — *computed* from formation + position + facing — but the engine must expose them because call definitions are written in these terms ("centers trade", "leads roll away") |
 
+Layer 1 describes the **ideal** dancer. The simulated, imperfect dancer — pursuit
+of these ideal states with per-dancer speed/rhythm/skill/helping coefficients,
+lag, and square drift — is a separate model layered on top:
+[`performance-model.md`](performance-model.md) (ADR-0006).
+
 ## Layer 2 — Square-level state
 
 The caller-theory view of the whole square. This is **FASR** — the model sight calling

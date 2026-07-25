@@ -53,7 +53,7 @@ from point of contact). Reprinted with permission of CALLERLAB.
 | Right and Left Grand | ✅ (`rlg`) | 10 | — | — |
 | Promenade | ✅ (`prom`) | ¼: 4 · ½: 8 · ¾: 12 · full: 16 | — | — |
 | Star Thru | ✅ (`st`) | 4 | — | — |
-| Pass Thru | ✅ (`pt`) | 2 (SS heads/sides: 4) | — | — |
+| Pass Thru | ✅ (`pt`) | 2 (SS heads/sides: 4) | [calls/pass-thru.md](calls/pass-thru.md) | draft (via `pass`) |
 | California Twirl | ✅ (`catw`) | 4 | — | — |
 | Partner Trade | ❌ **new** | 4 | — | — |
 

@@ -14,17 +14,21 @@ Reference PDFs are local (git-ignored, mapped in
 [`spec/reference-sources.md`](spec/reference-sources.md)). No source code yet;
 `package.json` doesn't exist, so CI's language jobs self-skip.
 
-**Next:** Ryan reviews the **building-block layer** (ADR-0005,
-[`spec/blocks/`](spec/blocks/README.md)) together with the reworked
-[`spec/calls/dosado.md`](spec/calls/dosado.md): Dosado is now a four-block chain —
-`pass(forward,right) · slide(right) · pass(backward,left) · slide(left)` — whose
-beats sum to the chart's 6 and whose mirror is Left Dosado for free. The per-call
-workflow is now **blocks-first** (spec new blocks, then the call as a composition).
-Once the shape holds, replicate for the other eight starter calls
-([`spec/starter-set.md`](spec/starter-set.md); anticipated new blocks: `arm-turn`,
-`pull-by`, `face-turn`, `courtesy-turn-half`, `promenade-step`). Then core types
-and the property-test seeds (now including chaining checks). Call-model review
-still open: Layer-4 v1 scope, two-couple-safe types, concepts out of scope.
+**Next:** Ryan reviews the **two-layer choreography decision** (ADR-0006,
+[`spec/performance-model.md`](spec/performance-model.md) — pursuit-based simulated
+dancers with toggleable coefficients: step length, rhythm offset, reaction
+latency, corner-cutting, general + per-move skill, help coefficient with
+Dunning-Kruger confidence bias; demeanor deferred to vFuture by decision) and the
+**Pass Thru spec** ([`spec/calls/pass-thru.md`](spec/calls/pass-thru.md)) — first
+pure-reuse composition: one block, `pass(forward, right, centered)`; the `exit`
+parameter (lane/centered) settles re-centering at the ideal layer. Then continue
+blocks-first through the remaining seven per the roadmap: Allemande Left
+(`arm-turn` — townage's taught gesture), R&L Grand (`pull-by`, first 8-dancer
+frame), Promenade (`promenade-step`), Square Thru (`face-turn` + reuse), Partner
+Trade (`arc-walk`), California Twirl + Star Thru (`twirl-arch`; Star Thru is
+first role-dependent). Then core types + property seeds (chaining checks, the
+performance anchor invariant). Call-model review still open: Layer-4 v1 scope,
+two-couple-safe types, concepts.
 
 ## Architecture
 
@@ -112,3 +116,12 @@ and [`reviews/`](reviews/README.md) for stance reviews._
   quantified flow rules F1–F7, variety rules V1–V6, delivery-timing model; Layer 4
   and the hand-availability row updated (naive hand-alternation superseded). See
   [`spec/flow-and-variety.md`](spec/flow-and-variety.md).
+- **2026-07-24** — ADR-0005 building blocks first-class; Dosado recomposed
+  (`pass`+`slide`); custom-move workshop + social layer added to the planning arc;
+  database deferred with named trigger. See
+  [`journal/2026-07-24-building-blocks-4.md`](journal/2026-07-24-building-blocks-4.md).
+- **2026-07-24** — ADR-0006 two-layer choreography: ideal paths + pursuit
+  simulation with toggleable dancer coefficients (incl. per-move skill and the
+  Dunning-Kruger helper; demeanor deferred). Re-centering settled via `pass`'s
+  `exit` parameter; **Pass Thru specced** as the first pure-reuse composition.
+  See [`spec/performance-model.md`](spec/performance-model.md).

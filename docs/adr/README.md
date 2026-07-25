@@ -84,3 +84,4 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0003](0003-roles-boy-girl-with-alternative-labels.md) | Model roles as boy/girl, with pluggable alternative labels | Accepted |
 | [0004](0004-starter-scope-zero-box-triple.md) | Starter scope — the Zero Box module triple plus the Square Thru equivalence set | Accepted |
 | [0005](0005-building-blocks-first-class.md) | Calls are compositions of first-class building blocks | Accepted |
+| [0006](0006-two-layer-choreography.md) | Two-layer choreography — ideal paths, pursued by simulated dancers | Accepted |
