@@ -39,10 +39,11 @@ A **block** is the smallest named unit of dance motion, defined by:
 |---|---|---|---|
 | `pass` | direction (forward/backward), shoulder (right/left), exit (lane/centered) | Dosado; Pass Thru | [pass.md](pass.md) |
 | `slide` | side (right/left) | Dosado | [slide.md](slide.md) |
+| `arm-turn` | hand (right/left), fraction, exit (step-out/hold) | Allemande Left | [arm-turn.md](arm-turn.md) |
 
 Anticipated from the remaining starter calls (specced when their call is):
-`arm-turn` (hand, fraction — Allemande Left), `pull-by` (hand — R&L Grand, Square
-Thru), `face-turn` (direction, fraction — turning in place; Square Thru corners,
-California Twirl halves), `courtesy-turn-half`, `promenade-step`. Townage's
+`pull-by` (hand — R&L Grand, Square Thru), `face-turn` (direction, fraction —
+turning in place; Square Thru corners), `arc-walk` (Partner Trade),
+`twirl-arch` (California Twirl, Star Thru), `promenade-step`. Townage's
 taught gestures (fist bump, arm turn) live in the same model — the game's
 building-block arc and this catalog are one system.

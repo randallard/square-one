@@ -14,21 +14,19 @@ Reference PDFs are local (git-ignored, mapped in
 [`spec/reference-sources.md`](spec/reference-sources.md)). No source code yet;
 `package.json` doesn't exist, so CI's language jobs self-skip.
 
-**Next:** Ryan reviews the **two-layer choreography decision** (ADR-0006,
-[`spec/performance-model.md`](spec/performance-model.md) — pursuit-based simulated
-dancers with toggleable coefficients: step length, rhythm offset, reaction
-latency, corner-cutting, general + per-move skill, help coefficient with
-Dunning-Kruger confidence bias; demeanor deferred to vFuture by decision) and the
-**Pass Thru spec** ([`spec/calls/pass-thru.md`](spec/calls/pass-thru.md)) — first
-pure-reuse composition: one block, `pass(forward, right, centered)`; the `exit`
-parameter (lane/centered) settles re-centering at the ideal layer. Then continue
-blocks-first through the remaining seven per the roadmap: Allemande Left
-(`arm-turn` — townage's taught gesture), R&L Grand (`pull-by`, first 8-dancer
-frame), Promenade (`promenade-step`), Square Thru (`face-turn` + reuse), Partner
-Trade (`arc-walk`), California Twirl + Star Thru (`twirl-arch`; Star Thru is
-first role-dependent). Then core types + property seeds (chaining checks, the
-performance anchor invariant). Call-model review still open: Layer-4 v1 scope,
-two-couple-safe types, concepts.
+**Next:** Ryan reviews the **Allemande Left** spec
+([`spec/calls/allemande-left.md`](spec/calls/allemande-left.md)) and the
+[`arm-turn`](spec/blocks/arm-turn.md) block — the catalog's first rotating,
+hands-engaged block (exit parameter `step-out | hold` per Ryan's call; left =
+CCW; fraction table from the chart; carries an open **F4 nuance**: anchored
+rotation should weight lighter than free-body rotation, accumulation counted
+across transitions). Then, talk-first per the working cadence, the next move:
+**Right and Left Grand** — introduces `pull-by` and the **first 8-dancer circle
+frame**. Remaining after that: Promenade (`promenade-step`), Square Thru
+(`face-turn` + reuse), Partner Trade (`arc-walk`), California Twirl + Star Thru
+(`twirl-arch`; first role-dependent). Then core types + property seeds (chaining
+checks, the performance anchor invariant). Call-model review still open: Layer-4
+v1 scope, two-couple-safe types, concepts.
 
 ## Architecture
 

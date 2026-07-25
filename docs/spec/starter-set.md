@@ -49,7 +49,7 @@ from point of contact). Reprinted with permission of CALLERLAB.
 |---|---|---|---|---|
 | Dosado | ✅ (`dsd`) | 6 (SS across set: 8) | [calls/dosado.md](calls/dosado.md) | draft |
 | Square Thru (2/3/4) | ✅ (`sqth`) | FC: 5 / 7 / 10 (SS: +2) | — | — |
-| Allemande Left | ✅ (`al`) | 4–8 by arm-turn fraction (full: 8) | — | — |
+| Allemande Left | ✅ (`al`) | 4–8 by arm-turn fraction (full: 8) | [calls/allemande-left.md](calls/allemande-left.md) | draft (via `arm-turn`) |
 | Right and Left Grand | ✅ (`rlg`) | 10 | — | — |
 | Promenade | ✅ (`prom`) | ¼: 4 · ½: 8 · ¾: 12 · full: 16 | — | — |
 | Star Thru | ✅ (`st`) | 4 | — | — |
