@@ -5,20 +5,24 @@ _Last updated: 2026-07-24_
 ## Status / next
 
 **Status:** Bootstrapped, pre-code. Architecture decided and recorded (ADR-0001
-TypeScript/provable-lite, ADR-0002 pure library — no storage/UI/IO). The main
-intellectual artifact so far is [`spec/call-model.md`](spec/call-model.md) — the
-researched four-layer state model (per-dancer state incl. roll/sweep/flow/hands,
-square-level FASR, the call definition record, sequence-level evaluation) — **drafted,
-awaiting Ryan's review**. No source code yet; `package.json` doesn't exist, so CI's
-language jobs self-skip.
+TypeScript/provable-lite, ADR-0002 pure library — no storage/UI/IO, ADR-0003 roles,
+ADR-0004 starter scope). [`spec/call-model.md`](spec/call-model.md) holds the
+four-layer state model (three review questions still open);
+[`spec/starter-set.md`](spec/starter-set.md) holds the first implementation target —
+the CALLERLAB-listed Zero Box triple + equivalence suite over nine Basic calls.
+Reference PDFs are local (git-ignored, mapped in
+[`spec/reference-sources.md`](spec/reference-sources.md)). No source code yet;
+`package.json` doesn't exist, so CI's language jobs self-skip.
 
-**Next:** Ryan finishes reviewing `spec/call-model.md` — the roles question is
-**settled** (boy/girl canonical with pluggable labels,
-[ADR-0003](adr/0003-roles-boy-girl-with-alternative-labels.md)); still open: Layer-4
-scope for v1, not hard-coding 8 dancers, concepts out of scope. Then: accept the model
-via an ADR, commit the bootstrap, migrate
-`~/Development/mix-a-hoot-n-hollar/docs/moves.md` in as the call-definition spec seed,
-and design the core types from the accepted model.
+**Next:** Migrate the nine starter calls
+([ADR-0004](adr/0004-starter-scope-zero-box-triple.md),
+[`spec/starter-set.md`](spec/starter-set.md)) from
+`~/Development/mix-a-hoot-n-hollar/docs/moves.md` into per-call spec files with the
+Layer-3 fields (timing from the charts in `reference/`, waypoint paths, roll/sweep,
+hands, role tokens per ADR-0003) — Partner Trade is the one net-new call. Then design
+the core types from the model and build toward the triple's property-test seeds.
+Call-model review: roles settled (ADR-0003); still open: Layer-4 v1 scope,
+two-couple-safe types, concepts out of scope.
 
 ## Architecture
 
@@ -39,17 +43,39 @@ zero-module identity, breathing bounds) so the invariants precede the implementa
 
 ## Worklist
 
-1. Review + accept the call/state model (ADR it once accepted).
-2. Migrate `mix-a-hoot-n-hollar/docs/moves.md` → call-definition specs under
-   `docs/spec/` (extend each call with the Layer-3 fields: paths, roll/sweep, hands,
-   parts, standard applications).
+1. ~~Pick the starter scope~~ — **done 2026-07-24**: the Zero Box triple + Square
+   Thru equivalence set, nine Basic calls (ADR-0004, [`spec/starter-set.md`](spec/starter-set.md)).
+2. Migrate the nine starter calls from `mix-a-hoot-n-hollar/docs/moves.md` →
+   per-call specs under `docs/spec/` (Layer-3 fields: timing, paths, roll/sweep,
+   hands, parts, standard applications; role tokens per ADR-0003). Partner Trade is
+   net-new. Track in the starter-set status table.
 3. Core types: dancer, formation, FASR, call record — two-couple-safe (don't
    hard-code 8 dancers).
-4. Formation recognition + call application for the first handful of Basic calls.
-5. Property-test harness (`fast-check`) over the named invariants.
+4. Formation recognition + call application for the starter formations (static
+   square, facing/back-to-back couples, eight-chain-thru, R&L-grand circle,
+   promenade).
+5. Property-test harness (`fast-check`) seeded with the starter-set vectors
+   (Dosado identity, the equivalences, working-zero classification, triple-ends-home)
+   plus the published flow vectors in [`spec/flow-and-variety.md`](spec/flow-and-variety.md)
+   (Dosado scores clean on rotation rules; the Guidelines' 540° example trips
+   overflow for heads only; `Star Thru → R&L Thru` passes hand availability while
+   the reverse order fails).
+5b. Path representation must support signed-rotation accounting and
+   rotation-center classification (flow/variety needs them — design in from the
+   start, per `flow-and-variety.md` consequence 3).
+6. Remaining call-model review questions (Layer-4 v1 scope, two-couple types,
+   concepts) — resolve as the types force the issue, ADR anything decided.
 
 Deferred with reasons: multiplayer/sync concerns (belongs to the games, not the
 engine); higher-level concepts (As Couples, Tandem — arc doesn't need them yet).
+
+## Reference material
+
+Local git-ignored `reference/callerlab/` holds the six CALLERLAB PDFs the specs are
+written against (definitions, timing charts, standard applications) — see
+[`spec/reference-sources.md`](spec/reference-sources.md) for the re-download map and
+the copyright posture (public repo ⇒ cite and paraphrase, never commit the PDFs). No
+CALLERLAB membership needed; all documents verified publicly downloadable 2026-07-24.
 
 ## Open questions
 
@@ -69,3 +95,11 @@ and [`reviews/`](reviews/README.md) for stance reviews._
   [`journal/2026-07-24-bootstrap-and-call-model.md`](journal/2026-07-24-bootstrap-and-call-model.md).
 - **2026-07-24** — Roles decision: boy/girl canonical with pluggable labels
   (ADR-0003). See [`journal/2026-07-24-roles-decision-1.md`](journal/2026-07-24-roles-decision-1.md).
+- **2026-07-24** — CALLERLAB reference library pulled (no membership needed);
+  starter scope decided: Zero Box triple + equivalence set, nine calls (ADR-0004).
+  See [`journal/2026-07-24-starter-set-2.md`](journal/2026-07-24-starter-set-2.md).
+- **2026-07-24** — Flow & variety model drafted from the CALLERLAB Choreographic
+  Guidelines (found + saved to `reference/`) and the challengedance.org flow rules:
+  quantified flow rules F1–F7, variety rules V1–V6, delivery-timing model; Layer 4
+  and the hand-availability row updated (naive hand-alternation superseded). See
+  [`spec/flow-and-variety.md`](spec/flow-and-variety.md).
