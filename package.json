@@ -1,6 +1,6 @@
 {
   "name": "square-one",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The square-dance engine: formations, call semantics, and choreography paths as pure data.",
   "license": "(MIT OR Apache-2.0)",
   "type": "module",
@@ -20,6 +20,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "prepare": "pnpm run build",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -36,5 +37,9 @@
     "typescript-eslint": "^8.48.0",
     "vitest": "^4.0.18"
   },
-  "packageManager": "pnpm@11.5.3"
+  "packageManager": "pnpm@11.5.3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randallard/square-one.git"
+  }
 }
