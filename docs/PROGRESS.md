@@ -39,10 +39,23 @@ left = CCW; fraction table from the chart), and it carries an open **F4 nuance**
 anchored rotation should weight lighter than free-body rotation, accumulation
 counted across transitions.
 
-**Next: M2** — the consumable package. The build already emits `dist/` with types, so
-what remains is a v0 tag and confirming townage can install it over the pinned git
-dependency (planning ADR-0006). Nothing is blocked: both conformance findings are
-fixed and the supply-chain gates are green.
+**M2 is done (2026-07-25): `v0.1.0` is tagged and townage consumes it.** the-lot pins
+`github:randallard/square-one#v0.1.0` and imports `applyCall`, `applyCallToPair`,
+`createPerformance` and the exported types successfully, at runtime and under `tsc -b`.
+
+A `prepare` script was the missing piece: `dist/` is gitignored, so a git-installed
+consumer has nothing to import unless the package builds itself after cloning.
+
+**Known friction, flagged to the planning effort.** pnpm's blocked-scripts default
+refuses that `prepare` until the consumer allows it, and it only accepts the full
+`square-one@https://codeload.github.com/.../<sha>` key — `square-one: true` is
+rejected. **The sha changes on every tag here**, so each square-one release needs a
+matching edit in every consumer. If that grates, the fix is in this repo: commit
+`dist/` so no build step is needed and tags become drop-in. Not done yet — committing
+build output is its own trade, and one consumer is not enough evidence.
+
+**Next: M4** — the townage choreography adapter, which is the first thing to actually
+render these paths and validate the waypoints marked "provisional until rendered".
 
 Deferred to after the first render (planning M6): **Right and Left Grand**
 (`pull-by` + the first 8-dancer circle frame), Promenade (`promenade-step`), Square
