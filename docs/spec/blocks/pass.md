@@ -36,8 +36,17 @@ lane or directly opposite at ~1 unit, facing opposite to this dancer.
 | 1 | −0.15 | +0.50 | lane offset at the shoulder-pass moment |
 | 2 | 0.00 | +1.00 | S-curve back to center; on the counterpart's former spot, back-to-back |
 
-- `shoulder: left` mirrors x. `direction: backward` negates the y-progression
-  (back up along the lane; shoulders named for the pair that brushes).
+- `shoulder: left` mirrors x.
+- **`direction: backward` is a full time-reversal of the forward pass, not just a
+  negated y-progression** (clarified 2026-07-25). Forward, you veer into the lane on
+  the first beat and hold it. Reversed, you travel straight and the veer lands on the
+  closing beat — the same path walked the other way. The shoulders are still named
+  for the pair that brushes, so the lane sign is unaffected.
+
+  This distinction is invisible at the endpoints: the exit pose is identical either
+  way. It only shows up **mid-block**, which is why the first implementation got it
+  wrong and why [Dosado](../calls/dosado.md)'s beat-4 waypoint is the thing that
+  caught it. Any future block with an asymmetric schedule needs the same care.
 - Facing constant throughout — **momentum delta: rotation 0**; exit flow vector is
   straight ahead (or straight back).
 - Hands: none.

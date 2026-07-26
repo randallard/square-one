@@ -1,6 +1,10 @@
 # Block: `arm-turn`
 
-_Status: draft (2026-07-24). First used by [Allemande Left](../calls/allemande-left.md).
+_Status: draft (2026-07-24; **Facing column corrected 2026-07-25** — it rotated
+clockwise against a counterclockwise orbit and put the pivot in front of the dancer
+rather than on the named side. Caught by the ADR-0009 conformance suite on its first
+run; see `docs/journal/2026-07-25-engine-core-9.md`.) First used by
+[Allemande Left](../calls/allemande-left.md).
 The first block with rotation, and the first with hands engaged — roll, F3/F4
 accounting, and F2 hand tracking all activate here. Also townage's second taught
 gesture: the NPC-taught arm turn **is** this block._
@@ -36,15 +40,20 @@ outside the block per the timing chart's convention.
 
 | Beat | x | y | Facing | Doing |
 |---|---|---|---|---|
-| 0 | 0.00 | −0.50 | +y | entry |
-| 1 | 0.00 | −0.30 | +y | step in, left forearms join |
-| 3 | +0.30 | 0.00 | +x→rotating | quarter around (CCW orbit — dancer sweeps to the east side moving north… pivot on the left) |
-| 5 | 0.00 | +0.30 | −y | halfway — on the counterpart's side |
-| 7 | −0.30 | 0.00 | −x | three quarters |
-| 8 | 0.00 | −0.42 | +y | full around; released, departure step blended out along final facing |
+| 0 | 0.00 | −0.50 | +y | entry — approaching head-on |
+| 1 | 0.00 | −0.30 | +x | step in, left forearms join; facing settles into the tangent, pivot now on the left |
+| 3 | +0.30 | 0.00 | +y | quarter around (CCW orbit — dancer sweeps to the east side moving north… pivot on the left) |
+| 5 | 0.00 | +0.30 | −x | halfway — on the counterpart's side |
+| 7 | −0.30 | 0.00 | −y | three quarters |
+| 8 | 0.00 | −0.42 | +x | full around; released, departure step blended out along final facing |
 
 - Facing stays tangential to the orbit — total facing rotation = `fraction` ×
   360°, **CCW for left, CW for right** (signed rotation is the momentum delta).
+  Tangential means `position angle ± 90°`, which is precisely what keeps the pivot
+  on the named side; head-on facing would put the counterpart in front instead.
+- **The 90° at contact is not part of that rotation.** Beat 0 → 1 turns from
+  head-on into the tangent as the grip is taken; the chart counts approach outside
+  the block ("from point of contact"), so it is entry travel, not accumulation.
 - Mirror transform gives the other hand; fractions truncate the orbit and exit
   from that point.
 - Counterpart is the 180° rotation, as always.

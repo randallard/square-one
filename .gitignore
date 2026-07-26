@@ -1,2 +1,8 @@
 # Local reference material — never committed (copyrighted; see docs/spec/reference-sources.md)
 reference/
+
+# Build output and dependencies. The lockfile IS committed — CI installs frozen.
+dist/
+node_modules/
+coverage/
+

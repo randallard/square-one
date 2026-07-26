@@ -1,0 +1,40 @@
+{
+  "name": "square-one",
+  "version": "0.0.0",
+  "description": "The square-dance engine: formations, call semantics, and choreography paths as pure data.",
+  "license": "(MIT OR Apache-2.0)",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.1",
+    "fast-check": "^4.3.0",
+    "license-checker-rseidelsohn": "^4.4.2",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^4.0.18"
+  },
+  "packageManager": "pnpm@10.28.1"
+}
