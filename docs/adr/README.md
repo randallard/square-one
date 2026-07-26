@@ -88,4 +88,5 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0007](0007-stepper-primary-ideal-paths-derived.md) | The performance stepper is the primary interface; path data is derived from it | Accepted |
 | [0008](0008-runtime-data-is-code-and-plain-data-not-spec-markdown.md) | Runtime call data is code plus plain data — the spec markdown is not a source | Accepted |
 | [0009](0009-spec-markdown-is-the-conformance-fixture.md) | The spec markdown's worked examples are conformance fixtures, parsed by the test suite | Accepted |
-| [0010](0010-wait-out-the-age-gate-rather-than-except-it.md) | When the audit gate and the age gate conflict, wait rather than except | Accepted |
+| [0010](0010-wait-out-the-age-gate-rather-than-except-it.md) | When the audit gate and the age gate conflict, wait rather than except | Superseded by [0011](0011-configure-the-age-gate-where-pnpm-reads-it.md) |
+| [0011](0011-configure-the-age-gate-where-pnpm-reads-it.md) | Configure the age gate where pnpm actually reads it, at pnpm's recommended window | Accepted |

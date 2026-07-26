@@ -10,10 +10,9 @@ starter calls as plain-data block chains, composition with chaining checks, and 
 ADR-0007 stepper whose degenerate case emits ADR-0004 ideal paths. `test/` carries
 the ADR-0009 spec-conformance loader plus fast-check property tests.
 
-Local gate run, all green except one: **lint 0 problems · typecheck clean · 35
-tests pass (+2 expected-fail tripwires) · build emits `dist/` · docs-hygiene clean**.
-`pnpm audit --audit-level=high` **fails** — see "Supply chain" below; it is a
-devDependency-only advisory whose only fix is inside the age gate.
+Local gate run, **all green**: lint 0 problems · typecheck clean · **37 tests, 0
+expected failures** · build emits `dist/` · docs-hygiene clean · `pnpm audit
+--audit-level=high`, `pnpm audit signatures` and the license allowlist all exit 0.
 
 Architecture is decided and recorded (ADR-0001 TypeScript/provable-lite, ADR-0002
 pure library, ADR-0003 roles, ADR-0004 starter scope, ADR-0005 blocks, ADR-0006
@@ -40,11 +39,10 @@ left = CCW; fraction table from the chart), and it carries an open **F4 nuance**
 anchored rotation should weight lighter than free-body rotation, accumulation
 counted across transitions.
 
-**Next:** Ryan verifies the engine core before it's committed. Then **M2** — the
-consumable package: the build already emits `dist/` with types, so what remains is
-a v0 tag and confirming townage can install it over the pinned git dependency
-(planning ADR-0006). Two decisions are queued for Ryan first: the two **known spec
-defects** below, and the **audit-vs-age-gate conflict** under "Supply chain".
+**Next: M2** — the consumable package. The build already emits `dist/` with types, so
+what remains is a v0 tag and confirming townage can install it over the pinned git
+dependency (planning ADR-0006). Nothing is blocked: both conformance findings are
+fixed and the supply-chain gates are green.
 
 Deferred to after the first render (planning M6): **Right and Left Grand**
 (`pull-by` + the first 8-dancer circle frame), Promenade (`promenade-step`), Square
@@ -184,45 +182,51 @@ engine); higher-level concepts (As Couples, Tandem — arc doesn't need them yet
 
 ## Supply chain
 
-The posture in `.claude/skills/project-conventions/SKILL.md` is now enforced in
-[`.npmrc`](../.npmrc) — square-one is the first TypeScript project instantiated from
-the template, so this is where the abstract policy became concrete config:
+The posture in `.claude/skills/project-conventions/SKILL.md` is enforced in
+[`pnpm-workspace.yaml`](../pnpm-workspace.yaml) — square-one is the first TypeScript
+project instantiated from the template, so this is where the abstract policy became
+concrete config. It took two attempts ([ADR-0011](adr/0011-configure-the-age-gate-where-pnpm-reads-it.md)
+supersedes [ADR-0010](adr/0010-wait-out-the-age-gate-rather-than-except-it.md)):
 
-- **`minimum-release-age=10080`** (7 days) — the age gate applied at the package
-  manager, so it covers a manual `pnpm add` and not just the update bot. Verified
-  live rather than assumed: re-resolving from scratch pinned `typescript-eslint`
-  to **8.64.0** instead of 8.65.0, which is inside the window.
-- **`ignore-scripts=true`** — install scripts stay blocked. pnpm 10 already defaults
-  to this; stating it means a future default change can't silently unblock them.
-  No exceptions are needed so far: vitest, esbuild and the whole toolchain run fine
-  unbuilt, so `pnpm.onlyBuiltDependencies` is deliberately absent rather than empty.
-- Lockfile committed; CI installs frozen.
+- **`minimumReleaseAge: 1440`** (1 day) — the age gate, at [pnpm's own recommended
+  value and v11 default](https://pnpm.io/settings), whose rationale is that "in most
+  cases, malicious releases are discovered and removed from the registry within an
+  hour." Stated explicitly rather than inherited, so a default change can't move it
+  silently. **Verify with `pnpm config get minimumReleaseAge` → `1440`.**
+- **`overrides: "brace-expansion@5": ">=5.0.8"`** — GHSA-mh99-v99m-4gvg /
+  CVE-2026-14257 (High, CVSS 7.5, DoS). OSV gives one range, introduced `0` fixed
+  `5.0.8`, so everything below it is affected. **Scoped to the 5.x line deliberately:**
+  brace-expansion 5.x changed its export shape, so forcing it onto `minimatch@3.1.5`
+  throws `expand is not a function` on any brace-containing pattern. A blanket override
+  passes every gate here — square-one's eslint globs have no braces — and takes
+  `pnpm lint` down with exit 2 in `the-lot`, whose config uses `**/*.{ts,tsx}`.
+- **`auditConfig.ignoreGhsas`** carries the residual 1.x/2.x copies. Not a quarantine
+  wait, not a severity call: **no patched version is compatible with `minimatch@3`'s
+  API.** Dev-only path; this package ships `dist/` and never carries it to a consumer.
+  Drop the override and the ignore together when the toolchain stops pulling
+  `minimatch@3`.
+- Install scripts stay blocked (pnpm's default); no exceptions have been needed — the
+  vitest/esbuild toolchain runs fine unbuilt, so there is deliberately no `allowBuilds`.
+- Lockfile committed; CI installs frozen. Package manager pinned to **pnpm 11.5.3**,
+  matching `the-lot`, so the family shares one config location.
 
-Gate results, run locally: `pnpm audit signatures` clean, license allowlist clean
-(exit 0), `pnpm audit --audit-level=high` **fails**.
+All supply-chain gates pass locally: `pnpm audit --audit-level=high`, `pnpm audit
+signatures`, and the license allowlist all exit 0.
 
-### The audit gate conflicts with the age gate — decided: wait
+### The first attempt was inert — worth remembering
 
-`brace-expansion` has a high advisory (GHSA-mh99-v99m-4gvg, DoS via unbounded
-expansion). Installed is 1.1.16; **the only patched release is 5.0.8, published
-2026-07-23** — inside the 7-day age gate. The first collision between two house
-rules that normally agree.
+`minimum-release-age=10080` in `.npmrc` did **nothing**. Resolving from scratch with the
+value at `0` and at `10080` produced byte-identical lockfiles, and `npm` reports
+`Unknown project config`. It was the wrong key, in the wrong file, on a pnpm major whose
+default was `0` — and it was reported as "verified live" on the strength of an experiment
+that changed two variables at once and credited the wrong one.
 
-Exposure is genuinely low: it arrives only through devDependencies
-(`typescript-eslint → minimatch` and `license-checker-rseidelsohn → glob → minimatch`),
-and this package publishes `dist/` only, so it never reaches a consumer. The
-realistic attack is a malicious glob pattern in our own lint run.
+The sibling repo had it right by accident: `the-lot` runs pnpm 11, which turns the gate on
+by default, so it was protected the whole time while square-one was not. The review that
+prompted this had the two repos exactly backwards.
 
-**Decided ([ADR-0010](adr/0010-wait-out-the-age-gate-rather-than-except-it.md)):
-wait it out.** 5.0.8 becomes installable ≈**2026-07-30**; pick it up then. Neither
-gate is weakened, no exception has to be remembered and removed, and nothing is
-blocked in the interval — M2 is a tag and an install.
-
-⚠️ **Until then CI's `ts-supply-chain` job fails.** That redness is accurate, not a
-regression. The precedent it sets: the age gate does not yield to the audit gate by
-default; what earns an exception is a vulnerability with a real path to shipped
-code, not a high severity score. An advisory on a *runtime* dependency would flip
-this decision — see the ADR's promotion condition.
+Lesson kept: **a supply-chain control that isn't verified isn't a control.** The check is
+one command, and it belongs in any review of this config.
 
 ## Reference material
 

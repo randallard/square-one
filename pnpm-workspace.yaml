@@ -1,0 +1,35 @@
+# pnpm 11 reads pnpm settings from here; `.npmrc` is auth/registry only.
+# Policy lives in .claude/skills/project-conventions/SKILL.md; this is the enforcement.
+
+# Age-gate new releases at the package manager, so it covers a manual `pnpm add`
+# and not just the update bot. 1440 minutes (1 day) is pnpm's own documented
+# recommendation and its v11 default: "in most cases, malicious releases are
+# discovered and removed from the registry within an hour."
+#
+# Stated explicitly rather than inherited, so a future default change cannot move
+# it silently — and so the value is visible to anyone reading the repo.
+minimumReleaseAge: 1440
+
+overrides:
+  # GHSA-mh99-v99m-4gvg / CVE-2026-14257 — brace-expansion, unbounded expansion
+  # exhausts memory (High, CVSS 7.5). OSV gives one range: introduced 0, fixed
+  # 5.0.8 — so every version below 5.0.8 is affected and there is no per-line patch.
+  #
+  # Scoped to the 5.x line ON PURPOSE. brace-expansion 5.x changed its export
+  # shape (1.x exported the function itself), so forcing 5.0.8 onto minimatch@3.1.5
+  # breaks it with `expand is not a function` the moment a pattern contains braces.
+  # A blanket override passes CI here only because this repo's eslint globs happen
+  # to have no braces in them — a latent break, not a fix.
+  #
+  # The residual 1.x/2.x copies stay vulnerable and are ignored in audit config,
+  # with the reason recorded there. Revisit when the toolchain's minimatch@3
+  # dependency is gone.
+  "brace-expansion@5": ">=5.0.8"
+
+auditConfig:
+  ignoreGhsas:
+    # See the overrides note above. Not a quarantine wait and not a severity
+    # judgement: there is no patched version compatible with minimatch@3's API.
+    # Dev-only path (eslint/typescript-eslint/license-checker); this package ships
+    # `dist/` and never carries brace-expansion to a consumer.
+    - GHSA-mh99-v99m-4gvg

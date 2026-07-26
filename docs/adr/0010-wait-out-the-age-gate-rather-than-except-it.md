@@ -1,5 +1,5 @@
 # ADR-0010: When the audit gate and the age gate conflict, wait rather than except
-- Status: Accepted
+- Status: Superseded by [ADR-0011](0011-configure-the-age-gate-where-pnpm-reads-it.md)
 - Date: 2026-07-25
 - Deciders: Ryan, Claude
 
