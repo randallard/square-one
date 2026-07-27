@@ -1,6 +1,6 @@
 {
   "name": "square-one",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The square-dance engine: formations, call semantics, and choreography paths as pure data.",
   "license": "(MIT OR Apache-2.0)",
   "type": "module",
