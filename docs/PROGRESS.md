@@ -54,8 +54,34 @@ matching edit in every consumer. If that grates, the fix is in this repo: commit
 `dist/` so no build step is needed and tags become drop-in. Not done yet — committing
 build output is its own trade, and one consumer is not enough evidence.
 
+**The first render watch happened (2026-07-26) and caught two real spec defects
+in Dosado's return leg.** Round one: dancers veered *outward* to twice the lane
+offset after beat 4 — the "backward pass is the time-reversal of the forward
+pass" model was endpoint-invisible and wrong (the pass starts already in its
+lane), and the spec table had skipped exactly the beat where the bulge lived.
+Round two: the first fix's straight-back-plus-sidestep had a 90° corner the
+watcher (a dancer) rejected, and CALLERLAB's definition agrees — *"walking a
+smooth circular path … slide slightly to the left"*. Final form: `pass` gained a
+3-beat **`close`** exit (back at half walking pace, then a final-beat diagonal
+onto home — the opening veer mirrored), **Dosado is a three-block chain**
+(2+1+3 = 6), spec tables list **every** beat, and the definition's adverbs are
+treated as geometry. **Dosado is the first call to graduate from "provisional
+until rendered" to render-validated.** 41 tests green. See
+[journal 9](journal/2026-07-26-first-render-validation-9.md).
+
+**Same day: `Motion.grips` landed — F2's per-beat hand-engagement channel.**
+Spans `{ hand, grip: "forearm", from, to }`; `arm-turn` emits contact→release,
+`pass`/`slide` emit none (hands-free as a positive fact), composition shifts
+spans with their blocks. Prompted by the render watch (Allemande read as
+unconnected — townage now aims engaged forearms from this data) and doubles as
+the foundation for the accessibility brief's tactile-channel analysis. townage
+currently consumes all of this via the ADR-0006 local link; **a v0.2.0 tag +
+pin bump is owed** (minor, not patch — `grips` is new API surface) before
+the-lot commits work that depends on it.
+
 **Next: M4** — the townage choreography adapter, which is the first thing to actually
 render these paths and validate the waypoints marked "provisional until rendered".
+Pass Thru and Allemande Left still await their render watch.
 
 Deferred to after the first render (planning M6): **Right and Left Grand**
 (`pull-by` + the first 8-dancer circle frame), Promenade (`promenade-step`), Square
