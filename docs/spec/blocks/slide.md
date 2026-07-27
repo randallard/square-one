@@ -26,6 +26,11 @@ at the crossing moment — a timing/collision check, not a formation requirement
 | 1 | +0.30 | 0.00 | lane changed (2 × 0.15 lane offset) |
 
 - `side: left` mirrors x.
+- A briefly-considered `span: half` variant (2026-07-26, for Dosado's closing
+  step) was removed the same day: CALLERLAB's dance action blends the closing
+  lateral into the backing ("walking a smooth circular path … slide slightly"),
+  which is [`pass`](pass.md)'s `close` exit, not a discrete sidestep. If the
+  Dodge family later needs partial slides, design the parameter then.
 - Facing constant — **momentum delta: rotation 0**; exit flow vector is lateral
   (which arms the F6 lateral-motion rule: the next block must not move this
   dancer against that lateral direction).

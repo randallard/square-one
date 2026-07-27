@@ -89,6 +89,17 @@ export const armTurn = {
     return {
       beats,
       waypoints,
+      // The F2 grip channel: forearms join at contact and stay engaged for the
+      // whole turn. `step-out` releases half a beat early — the departure step
+      // blends into the closing beat, and the grip lets go as it begins.
+      grips: [
+        {
+          hand,
+          grip: "forearm",
+          from: CONTACT_BEAT,
+          to: exit === "hold" ? beats : Math.max(CONTACT_BEAT, round(beats - 0.5)),
+        },
+      ],
       // Grip-centred frame: the pivot is the origin and the dancer stands off it.
       entry: { position: { x: 0, y: round(-ENTRY_RADIUS) }, facing: PLUS_Y },
       exit: { position: { x: round(end.x), y: round(end.y) }, facing: endFacing },

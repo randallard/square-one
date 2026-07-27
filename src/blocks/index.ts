@@ -35,7 +35,7 @@ export function generateBlock(call: CatalogCall): Motion {
 export function blockBeats(call: CatalogCall): number {
   switch (call.block) {
     case "pass":
-      return pass.beats();
+      return pass.beats(call.params);
     case "slide":
       return slide.beats();
     case "arm-turn":

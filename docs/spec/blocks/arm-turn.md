@@ -63,6 +63,17 @@ outside the block per the timing chart's convention.
 `step-out`: off the orbit ~0.1 beyond entry radius, facing per fraction, grip
 released. `hold`: on the orbit at radius 0.3, grip engaged.
 
+## Grip channel (added 2026-07-26)
+
+The motion carries F2's per-beat engagement as `grips`: one span,
+`{ hand, grip: "forearm", from: 1, to: beats }` — contact at beat 1 where
+rotation starts; `step-out` releases half a beat early (`to: beats − 0.5`) as
+the departure step blends in. `pass` and `slide` emit **no** spans — hands-free
+is a positive fact, which is what lets a consumer (or the future tactile-channel
+analysis in the accessibility work) read "which calls drop hand contact"
+straight off the data. A renderer aims the named forearm at the shared grip
+point for the span's duration; the grip point is this block's own frame origin.
+
 ## Momentum results
 
 | Aspect | Value |

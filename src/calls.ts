@@ -39,8 +39,11 @@ export const dosado: CallDef = {
   chain: [
     { block: "pass", params: { direction: "forward", shoulder: "right", exit: "lane" } },
     { block: "slide", params: { side: "right" } },
-    { block: "pass", params: { direction: "backward", shoulder: "left", exit: "lane" } },
-    { block: "slide", params: { side: "left" } },
+    // The return mirrors the outbound from the other lane: back straight, then
+    // blend diagonally onto home — CALLERLAB's "slide slightly to the left to
+    // return", walked as part of the "smooth circular path" (render feedback
+    // 2026-07-26; a straight retreat with a sidestep correction read wrong).
+    { block: "pass", params: { direction: "backward", shoulder: "left", exit: "close" } },
   ],
 };
 

@@ -1,6 +1,9 @@
 # Dosado
 
-_Status: draft (2026-07-24). First per-call spec — it establishes the template
+_Status: **render-validated 2026-07-26** (townage `#dance` debug scene, first human
+watch) — with one correction found by that watch: the return leg's beats 4–6, see
+the waypoint table note. Originally drafted 2026-07-24. First per-call spec — it
+establishes the template
 (sections mirror [`call-model.md`](../call-model.md) Layer 3), the local-frame
 convention for choreography paths, and the first
 [block composition](../blocks/README.md) (ADR-0005). Sources: CALLERLAB Basic
@@ -39,22 +42,30 @@ where the dancers start apart).
 
 ## Dance action
 
-Walk forward, passing right shoulders; without turning, sidestep to the own-right
-passing back-to-back behind the other dancer; walk backward, passing left
-shoulders; step sideways back to the starting position. **Facing direction never
-changes** — the dancers orbit each other face-forward the whole way.
+Per the CALLERLAB Basic definition: *"Walking a smooth circular path, dancers
+walk forward, passing right shoulders, slide sideways to the right, walk
+backwards, passing left shoulders, and slide **slightly** to the left to return
+to their starting position."* Two load-bearing words: the path is **smooth** (no
+hard corners — the closing lateral blends into the backing as a diagonal, the
+opening veer mirrored from the other side), and the closing slide is
+**slight** (one lane, not the full two-lane crossing behind the counterpart).
+**Facing direction never changes** — the dancers orbit each other face-forward
+the whole way.
 
 ## Block composition
 
-Dosado is a four-block chain from the [block catalog](../blocks/README.md)
+Dosado is a three-block chain from the [block catalog](../blocks/README.md)
 (ADR-0005 — calls are compositions of first-class blocks):
 
 | # | Block | Beats | Exit |
 |---|---|---|---|
 | 1 | [`pass`](../blocks/pass.md)`(forward, right, lane)` | 2 | past the counterpart, own-left lane |
 | 2 | [`slide`](../blocks/slide.md)`(right)` | 1 | crossed behind them to the other lane |
-| 3 | [`pass`](../blocks/pass.md)`(backward, left, lane)` | 2 | backed past, original side |
-| 4 | [`slide`](../blocks/slide.md)`(left)` | 1 | home |
+| 3 | [`pass`](../blocks/pass.md)`(backward, left, close)` | 3 | backed down the return lane, closing diagonally onto home |
+
+The definition's fourth phrase — "slide slightly to the left" — is not a fourth
+block: it is the `close` exit's final-beat diagonal, walked as part of the smooth
+circular path.
 
 Beats sum to the chart's 6 ✓. Each exit pose satisfies the next entry contract
 (the chaining check), and the full-call waypoint table below is the composition's
@@ -77,15 +88,26 @@ Dancer A, facing `+y` at every waypoint (facing column omitted — constant):
 | Beat | x | y | Doing |
 |---|---|---|---|
 | 0 | 0.00 | −0.50 | start |
-| 1 | −0.15 | −0.10 | forward, shifting to the left lane |
+| 1 | −0.15 | −0.10 | forward, veering into the left lane |
 | 2 | −0.15 | +0.30 | right shoulders pass |
 | 3 | +0.15 | +0.30 | sidestep right, crossing behind B |
-| 4 | +0.15 | −0.10 | backing up, left shoulders pass |
-| 6 | 0.00 | −0.50 | back up and sidestep home |
+| 4 | +0.15 | +0.10 | backing straight down the return lane (backing is half walking pace) |
+| 5 | +0.15 | −0.10 | left shoulders pass |
+| 6 | 0.00 | −0.50 | closing diagonal onto home — the beat-0→1 veer, mirrored |
 
 Hands: none throughout (arms in natural dance position; skirt work is styling
-only). Paths are **provisional until rendered** — validate visually in a consumer
-before treating as final.
+only — CALLERLAB notes crossed arms are *not* recommended styling today).
+
+**Render-validated 2026-07-26, in two rounds** — the validation earned its keep
+twice. Round one: the original table *skipped beat 5*, hiding a bulge to
+`(+0.30, −0.50)` where the backward pass re-applied its lane veer outward and
+the closing slide swung two lanes home; the watch caught dancers backing
+diagonally *away* from home. Round two: the first fix (straight back, then a
+discrete sidestep) had a hard 90° corner at beat 5 — the watcher (a dancer)
+called the return "straight back then correct", where the definition demands a
+smooth path with the closing slide blended in. Lessons, both recorded in
+[`pass.md`](../blocks/pass.md): waypoint tables list **every** beat, and the
+definition's adverbs ("smooth", "slightly") are geometry, not decoration.
 
 Derived geometry worth noting: each dancer's *position* orbits the pair center a
 full 360° **clockwise** (viewed from above, `+y` up), while *facing* rotation is

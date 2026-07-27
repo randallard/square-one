@@ -58,10 +58,35 @@ export interface Momentum {
   readonly lastHand: Hand;
 }
 
+/**
+ * A span of beats during which one of this dancer's hands is engaged in a grip.
+ *
+ * This is F2's per-beat data: `Momentum.lastHand` says what *finished* engaged;
+ * grips say what is engaged *now*. `grip` is the style — forearm for the
+ * arm-turn family; palm grips arrive with Right and Left Grand.
+ *
+ * A consumer rendering arms should **place** the named forearm into the grip for
+ * the span, not aim it at the grip point: townage tried aiming first and the arms
+ * came out pointing sideways at each other, because in an arm turn the gripping
+ * shoulder is already nearly over the pivot. A forearm grip is two horizontal,
+ * antiparallel forearms along the line between the pair, each hand at the other's
+ * elbow, pinned to the pivot and rotating with it while the bodies move around it.
+ * See the-lot's `src/dance/arm-pose.ts`.
+ */
+export interface GripSpan {
+  readonly hand: Hand;
+  readonly grip: "forearm";
+  readonly from: number;
+  readonly to: number;
+}
+
 /** What applying a block or a call yields. */
 export interface Motion {
   readonly beats: number;
   readonly waypoints: readonly Waypoint[];
+  /** Hand engagements over this motion's beat axis; empty means hands stay
+   *  free throughout — a positive fact (F2), not an omission. */
+  readonly grips: readonly GripSpan[];
   /**
    * The dancer's pose at beat 0 **in this motion's own local frame**.
    *

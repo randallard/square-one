@@ -27,6 +27,7 @@ export const slide = {
 
     return {
       beats: BEATS,
+      grips: [], // hands stay free
       waypoints: [
         { beat: 0, x: 0, y: 0, facing: PLUS_Y },
         { beat: 1, x: round(dx), y: 0, facing: PLUS_Y },

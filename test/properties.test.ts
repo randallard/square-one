@@ -17,7 +17,7 @@ import { IDEAL, createPerformance, idealPaths, sampleMotion } from "../src/stepp
 const passParams = fc.record({
   direction: fc.constantFrom("forward" as const, "backward" as const),
   shoulder: fc.constantFrom("right" as const, "left" as const),
-  exit: fc.constantFrom("lane" as const, "centered" as const),
+  exit: fc.constantFrom("lane" as const, "centered" as const, "close" as const),
 });
 
 const slideParams = fc.record({ side: fc.constantFrom("right" as const, "left" as const) });
@@ -69,6 +69,50 @@ describe("block invariants", () => {
         expect(m.momentum.roll).toBe(turnOf(m.momentum.rotation));
       }),
     );
+  });
+
+  it("grip spans lie inside the block's beat range and start before they end", () => {
+    fc.assert(
+      fc.property(anyBlock, (call) => {
+        const m = generateBlock(call);
+        for (const g of m.grips) {
+          expect(g.from).toBeGreaterThanOrEqual(0);
+          expect(g.to).toBeLessThanOrEqual(m.beats);
+          expect(g.from).toBeLessThan(g.to);
+        }
+      }),
+    );
+  });
+
+  it("arm-turn engages the named forearm from contact; pass and slide keep hands free", () => {
+    fc.assert(
+      fc.property(armTurnParams, (params) => {
+        const m = armTurn.generate(params);
+        expect(m.grips).toHaveLength(1);
+        expect(m.grips[0]?.hand).toBe(params.hand);
+        expect(m.grips[0]?.grip).toBe("forearm");
+        expect(m.grips[0]?.from).toBe(1); // the contact beat
+      }),
+    );
+    fc.assert(
+      fc.property(fc.oneof(passParams, slideParams), (params) => {
+        const m =
+          "side" in params ? slide.generate(params) : pass.generate(params);
+        expect(m.grips).toEqual([]);
+      }),
+    );
+  });
+
+  it("composition shifts grip spans onto the chain's beat axis", () => {
+    // A slide (1 beat, no grips) ahead of a full left arm-turn: the turn's grip
+    // must ride along with its block.
+    const motion = compose([
+      { block: "slide", params: { side: "right" } },
+      { block: "arm-turn", params: { hand: "left", fraction: 1, exit: "step-out" } },
+    ]);
+    expect(motion.grips).toHaveLength(1);
+    expect(motion.grips[0]?.from).toBe(2); // 1 (slide) + 1 (contact beat)
+    expect(motion.grips[0]?.to).toBe(8.5); // 1 + 8 − the step-out half beat
   });
 
   it("non-rotating blocks cannot roll", () => {

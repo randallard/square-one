@@ -61,6 +61,12 @@ export function embed(motion: Motion, at: Pose, beatOffset: number): Motion {
   return {
     beats: motion.beats,
     waypoints,
+    // Grips carry no geometry — only their beat axis shifts with the block.
+    grips: motion.grips.map((g) => ({
+      ...g,
+      from: round(g.from + beatOffset),
+      to: round(g.to + beatOffset),
+    })),
     entry: at,
     exit: {
       position: { x: round(e.x), y: round(e.y) },
@@ -87,6 +93,7 @@ export function compose(chain: readonly CatalogCall[], start: Pose = ORIGIN): Mo
     return {
       beats: 0,
       waypoints: [{ beat: 0, x: start.position.x, y: start.position.y, facing: start.facing }],
+      grips: [],
       entry: start,
       exit: start,
       momentum: { rotation: 0, roll: null, bodyFlow: null, lastHand: "none" },
@@ -94,6 +101,7 @@ export function compose(chain: readonly CatalogCall[], start: Pose = ORIGIN): Mo
   }
 
   const waypoints: Waypoint[] = [];
+  const grips: Motion["grips"][number][] = [];
   let at = start;
   let beatOffset = 0;
   let rotation = 0;
@@ -104,6 +112,7 @@ export function compose(chain: readonly CatalogCall[], start: Pose = ORIGIN): Mo
     // Drop the leading waypoint on every block after the first — it repeats the
     // previous block's exit instant.
     waypoints.push(...(waypoints.length === 0 ? placed.waypoints : placed.waypoints.slice(1)));
+    grips.push(...placed.grips);
     rotation += placed.momentum.rotation;
     beatOffset += placed.beats;
     at = placed.exit;
@@ -116,6 +125,7 @@ export function compose(chain: readonly CatalogCall[], start: Pose = ORIGIN): Mo
   return {
     beats: round(beatOffset),
     waypoints,
+    grips,
     entry: start,
     exit: at,
     momentum: {

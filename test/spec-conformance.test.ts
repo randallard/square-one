@@ -24,7 +24,7 @@ function invoke(v: SpecVector): Motion {
       return pass.generate({
         direction: a as "forward" | "backward",
         shoulder: b as "right" | "left",
-        exit: c as "lane" | "centered",
+        exit: c as "lane" | "centered" | "close",
       });
     case "slide":
       return slide.generate({ side: a as "right" | "left" });
@@ -86,16 +86,18 @@ describe("call composition matches the chart", () => {
     });
   }
 
-  // dosado.md asserts its full-call table is the chain's embedding. It is — once
-  // `pass(backward, …)` is the time-reversal it should always have been. This test
-  // is what caught that it wasn't.
+  // dosado.md asserts its full-call table is the chain's embedding. Every beat is
+  // listed on purpose: this table has hidden a geometry defect twice, both times
+  // in a beat it didn't print (beat 4 under the negated-y model, beat 5 under the
+  // time-reversal model — the outward bulge the 2026-07-26 render watch caught).
   it("Dosado's documented full-call table is the chain's embedding", () => {
     const documented = [
       { beat: 0, x: 0.0, y: -0.5 },
       { beat: 1, x: -0.15, y: -0.1 },
       { beat: 2, x: -0.15, y: 0.3 },
       { beat: 3, x: 0.15, y: 0.3 },
-      { beat: 4, x: 0.15, y: -0.1 },
+      { beat: 4, x: 0.15, y: 0.1 },
+      { beat: 5, x: 0.15, y: -0.1 },
       { beat: 6, x: 0.0, y: -0.5 },
     ];
     const motion = compose(CALLS.dosado.chain, PAIR_A);
