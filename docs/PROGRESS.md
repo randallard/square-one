@@ -1,6 +1,6 @@
 # Progress & Status
 
-_Last updated: 2026-07-25_
+_Last updated: 2026-07-29_
 
 ## Status / next
 
@@ -10,9 +10,13 @@ starter calls as plain-data block chains, composition with chaining checks, and 
 ADR-0007 stepper whose degenerate case emits ADR-0004 ideal paths. `test/` carries
 the ADR-0009 spec-conformance loader plus fast-check property tests.
 
-Local gate run, **all green**: lint 0 problems · typecheck clean · **37 tests, 0
-expected failures** · build emits `dist/` · docs-hygiene clean · `pnpm audit
---audit-level=high`, `pnpm audit signatures` and the license allowlist all exit 0.
+Local gate run (2026-07-29), **all green**: lint 0 problems · typecheck clean ·
+**44 tests, 0 expected failures** · build emits `dist/` · docs-hygiene clean ·
+`pnpm audit --audit-level=high`, `pnpm audit signatures` and the license allowlist
+all exit 0 — **and now the OSV scan too**, which had never once passed in Actions
+until `osv-scanner.toml` was added today. See [The ninth gate nobody was
+running](#the-ninth-gate-nobody-was-running); the same section is the reason to
+distrust "all gates green" when a gate is only ever observed in CI.
 
 Architecture is decided and recorded (ADR-0001 TypeScript/provable-lite, ADR-0002
 pure library, ADR-0003 roles, ADR-0004 starter scope, ADR-0005 blocks, ADR-0006
@@ -23,7 +27,7 @@ four-layer state model (three review questions still open);
 are local (git-ignored, mapped in [`spec/reference-sources.md`](spec/reference-sources.md)).
 
 **Course change (2026-07-25): call specs pause at three; code starts now.** The
-planning effort's [ADR-0005](../../work/square-dance-planning/adr/0005-integration-first-cut-to-code-at-three-calls.md)
+planning effort's **ADR-0005** (`square-dance-planning/adr/0005-integration-first-cut-to-code-at-three-calls.md`)
 stops the talk-first call cadence at Dosado / Pass Thru / Allemande Left and puts
 the engine core + the townage choreography adapter next, because the waypoint
 tables are marked "provisional until rendered" and only a consumer can validate
@@ -75,9 +79,11 @@ Spans `{ hand, grip: "forearm", from, to }`; `arm-turn` emits contact→release,
 spans with their blocks. Prompted by the render watch (Allemande read as
 unconnected — townage now aims engaged forearms from this data) and doubles as
 the foundation for the accessibility brief's tactile-channel analysis. townage
-currently consumes all of this via the ADR-0006 local link; **a v0.2.0 tag +
-pin bump is owed** (minor, not patch — `grips` is new API surface) before
-the-lot commits work that depends on it.
+consumed this via the ADR-0006 local link at the time. **`v0.2.0` is now tagged,
+pushed, and consumed** (2026-07-28, `660fe33`; minor not patch, since `grips` is
+new API surface) — the-lot resolves it from the tarball with the link override
+dropped, and pnpm runs this package's `prepare` on install because `dist/` is
+gitignored.
 
 **Next: M4** — the townage choreography adapter, which is the first thing to actually
 render these paths and validate the waypoints marked "provisional until rendered".
@@ -100,7 +106,8 @@ the paths-as-data seam). This repo's own decisions:
 - Roles: boy/girl canonical, pluggable presentation labels — [ADR-0003](adr/0003-roles-boy-girl-with-alternative-labels.md)
 - Public interface: the performance stepper is primary, ideal paths derive from it — [ADR-0007](adr/0007-stepper-primary-ideal-paths-derived.md)
 - Distribution: consumers take a **pinned git dependency** (local link during
-  co-development) — planning [ADR-0006](../../work/square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md)
+  co-development) — planning **ADR-0006**
+  (`square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md`)
 
 ## Provability
 
@@ -244,13 +251,49 @@ supersedes [ADR-0010](adr/0010-wait-out-the-age-gate-rather-than-except-it.md)):
   API.** Dev-only path; this package ships `dist/` and never carries it to a consumer.
   Drop the override and the ignore together when the toolchain stops pulling
   `minimatch@3`.
+- **[`osv-scanner.toml`](../osv-scanner.toml) carries the same ignore, and has to**
+  (added 2026-07-29). `auditConfig` is read by `pnpm audit` and by nothing else; CI's
+  `osv-scan` job runs osv-scanner with `fail-on-vuln: true` against its own config and its
+  own database. Two scanners, two formats, one posture — each file points at the other, and
+  they are dropped together. See [The ninth gate nobody was
+  running](#the-ninth-gate-nobody-was-running).
 - Install scripts stay blocked (pnpm's default); no exceptions have been needed — the
   vitest/esbuild toolchain runs fine unbuilt, so there is deliberately no `allowBuilds`.
 - Lockfile committed; CI installs frozen. Package manager pinned to **pnpm 11.5.3**,
   matching `the-lot`, so the family shares one config location.
 
 All supply-chain gates pass locally: `pnpm audit --audit-level=high`, `pnpm audit
-signatures`, and the license allowlist all exit 0.
+signatures`, and the license allowlist all exit 0 — and, since 2026-07-29, so does the OSV
+scan (below), which is the one that wasn't.
+
+### The ninth gate nobody was running
+
+*2026-07-29.* **`osv-scan` had failed on every run in this repo's history**, and the local
+signal said otherwise the whole time: `pnpm audit --audit-level=high` reported
+`1 high (1 ignored)`, which reads as "the posture is configured". It was configured for one
+of the two scanners. osv-scanner never reads `pnpm-workspace.yaml`, so it saw an unignored
+High and exited 1.
+
+`the-lot` had learned this on 2026-07-25 and written it down — "osv-scanner reads its own
+config file, not pnpm's" — then deleted its `osv-scanner.toml` later the same day, to keep
+one ignore in one place. Good instinct, wrong target: the two files aren't two records of
+one decision, they're config for two programs. Both repos were red from that point.
+
+**The part worth keeping is how it stayed invisible.** The OSV job is a *reusable workflow*,
+and both repos had recorded that it "can't be exercised from a local checkout" — true of the
+workflow, false of the scanner that decides it. Reproduced and then verified against a clean
+`git archive` export, so `node_modules` couldn't change the answer:
+
+```
+docker run --rm -v "$PWD:/src" -w /src ghcr.io/google/osv-scanner:v2.3.8 -r ./
+```
+
+Before: exit 1, the brace-expansion finding, 236 packages scanned — matching CI's log line
+for line. After: `Loaded filter from: /src/osv-scanner.toml`, `No issues found`, exit 0.
+**A gate you believe can't run locally is worth ten minutes of trying anyway.** This is the
+same lesson as 2026-07-28's — run what CI runs, not a hand-rolled approximation — arriving
+from the other direction: there, the approximation was too lenient; here, a gate was skipped
+entirely because it was assumed unreachable.
 
 ### The first attempt was inert — worth remembering
 
@@ -278,8 +321,8 @@ CALLERLAB membership needed; all documents verified publicly downloadable 2026-0
 ## Open questions
 
 - ~~**Distribution**~~ — **decided 2026-07-25**: pinned git dependency, local link
-  during co-development (planning
-  [ADR-0006](../../work/square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md)).
+  during co-development (planning **ADR-0006**,
+  `square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md`).
   Revisit when hash-n-patter arrives as a second consumer.
 - The four model questions listed at the end of [`spec/call-model.md`](spec/call-model.md).
 - ~~Whether `docs/spec/` call files or generated JSON become the runtime call data

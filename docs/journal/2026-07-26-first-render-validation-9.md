@@ -114,7 +114,7 @@ is on the named side, so the gripping shoulder is already nearly over it and
 antiparallel forearms along the line between the pair, each hand at the other's
 elbow, pinned to the pivot and rotating with it. The data was right; only the
 advice about consuming it was wrong. See
-[the-lot's journal](../../../the-lot/docs/journal/2026-07-26-the-grip-is-horizontal-and-tracked.md).
+[the-lot's journal](https://github.com/randallard/the-lot/blob/main/docs/journal/2026-07-26-the-grip-is-horizontal-and-tracked.md).
 
 **And one finding for this repo, deliberately not fixed.** `arm-turn` emits a
 waypoint every quarter turn and the stepper interpolates linearly, so a turning
