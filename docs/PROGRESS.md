@@ -268,7 +268,9 @@ scan (below), which is the one that wasn't.
 
 ### The ninth gate nobody was running
 
-*2026-07-29.* **`osv-scan` had failed on every run in this repo's history**, and the local
+*2026-07-29 — fixed and confirmed green in Actions (run `30486329759`, commit `fdb4bd2`).*
+
+**`osv-scan` had failed on every run in this repo's history**, and the local
 signal said otherwise the whole time: `pnpm audit --audit-level=high` reported
 `1 high (1 ignored)`, which reads as "the posture is configured". It was configured for one
 of the two scanners. osv-scanner never reads `pnpm-workspace.yaml`, so it saw an unignored
@@ -289,7 +291,9 @@ docker run --rm -v "$PWD:/src" -w /src ghcr.io/google/osv-scanner:v2.3.8 -r ./
 ```
 
 Before: exit 1, the brace-expansion finding, 236 packages scanned — matching CI's log line
-for line. After: `Loaded filter from: /src/osv-scanner.toml`, `No issues found`, exit 0.
+for line. After: `Loaded filter from: /src/osv-scanner.toml`, `No issues found`, exit 0. The
+CI run then said the same thing from `/github/workspace/osv-scanner.toml`, which is what makes
+the local command trustworthy as a stand-in rather than merely reassuring.
 **A gate you believe can't run locally is worth ten minutes of trying anyway.** This is the
 same lesson as 2026-07-28's — run what CI runs, not a hand-rolled approximation — arriving
 from the other direction: there, the approximation was too lenient; here, a gate was skipped
