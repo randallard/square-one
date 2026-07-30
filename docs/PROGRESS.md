@@ -328,6 +328,23 @@ CALLERLAB membership needed; all documents verified publicly downloadable 2026-0
   during co-development (planning **ADR-0006**,
   `square-dance-planning/adr/0006-townage-consumes-square-one-as-pinned-git-dependency.md`).
   Revisit when hash-n-patter arrives as a second consumer.
+- ~~**Teaching content**~~ — **decided 2026-07-29** by planning **ADR-0008**
+  (`square-dance-planning/adr/0008-teaching-content-is-townage-data-engine-stays-pure.md`).
+  **Standing constraint on this repo: square-one gains no teaching metadata of any kind** —
+  no prerequisites, no difficulty, no lesson ordering, and it is never told that anything is
+  being taught. Consumers derive prerequisite ordering from block composition and hold
+  difficulty themselves, because difficulty is a tuning judgment about one game rather than a
+  fact about square dance. What this repo contributes is the teachable *structure* that
+  [ADR-0005](adr/0005-building-blocks-first-class.md) already built — blocks with entry
+  contracts, timing, hands and composition rules. `docs/spec/blocks/arm-turn.md` already
+  states the relationship: the NPC-taught arm turn **is** that block. If hash-n-patter ever
+  wants the same difficulty ordering townage has, that ordering has become a shared fact and
+  belongs in the block catalog — a new ADR, not a field quietly added in two places.
+- **`externallyDriven` is implemented and property-tested here, and no consumer has ever
+  passed it.** `src/stepper.ts` honours it and `test/properties.test.ts:330` asserts a driven
+  dancer is marked as such — but the-lot declares the option and has never supplied it, so the
+  player has never actually been in a square. The engine side is proven; the seam is not.
+  Don't read the green tests as end-to-end evidence.
 - The four model questions listed at the end of [`spec/call-model.md`](spec/call-model.md).
 - ~~Whether `docs/spec/` call files or generated JSON become the runtime call data
   (spec-as-source vs spec-as-documentation)~~ — **decided 2026-07-25, and the binary
