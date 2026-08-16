@@ -4,7 +4,47 @@ _Last updated: 2026-08-15_
 
 ## Status / next
 
-**▶ S1 has started (2026-08-15) — sequences chain, and "are we home" exists.** Planning
+**▶ S1's calls are done (2026-08-15) — and 🔴 none of it is rendered.** Ryan's framing:
+*"define 'partner up' … then we can just do two partner trades for a zero, then two California
+twirls."* Both zeros now come back `home` from `isCoupleZero`. Narrative in
+[the twelfth journal entry](journal/2026-08-15-couples-and-two-zeros-12.md).
+**122 tests** (from 44 this morning), lint clean, typecheck and build clean.
+
+- **[ADR-0012](adr/0012-calls-key-off-couple-position-not-role.md)** — calls key off couple
+  position (**beau**/**belle**), never role. ADR-0003 is not superseded: a role is who you are,
+  a position is where you are standing. `CallDef.roleDependent` renamed `positionDependent`.
+- **`src/couple.ts`** — `partnerUp` **takes** the arrangement rather than inferring it, so two
+  dancers of the same role can partner up and no call breaks.
+- **Two new blocks.** `orbit` (walk forward around a shared centre, hands free) and
+  `turn-under` (the arch). Ryan chose "cleaner" over a `grip` parameter on `arm-turn`.
+- **Two new calls**, both position-dependent, both zeros when doubled.
+- 🔴 **Equivalence confirmed:** Partner Trade and California Twirl land the couple in exactly
+  the same place, and either can follow the other and still come home. First member of
+  ADR-0004's equivalence suite.
+
+**🔴 Four things the building corrected, none of them by reading.** The list matters more than
+any entry on it — every one read perfectly well, and only composing blocks and running the
+result caught them:
+
+1. Partner Trade is **not** a rigid rotation; under one, a dancer walks sideways.
+2. It **is** position-dependent (the spec said `false`): both arcs cross the couple's front, so
+   the right-shoulder lane separates them *asymmetrically* — belle inside, beau outside.
+3. **No single constant-radius arc can do it.** The centre must lie on the dancers'
+   perpendicular bisector, so the only semicircle is radius 0.5 for *both* — the collision.
+   This forced giving `slide` a distance parameter.
+4. California Twirl's dancers are **not** on different arcs; they stay diametrically opposite
+   at the same radius, which is why it needs no lane.
+
+Plus: `arm-turn` **absorbs** the step-in rather than adding it — both are 8 beats and `arm-turn`
+compresses its closing quarter — found by the `orbit` equivalence test.
+
+**🔴 Still owed: a render.** California Twirl's intermediate path is marked *provisional until
+rendered*; `moves.md`'s "the gent stays in place or steps through" is loose. `dosado.md` carried
+the same marker before its own watch caught two defects.
+
+---
+
+**▶ S1 started (2026-08-15) — sequences chain, and "are we home" exists.** Planning
 **ADR-0011** re-ordered the milestone table: NPCs dance a complete sequence before the player
 joins one, in three increments (S1 one couple, S2 two couples, S3 the full square). S1 isolates
 *sequence* from *formation*, so it needs no frame work — two dancers is what the consumer
