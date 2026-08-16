@@ -4,6 +4,35 @@ _Last updated: 2026-08-15_
 
 ## Status / next
 
+**▶ A couple stands hand in hand (2026-08-15).** Ryan, after S1 was wired into townage:
+*"they should hold hands — we say touch hands — beau right palm up and belle's left palm
+down … the characters need to be a bit closer together when partnered up."* Narrative in
+[the thirteenth journal entry](journal/2026-08-15-touch-hands-13.md). **137 tests**, all gates
+green.
+
+- 🔴 **"A bit" was a factor of three.** Measured against townage's default cast at its derived
+  frame scale of 2.60: a `COUPLE_WIDTH` couple stood **2.60 world units** apart while their
+  inside hands meet at **0.82**. The constant was `1` — the same as a facing pair — because
+  that was the obvious default when the formation was invented that morning and nothing had
+  looked at it since. Now **a third**.
+- **The engine cannot know the real answer**, since the touching distance depends on shoulder
+  offsets that run 0.2 to 0.46 across the cast. `partnerUp` takes an optional width; a third
+  is the body-agnostic default. The ADR-0004 seam doing its job — the engine says *hand in
+  hand*, a consumer with bodies says *how far*.
+- 🔴 **`TRADE_LANE` had been carrying a ratio in disguise.** It was the flat `LANE_OFFSET`,
+  which is calibrated against a **facing pair's one-unit separation**. Invisible while a couple
+  was a full unit wide; the moment it narrowed, the inside dancer's arc radius came out at
+  **0.017** — a dancer spinning on the spot. **A constant borrowed from one formation and used
+  in another is a ratio in disguise, and it stays invisible for exactly as long as the two
+  happen to be the same size.**
+- **`insideHands`** names which hands are joined (beau's right, belle's left). *Which* hands is
+  a formation fact and lives here; *how* they are held is a rendering convention and does not.
+- **`flattenSequence`** turns a sequence into one motion per dancer for the stepper. The
+  dropped duplicate waypoint at each join is the part with a test on it: keeping it puts two
+  waypoints on one beat, and interpolating across a zero-length interval divides by zero.
+
+---
+
 **▶ S1's calls are done (2026-08-15) — and 🔴 none of it is rendered.** Ryan's framing:
 *"define 'partner up' … then we can just do two partner trades for a zero, then two California
 twirls."* Both zeros now come back `home` from `isCoupleZero`. Narrative in
