@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { armTurn, pass, slide } from "../src/blocks/index.js";
+import { armTurn, orbit, pass, slide } from "../src/blocks/index.js";
 import { compose } from "../src/compose.js";
 import { CALLS, PAIR_A } from "../src/calls.js";
 import type { Motion } from "../src/types.js";
@@ -33,6 +33,12 @@ function invoke(v: SpecVector): Motion {
         hand: a as "right" | "left",
         fraction: b === "full" ? 1 : Number(b),
         exit: c as "step-out" | "hold",
+      });
+    case "orbit":
+      return orbit.generate({
+        turn: a as "right" | "left",
+        fraction: b === "full" ? 1 : Number(b),
+        radius: Number(c),
       });
     default:
       throw new Error(`${v.file}: unknown block \`${v.block}\` in the catalog`);
