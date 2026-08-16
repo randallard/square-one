@@ -64,6 +64,15 @@ export function opposite(position: CouplePosition): CouplePosition {
  * across the shipped cast. A consumer with real bodies should compute it and pass it to
  * {@link partnerUp}; a third is the engine's body-agnostic default and the ratio a
  * caller would recognise, not a fitted number.
+ *
+ * 🔴 **And on 2026-08-16 a consumer did, which is worth recording as the seam working
+ * rather than as this constant being wrong.** townage measured its own cast and passes
+ * **0.438** — a third put the couple 0.868 world units apart while one dancer's
+ * shoulders alone are 0.920 across, so each inside shoulder sat *over* the joined hands
+ * and both arms hung dead vertical. "Within a hair of hand contact", above, was true and
+ * insufficient: hands can meet and still have nothing that reads as a handhold. Nothing
+ * here changes — a third remains the right body-agnostic answer, and the fix belonged on
+ * the side that owns shoulders.
  */
 export const COUPLE_WIDTH = 1 / 3;
 
