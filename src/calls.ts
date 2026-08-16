@@ -114,11 +114,50 @@ export const allemandeLeft: CallDef = {
   chain: [{ block: "arm-turn", params: { hand: "left", fraction: 1, exit: "step-out" } }],
 };
 
+/**
+ * California Twirl — the couple turns around under a raised arch.
+ *
+ * The **same net effect** as a Partner Trade (positions swapped, facings reversed) by a
+ * different route: hands stay joined, the pair rotates as a unit about them, and the
+ * belle takes a full turn under the arch on the way. That difference lives in
+ * `momentum.rotation` rather than in the end pose, which is why the two calls are
+ * candidates for an equivalence rather than duplicates.
+ *
+ * No lane is needed. The dancers stay diametrically opposite across the joined hands
+ * for the whole rotation, so unlike Partner Trade there is nothing to separate — which
+ * is a nice illustration that the lane is a property of the *figure*, not of exchanging
+ * places.
+ *
+ * 🔴 The intermediate path is **provisional until rendered**, the same marker
+ * `dosado.md` carried before its own watch. `moves.md`'s description says the beau
+ * "stays in place or steps through", which is loose, and the rigid-rotation reading here
+ * is the one consistent with the end state and with the hands staying joined.
+ */
+export const californiaTwirl: CallDef = {
+  name: "California Twirl",
+  chartBeats: 4,
+  positionDependent: true,
+  chain: [
+    { block: "turn-under", params: { pivot: "right", turn: "right", fraction: 0.5, radius: COUPLE_WIDTH / 2, hand: "right", spin: 0 } },
+  ],
+  chains: {
+    // The beau makes the arch: no spin, joined right hand, hands on his right.
+    beau: [
+      { block: "turn-under", params: { pivot: "right", turn: "right", fraction: 0.5, radius: COUPLE_WIDTH / 2, hand: "right", spin: 0 } },
+    ],
+    // The belle passes under it: one full turn, joined left hand, hands on her left.
+    belle: [
+      { block: "turn-under", params: { pivot: "left", turn: "right", fraction: 0.5, radius: COUPLE_WIDTH / 2, hand: "left", spin: 1 } },
+    ],
+  },
+};
+
 export const CALLS = {
   dosado,
   "pass-thru": passThru,
   "allemande-left": allemandeLeft,
   "partner-trade": partnerTrade,
+  "california-twirl": californiaTwirl,
 } as const;
 
 export type CallName = keyof typeof CALLS;

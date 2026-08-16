@@ -85,15 +85,20 @@ use of the vocabulary ADR-0012 introduced.
 
 ## Block composition
 
-🔴 **Needs a block the catalog does not have**, and a different one from Partner Trade's.
+Built 2026-08-15. Per position, one block each:
 
-| # | Block | Beats | Exit |
+| Position | Block | Beats | Exit |
 |---|---|---|---|
-| 1 | `turn-under(...)` — **not yet in the catalog** | 4 | the other's spot, facing reversed, grip kept |
+| beau | [`turn-under`](../blocks/turn-under.md)`(right, right, 0.5, 0.5, 0, right)` | 4 | the belle's spot, facing reversed, having made the arch |
+| belle | [`turn-under`](../blocks/turn-under.md)`(left, right, 0.5, 0.5, 1, left)` | 4 | the beau's spot, facing reversed, having turned under once |
+
+**No lane, unlike [Partner Trade](partner-trade.md).** The two stay diametrically opposite
+across the joined hands for the whole rotation, so nothing has to separate them — which shows
+the lane is a property of the *figure* rather than of exchanging places.
 
 `turn-under` is the arch figure: two dancers with joined hands, one passing beneath while the
 other walks around. It is the block **Star Thru and Box the Gnat also need**, which is why it
-is worth designing once rather than per call — ADR-0005's bet that the catalog makes later
+was worth designing once rather than per call — ADR-0005's bet that the catalog makes later
 calls cheaper, stated as a prediction that can be checked:
 
 - **California Twirl** — from a couple, ends a couple, facing reversed
@@ -105,22 +110,19 @@ block, ADR-0011's consequence applies and S2 should say so rather than absorbing
 
 ## Choreography paths
 
-**Deliberately not in the conformance-fixture format yet**, for the same reason as
-[Partner Trade](partner-trade.md): the loader throws on a block it cannot find, and taking the
-suite red for an unbuilt block is not a defect worth signalling.
+The block's own worked examples in [`turn-under.md`](../blocks/turn-under.md) **are** this
+call's two paths and are conformance fixtures. Not restated here — a third copy is a thing that
+can disagree.
 
-What the fixture will assert once `turn-under` lands — couple centred on the origin facing
-`+y`, beau entering at `(−0.5, 0)` and belle at `(+0.5, 0)`:
+🔴 The earlier draft of this section sketched the beau on an outer arc and the belle on a
+tighter one, marked "illustrative, not derived". It was wrong, and worth recording as wrong:
+the two are **diametrically opposite at the same radius** the whole way. The sketch had
+imported Partner Trade's inside/outside asymmetry into a figure that does not have it.
 
-| Beat | beau x | beau y | beau facing | belle x | belle y | belle facing |
-|---|---|---|---|---|---|---|
-| 0 | −0.5 | 0 | +y | +0.5 | 0 | +y |
-| 2 | −0.35 | −0.35 | −x | +0.2 | +0.2 | +x |
-| 4 | +0.5 | 0 | −y | −0.5 | 0 | −y |
-
-🔴 The beat-2 row is **illustrative, not derived** — it says the beau takes the outer arc and
-the belle the tighter one, which is the call's shape, but the actual coordinates come from the
-block once it exists. Marked so nobody mistakes a sketch for a fixture.
+🔴 The intermediate path remains **provisional until rendered**, the marker `dosado.md` carried
+before its own watch. `moves.md` says the beau "stays in place or steps through", which is
+loose; the rigid-rotation reading here is the one consistent with the end state and with the
+hands staying joined, and only a render will settle it.
 
 ## Flow
 
@@ -138,7 +140,7 @@ block once it exists. Marked so nobody mistakes a sketch for a fixture.
 exchanges. That is the second half of Ryan's S1 sequence, and `isZero` settles it rather than
 this paragraph.
 
-## Suspected equivalence with Partner Trade
+## Equivalence with Partner Trade — confirmed 2026-08-15
 
 Both calls appear to end with the couple facing reversed and the two dancers in each other's
 spots. If the end positions match exactly, it is a real equivalence — a caller can substitute —
@@ -149,4 +151,18 @@ They are **not** the same call: the hands differ, the paths differ, and one turn
 while the other does not. Equivalence is about where you end up, and that is exactly the kind
 of claim this engine now has the machinery to check.
 
-🔴 **Unverified.** A question for the engine, not a claim.
+**Verified.** `test/california-twirl.test.ts` dances both from the same couple and resolves one
+end state against the other: identical. Either can follow the other and the couple still comes
+home. It is the first member of ADR-0004's equivalence suite.
+
+And the engine says how they differ, in three measurable ways:
+
+| | Partner Trade | California Twirl |
+|---|---|---|
+| Hands | both free throughout | one joined throughout |
+| The two dancers' rotation | **opposite senses**, equal magnitude (∓180°) | **same sense**, different magnitude (−180° / −540°) |
+| Beats | 6 — two of them paying for the lane | 4 |
+
+🔴 The rotation row corrected a comment written while building this. The first version said a
+Trade's dancers "accumulate alike"; they accumulate *oppositely*, because they walk forward in
+opposite senses. That is the sharper characterisation and the test now carries it.
