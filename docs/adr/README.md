@@ -90,3 +90,4 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0009](0009-spec-markdown-is-the-conformance-fixture.md) | The spec markdown's worked examples are conformance fixtures, parsed by the test suite | Accepted |
 | [0010](0010-wait-out-the-age-gate-rather-than-except-it.md) | When the audit gate and the age gate conflict, wait rather than except | Superseded by [0011](0011-configure-the-age-gate-where-pnpm-reads-it.md) |
 | [0011](0011-configure-the-age-gate-where-pnpm-reads-it.md) | Configure the age gate where pnpm actually reads it, at pnpm's recommended window | Accepted |
+| [0012](0012-calls-key-off-couple-position-not-role.md) | Calls key off couple position (beau/belle), not role | Accepted |
