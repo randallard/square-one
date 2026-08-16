@@ -39,6 +39,9 @@ function invoke(v: SpecVector): Motion {
         turn: a as "right" | "left",
         fraction: b === "full" ? 1 : Number(b),
         radius: Number(c),
+        // Optional in the signature as it is in the block: `orbit(right, 0.5, 0.5)` is
+        // the constant-radius arc, a fourth argument bows it (ADR-0013).
+        lane: Number(v.args[3] ?? 0),
       });
     case "turn-under":
       return turnUnder.generate({

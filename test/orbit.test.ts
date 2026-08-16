@@ -58,6 +58,9 @@ describe("orbit — walking a circle with your hands free", () => {
   it("refuses a degenerate arc rather than emitting one", () => {
     expect(() => orbit.generate({ turn: "left", fraction: 0, radius: 0.5 })).toThrow(/fraction/);
     expect(() => orbit.generate({ turn: "left", fraction: 0.5, radius: 0 })).toThrow(/radius/);
+    expect(() =>
+      orbit.generate({ turn: "left", fraction: 0.5, radius: 0.3, lane: -0.3 }),
+    ).toThrow(/lane/);
   });
 
   it("mirrors exactly between left and right", () => {
@@ -70,6 +73,93 @@ describe("orbit — walking a circle with your hands free", () => {
       expect(m?.x).toBeCloseTo(-w.x, 6);
       expect(m?.y).toBeCloseTo(w.y, 6);
     });
+  });
+});
+
+describe("the lane — bowing off the circle to pass someone (ADR-0013)", () => {
+  const bowed = (lane: number) =>
+    orbit.generate({ turn: "right", fraction: 0.5, radius: 0.5, lane });
+  const radiusOf = (w: { x: number; y: number }) => Math.hypot(w.x, w.y);
+
+  it("changes nothing at all when there is no lane", () => {
+    // The anchor. Every call, spec fixture and equivalence written before the lane
+    // existed goes through this path, so "off by default" has to mean *identical*,
+    // not *close*. `radialRate` is exactly zero here, which is what makes the crab
+    // term exactly zero rather than merely small.
+    for (const fraction of [0.25, 0.5, 1]) {
+      for (const turn of ["left", "right"] as const) {
+        const plain = orbit.generate({ turn, fraction, radius: 0.5 });
+        expect(orbit.generate({ turn, fraction, radius: 0.5, lane: 0 })).toEqual(plain);
+      }
+    }
+  });
+
+  it("leaves and arrives on the dancer's own radius, and is widest where they meet", () => {
+    // The whole shape of the decision in one assertion. A dancer who is on `radius` at
+    // both ends never had to step onto a lane, which is why the call costs no beats
+    // beyond its arc.
+    const m = bowed(0.1);
+    const first = m.waypoints[0];
+    const last = m.waypoints[m.waypoints.length - 1];
+    const mid = m.waypoints.find((w) => w.beat === 2);
+    expect(radiusOf(first ?? { x: 0, y: 0 })).toBeCloseTo(0.5, 6);
+    expect(radiusOf(last ?? { x: 0, y: 0 })).toBeCloseTo(0.5, 6);
+    expect(radiusOf(mid ?? { x: 0, y: 0 })).toBeCloseTo(0.6, 6);
+  });
+
+  it("bows inward on a negative lane, which is the other side of a pass", () => {
+    const m = bowed(-0.1);
+    const mid = m.waypoints.find((w) => w.beat === 2);
+    expect(radiusOf(mid ?? { x: 0, y: 0 })).toBeCloseTo(0.4, 6);
+  });
+
+  it("keeps the entry and exit facings exactly tangential", () => {
+    // Why the profile is `sin²` and not, say, a triangle or a plain sine: it is flat at
+    // both ends, so the bow contributes no sideways velocity where the block has to
+    // hand over to its neighbours. A profile that arrived at the ends still moving
+    // outward would tilt the entry facing and put a kink at every block boundary.
+    const plain = orbit.generate({ turn: "right", fraction: 0.5, radius: 0.5 });
+    const m = bowed(0.1);
+    expect(m.entry.facing).toBeCloseTo(plain.entry.facing, 6);
+    expect(m.exit.facing).toBeCloseTo(plain.exit.facing, 6);
+  });
+
+  it("turns the facing through the same arc, lane or no lane", () => {
+    // The bow is a detour in space, not in rotation: the crab it introduces returns to
+    // zero, so net rotation is untouched and F4 reads the same either way.
+    for (const lane of [-0.1, 0, 0.1]) {
+      expect(bowed(lane).momentum.rotation).toBeCloseTo(-180, 9);
+    }
+  });
+
+  it("🔴 faces where it is actually going, not where the circle points", () => {
+    // The reason facing is solved from the velocity rather than taken as `angle ± 90`.
+    // A dancer bowing outward is travelling outward as well as round; if facing stayed
+    // tangential to the *circle* they would be crabbing sideways for half the call —
+    // the defect in a subtler form, and CALLERLAB's Trade is explicit that both
+    // dancers walk *forward*.
+    const m = bowed(0.1);
+    for (let i = 0; i + 1 < m.waypoints.length; i += 1) {
+      const from = m.waypoints[i];
+      const to = m.waypoints[i + 1];
+      if (from === undefined || to === undefined) continue;
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      for (const facing of [from.facing, to.facing]) {
+        const a = (facing * Math.PI) / 180;
+        expect(dx * Math.cos(a) + dy * Math.sin(a)).toBeGreaterThan(0);
+      }
+    }
+    // And the crab is real, not a rounding artefact: at the quarter marks, where the
+    // bow is moving fastest, the facing is measurably off the circle's tangent.
+    const quarter = m.waypoints.find((w) => w.beat === 1);
+    const plainQuarter = orbit
+      .generate({ turn: "right", fraction: 0.5, radius: 0.5 })
+      .waypoints.find((w) => w.beat === 1);
+    const off = Math.abs(
+      normaliseDeg((quarter?.facing ?? 0) - (plainQuarter?.facing ?? 0) + 180) - 180,
+    );
+    expect(off).toBeGreaterThan(5);
   });
 });
 

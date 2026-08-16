@@ -44,7 +44,7 @@ export interface CallDef {
 }
 
 /**
- * How far off their standing radius a Trade's dancers step to pass right shoulders.
+ * How far off their standing radius a Trade's dancers **bow** to pass right shoulders.
  *
  * 🔴 **Proportional to the couple's width, not the absolute `LANE_OFFSET`.** It was
  * absolute, which was invisible while a couple was a full unit wide and degenerate the
@@ -57,34 +57,44 @@ export interface CallDef {
  * calls still separate dancers by the same relative amount.
  */
 export const TRADE_LANE = COUPLE_WIDTH * LANE_OFFSET;
-/** The outside dancer's arc radius, and the inside dancer's. */
+/**
+ * How far each dancer is from the couple's centre **at the pass** — the top of the
+ * bow, and the only instant either of them is off their standing radius (ADR-0013).
+ *
+ * 🔴 These were the dancers' *arc* radii, constant for the whole half circle, reached
+ * by a sidestep at each end. They are now the peak of a radius that varies along the
+ * arc, which is why the call starts and ends on `COUPLE_WIDTH / 2` and no longer pays
+ * two beats for the trip.
+ */
 export const TRADE_RADIUS_OUT = COUPLE_WIDTH / 2 + TRADE_LANE;
 export const TRADE_RADIUS_IN = COUPLE_WIDTH / 2 - TRADE_LANE;
 
 /**
- * One side of a Partner Trade: step onto your lane, walk the half circle, step off it.
+ * One side of a Partner Trade: **one** forward semicircle, bowed to the passing side.
  *
- * The two sides have the **same shape** and differ only in the orbit's direction and
- * radius, which is a check on the reading — a Trade really is one figure danced two
- * ways round. Both slide `left` then `right`, because each dancer's own left is the
- * way onto their lane and their own right is the way off it once they have turned
- * around.
+ * Both dancers walk the circle the couple is already standing on — radius
+ * `COUPLE_WIDTH / 2`, centred on the couple's centre — and the right-shoulder pass is
+ * the lane bowing them apart at the middle and returning them to their own radius by
+ * the end. The two sides have the **same shape** and differ only in the direction they
+ * walk and which way they bow, which is the check on the reading: a Trade really is
+ * one figure danced two ways round.
  */
-function tradeChain(turn: "left" | "right", radius: number): readonly CatalogCall[] {
+function tradeChain(turn: "left" | "right", lane: number): readonly CatalogCall[] {
   return [
-    { block: "slide", params: { side: "left", distance: TRADE_LANE } },
-    { block: "orbit", params: { turn, fraction: 0.5, radius } },
-    { block: "slide", params: { side: "right", distance: TRADE_LANE } },
+    { block: "orbit", params: { turn, fraction: 0.5, radius: COUPLE_WIDTH / 2, lane } },
   ];
 }
 
 /** The beau passes outside, the belle inside — see the spec's correction 3. */
-const BEAU_TRADE = tradeChain("right", TRADE_RADIUS_OUT);
-const BELLE_TRADE = tradeChain("left", TRADE_RADIUS_IN);
+const BEAU_TRADE = tradeChain("right", TRADE_LANE);
+const BELLE_TRADE = tradeChain("left", -TRADE_LANE);
 
 export const partnerTrade: CallDef = {
   name: "Partner Trade",
-  chartBeats: 6,
+  // 4, per CALLERLAB's Basic Program Definitions §35.b and the 2023 timing chart —
+  // and it is the whole call, because a couple is already at the point of contact the
+  // chart measures from. It was 6 while the lane cost a beat at each end (ADR-0013).
+  chartBeats: 4,
   positionDependent: true,
   chain: BEAU_TRADE,
   chains: { beau: BEAU_TRADE, belle: BELLE_TRADE },

@@ -12,7 +12,34 @@ are the same figure at other radii.
 |---|---|---|
 | `turn` | `left` / `right` | Which way round. **`left` is CCW**, matching [`arm-turn`](arm-turn.md) |
 | `fraction` | quarter multiples — `0.25`, `0.5`, `0.75`, `1`, … | How much of the circle |
-| `radius` | any positive number | Distance from the shared centre, constant for the whole arc |
+| `radius` | any positive number | Distance from the shared centre at the arc's **ends** |
+| `lane` | any number, default `0` | How far to bow off `radius` on the way past someone walking the same circle the other way. Positive is **outward**. Zero is a constant-radius arc |
+
+## The lane rides inside the arc
+
+Two dancers walking one circle in opposite senses meet head-on. CALLERLAB's **Passing
+Rule** says they pass right shoulders *and continue* — an adjustment made inside the walk,
+not a step taken before it and undone after it. `lane` is that adjustment: the radius bows
+out (or in) along the arc instead of the dancer stepping onto a wider circle and off it
+again.
+
+The profile is `sin²` of the fraction walked — zero at both ends, peaking at the middle:
+
+- **Zero at the ends** so the dancer leaves and arrives on their own radius. That is what
+  makes the lane cost no beats, which is the whole of [ADR-0013](../../adr/0013-the-trade-lane-rides-inside-the-arc.md).
+- **Flat at the ends**, which is a stronger property than merely being zero there: the bow
+  contributes no sideways velocity at the block boundaries, so entry and exit facings stay
+  exactly tangential and a chain has no kink where blocks meet. A triangular or plain-sine
+  profile would be zero at the ends but still moving, and would tilt them.
+- **Peaking at the middle**, which is where two dancers walking opposite senses meet, so
+  the widest point of the bow is the moment of the pass. Flat there too, so they pass
+  exactly shoulder to shoulder.
+
+**Facing is solved from the velocity, not from the circle.** With a lane the dancer is
+travelling outward as well as round, and *walking forward* means facing where they are
+actually going — so facing is the tangent to the **path**, which sits a few degrees off the
+circle's tangent while the bow is moving. Taking `angle ± 90` instead would have them
+crabbing sideways for half the arc.
 
 ## Frame
 
@@ -48,8 +75,14 @@ at the same radius, so the claim is checked and a future refactor would start fr
 
 ## Timing
 
-A full circle is **8 beats**, the same rate `arm-turn` uses. The Trade family's 4 beats for a
-half turn is exactly this.
+A full circle is **8 beats**, the same rate `arm-turn` uses. A half turn is 4.
+
+🔴 **Corrected 2026-08-16.** This section used to add: *"The Trade family's 4 beats for a half
+turn is exactly this."* The rate is right and the arithmetic is right, but the sentence reads
+the chart's `Partner Trade: 4` as the **rotation's** budget, and it is the **whole call's** —
+the chart measures from point of contact, and a couple is already in contact. Partner Trade
+was built at 6 on the strength of that reading, buying a beat at each end for a sidestep the
+sources do not describe. See [ADR-0013](../../adr/0013-the-trade-lane-rides-inside-the-arc.md).
 
 ## Flow
 
@@ -86,3 +119,22 @@ equivalence test is built on.
 |---|---|---|---|---|
 | 0 | 0 | −0.3 | +x | tangential to a CCW arc |
 | 2 | 0.3 | 0 | +y | a quarter round CCW |
+
+The third is the same half turn with a lane, which is a Partner Trade's dancer in the general
+case. Note what is **unchanged** by the bow: both ends, and the facing at all three rows.
+
+`orbit(right, 0.5, 0.5, 0.1)` — 4 beats; bowed a fifth of its radius to pass outside:
+
+| Beat | x | y | Facing | Doing |
+|---|---|---|---|---|
+| 0 | 0 | −0.5 | −x | on the dancer's own radius, tangential — the bow is flat here |
+| 2 | −0.6 | 0 | +y | the top of the bow, a whole lane out, and the moment of the pass |
+| 4 | 0 | 0.5 | +x | back on the radius they started from, having paid nothing to get there |
+
+**Beats 1 and 3 are deliberately absent from this table**, and it is the one place in these
+specs where a missing row is a statement. They are where the bow moves fastest, so they are
+the only rows whose facing is *not* a cardinal — the dancer is crabbing a few degrees off the
+circle's tangent because that is the direction they are genuinely travelling. The loader reads
+cardinals (`SpecRow.facing`), so putting a number there would be silently ignored, and a
+silently ignored fixture is what this repo treats as worse than no fixture. Those two facings
+are asserted in `test/orbit.test.ts` instead, where a number is a number.

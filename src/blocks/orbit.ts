@@ -30,9 +30,24 @@
  * enters standing off it at `radius`. Unlike `arm-turn` the entry facing is
  * **tangential**, because there is no step-in to turn out of — a dancer walking a
  * circle is facing the way they are going from the first beat.
+ *
+ * ## The lane rides inside the arc (ADR-0013)
+ *
+ * Two dancers walking the same circle in opposite senses meet head-on, and CALLERLAB's
+ * Passing Rule says they pass right shoulders **and continue** — an adjustment made
+ * inside the walk, not a step before and after it. So `lane` bows the radius rather
+ * than adding blocks around the arc: zero at both ends, peaking where the two meet.
+ *
+ * 🔴 **The first Partner Trade spent a beat sidestepping onto the lane and another
+ * stepping off it**, which made the call 6 beats against the chart's 4 and put two
+ * beats of pure lateral translation at every call boundary. Rendered, that reads as a
+ * standing couple swaying — Ryan, watching `#dance=two-trades`: *"the sway when just
+ * standing … 2x too wide and 2X too slow."* It was not a tuning problem. Sideways
+ * motion with no forward component is not something the source describes anywhere,
+ * and the beats it took were never in the chart.
  */
 
-import { normaliseDeg, polar, round, turnOf } from "../geometry.js";
+import { normaliseDeg, polar, rad2deg, round, turnOf } from "../geometry.js";
 import type { Motion, Waypoint } from "../types.js";
 
 export interface OrbitParams {
@@ -40,12 +55,25 @@ export interface OrbitParams {
   readonly turn: "right" | "left";
   /** Quarter multiples: 0.25, 0.5, 0.75, 1, … */
   readonly fraction: number;
-  /** Distance from the shared centre. Constant for the whole arc. */
+  /** Distance from the shared centre at the arc's **ends**. */
   readonly radius: number;
+  /**
+   * How far the dancer bows off `radius` on the way past someone walking the same
+   * circle the other way. Positive bows **outward**, negative inward; `0` (the
+   * default) is the constant-radius arc every use before the Trade family.
+   *
+   * Zero at both ends and peaking at the middle of the arc, so the dancer leaves and
+   * arrives on their own radius and the widest point is where the two meet
+   * (ADR-0013). The profile is `sin²`, chosen for the derivative rather than the
+   * shape: it is flat at both ends *and* at the peak, which is what keeps the entry
+   * and exit facings exactly tangential and the pass exactly shoulder-to-shoulder.
+   */
+  readonly lane?: number;
 }
 
 /** A full circle takes the same 8 beats an `arm-turn` does — the timing charts do not
- *  distinguish, and a Trade's 4 beats for a half turn is exactly this rate. */
+ *  distinguish. A half turn is 4, which is a Partner Trade **entire** (ADR-0013): the
+ *  lane rides inside the arc and is charged nothing. */
 export const BEATS_PER_TURN = 8;
 
 /** The dancer starts due south of the centre, as `arm-turn` does. */
@@ -62,27 +90,60 @@ export const orbit = {
   beats: (params: OrbitParams): number => params.fraction * BEATS_PER_TURN,
 
   generate(params: OrbitParams): Motion {
-    const { turn, fraction, radius } = params;
+    const { turn, fraction, radius, lane = 0 } = params;
     if (fraction <= 0) throw new Error("orbit: fraction must be positive");
     if (radius <= 0) throw new Error("orbit: radius must be positive");
+    if (radius + Math.min(0, lane) <= 0) {
+      throw new Error("orbit: lane must not bow the dancer through the centre");
+    }
 
     const dir = turn === "left" ? 1 : -1; // left = CCW = positive, as `arm-turn`
     const beats = fraction * BEATS_PER_TURN;
     const rotation = dir * fraction * 360;
 
-    // Position angle and facing both advance with the walk. Facing is tangential —
-    // the dancer goes where they are looking — so it is the position angle a quarter
-    // ahead in the direction of travel, and the facing delta equals the arc swept.
+    // Position angle advances with the walk, at a steady rate; the radius does not,
+    // when there is a lane to bow into.
     const angleAt = (turns: number): number => START_ANGLE + dir * turns * 360;
-    const facingAt = (turns: number): number => angleAt(turns) + dir * 90;
+    const radiusAt = (turns: number): number =>
+      radius + lane * Math.sin((Math.PI * turns) / fraction) ** 2;
+    /** `d(radius)/d(turns)` — the bow's own speed, outward-positive. */
+    const radialRate = (turns: number): number =>
+      lane * (Math.PI / fraction) * Math.sin((2 * Math.PI * turns) / fraction);
+
+    /**
+     * Facing is the **tangent to the path actually walked**, not to the circle.
+     *
+     * With no lane those are the same thing and this reduces to the position angle a
+     * quarter ahead in the direction of travel — `radialRate` is exactly `0`, the
+     * crab term is exactly `0`, and every pre-lane vector is untouched.
+     *
+     * With a lane they differ, and the difference is the point: a dancer bowing out
+     * is travelling slightly outward as well as round, and *walking forward* means
+     * facing where they are actually going. Decomposing the velocity in the local
+     * (radial, tangential) basis, the bearing of travel is `atan2(tangential,
+     * radial)`, and the crab is how far that sits off the pure tangent.
+     */
+    const facingAt = (turns: number): number => {
+      const radial = radialRate(turns);
+      const tangential = dir * 2 * Math.PI * radiusAt(turns);
+      const crab =
+        radial === 0 ? 0 : rad2deg(Math.atan2(tangential, radial)) - dir * 90;
+      return angleAt(turns) + dir * 90 + crab;
+    };
 
     const at = (turns: number): Waypoint => {
-      const p = polar(radius, angleAt(turns));
+      const p = polar(radiusAt(turns), angleAt(turns));
       return {
         beat: round(turns * BEATS_PER_TURN),
         x: round(p.x),
         y: round(p.y),
-        facing: round(normaliseDeg(facingAt(turns))),
+        // Rounded **before** normalising, not after. A bowed arc's closing facing lands
+        // a float's breath below its cardinal — the crab term returns to zero through
+        // `Math.sin(2π)`, which is −2.4e-16 rather than 0 — and normalising first sent
+        // that to 359.999…, which `round` then reported as a facing of `360`. Outside
+        // `normaliseDeg`'s own `[0, 360)` contract, and it made an exit facing that
+        // should have been identical to the lane-free one differ by a whole turn.
+        facing: normaliseDeg(round(facingAt(turns))),
       };
     };
 

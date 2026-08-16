@@ -11,19 +11,25 @@ import { LANE_OFFSET } from "./pass.js";
 
 export interface SlideParams {
   readonly side: "right" | "left";
-  /**
-   * How far, in frame units. Defaults to {@link SLIDE_DISTANCE}, a full lane change.
-   *
-   * Added for Partner Trade, which needs a **half** lane — it moves a dancer onto the
-   * lane rather than across both of them. Optional so every existing invocation and
-   * every serialised move keeps the distance it was authored with.
-   */
-  readonly distance?: number;
 }
 
 /** A full lane change: across both lanes, so twice the `pass` offset. */
 export const SLIDE_DISTANCE = 2 * LANE_OFFSET;
 
+/**
+ * One beat, whatever the distance — which is only honest while there *is* only one
+ * distance.
+ *
+ * 🔴 A `distance` parameter lived here briefly (2026-08-15) so Partner Trade could
+ * sidestep a half lane onto its passing lane. It was removed by
+ * [ADR-0013](../../docs/adr/0013-the-trade-lane-rides-inside-the-arc.md): charging a
+ * flat beat for a sixth of the distance made the Trade's sidestep crawl at a sixth of
+ * a Dosado's, which is what the render watch caught. This block's own spec had already
+ * rejected the same idea once — a `span: half` variant was proposed and dropped on
+ * 2026-07-26 because CALLERLAB blends the closing lateral into the walk — and the
+ * Trade re-introduced it without noticing. If the Dodge family needs partial slides,
+ * design the parameter *and its timing* together.
+ */
 const BEATS = 1;
 
 export const slide = {
@@ -31,9 +37,7 @@ export const slide = {
   beats: (): number => BEATS,
 
   generate(params: SlideParams): Motion {
-    const distance = params.distance ?? SLIDE_DISTANCE;
-    if (distance <= 0) throw new Error("slide: distance must be positive");
-    const dx = (params.side === "right" ? 1 : -1) * distance;
+    const dx = (params.side === "right" ? 1 : -1) * SLIDE_DISTANCE;
 
     return {
       beats: BEATS,

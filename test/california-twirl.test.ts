@@ -95,8 +95,9 @@ describe("the suspected equivalence with Partner Trade", () => {
   });
 
   it("but is a different figure, and the numbers say how", () => {
-    // Equivalence is about where you end up. These two differ in three measurable
-    // ways, which is why they are equivalent calls rather than the same call.
+    // Equivalence is about where you end up. These two differ in two measurable ways,
+    // which is why they are equivalent calls rather than the same call — and they no
+    // longer differ in a third. See the timing assertion below.
     const trade = applyCallToCouple("partner-trade", couple);
     const twirled = twirl();
 
@@ -118,8 +119,13 @@ describe("the suspected equivalence with Partner Trade", () => {
     expect(Math.sign(twirlBeau)).toBe(Math.sign(twirlBelle));
     expect(Math.abs(twirlBelle)).toBeGreaterThan(Math.abs(twirlBeau));
 
-    // 3. Timing: the Trade pays two beats for its lane.
-    expect(partnerTrade.chartBeats).toBe(californiaTwirl.chartBeats + 2);
+    // 🔴 And NOT timing — they take the same 4 beats, which is what makes the
+    // equivalence usable. This assertion used to read `+ 2`, with the comment "the
+    // Trade pays two beats for its lane", and it was pinning a defect: the chart gives
+    // both calls 4 and the Trade's extra two were ours (ADR-0013). A caller substitutes
+    // one for the other inside a phrase, so an equivalence that changes the length of
+    // the phrase is not one they can actually use.
+    expect(partnerTrade.chartBeats).toBe(californiaTwirl.chartBeats);
   });
 
   it("so either can follow the other and still come home", () => {

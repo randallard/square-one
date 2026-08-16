@@ -1,8 +1,49 @@
 # Progress & Status
 
-_Last updated: 2026-08-15_
+_Last updated: 2026-08-16_
 
 ## Status / next
+
+**▶ Partner Trade is 4 beats and one block per dancer (2026-08-16).** Ryan, watching
+`#dance=two-trades` in townage: *"I'm wondering about the sway when just standing — it seems 2x
+too wide and 2X too slow."* Narrative in
+[the fourteenth journal entry](journal/2026-08-16-the-sway-was-the-lane-14.md).
+**148 tests** (from 137), lint 0 errors, typecheck, build and docs-hygiene clean.
+**Watched and accepted** — Ryan, on `#dance=two-trades`: *"looks ok — a step in the right
+direction."* Which is the right weight for it: the sway is gone and the timing is the chart's,
+and the pass is still a collision (below).
+
+- **[ADR-0013](adr/0013-the-trade-lane-rides-inside-the-arc.md)** — a Trade's passing lane
+  rides **inside** the arc, not as steps around it. `orbit` gains an optional `lane` that bows
+  the radius along the arc (`sin²`: zero at both ends, peaking at the pass), and Partner Trade
+  is a single `orbit` per dancer again.
+- 🔴 **There was no sway.** Nothing in the dance path has an idle animation. It was the Trade's
+  own `slide` blocks — the closing sidestep of one Trade against the opening sidestep of the
+  next, two beats of pure lateral translation with facing, `y` and separation all constant.
+- 🔴 **The timing was wrong against two sources.** Basic Program Definitions §35.b says
+  `Timing: 4`; the 2023 timing chart says `Partner Trade: 4`. We said 6, by reading the chart's
+  4 as the *rotation's* budget and adding a beat per lane step. The chart measures **from point
+  of contact** and a couple is already in contact — they are holding hands, which is why the
+  styling note is about *releasing* a handhold. **The two extra beats were ours.**
+- **Both halves of Ryan's observation were one thing.** Halving a distance and its duration
+  leaves the speed unchanged; the complaint was that the sidestep existed. And `slide` charges
+  a flat beat whatever the distance, so the Trade's half-lane step moved at **a sixth the speed
+  of every other slide in the catalog**.
+- **One word rescued yesterday's proof.** "No single **constant-radius** arc both lands on the
+  standing spots and separates the dancers" is true; the conclusion "so the lane must be its
+  own motion" is not. A varying radius does both.
+- 🔴 **`slide`'s `distance` parameter is removed.** This block's spec had already rejected the
+  same idea once (`span: half`, 2026-07-26, for Dosado) and the Trade reintroduced it three
+  weeks later without reading the precedent. **Design a distance parameter and its timing
+  together, or not at all.**
+- **The Trade ≡ Twirl equivalence got stronger.** Both are 4 beats now, which is what makes the
+  substitution usable inside a phrase. Its test had asserted `chartBeats + 2`.
+- 🔴 **The clearance problem is untouched and wants its own ADR.** At townage's default cast the
+  pass puts dancers **0.260** world units apart against a needed **0.710** — the bodies
+  interpenetrate, and did before this change. `TRADE_LANE` is a proportion of the couple's
+  width with nothing about bodies in it.
+
+---
 
 **▶ A couple stands hand in hand (2026-08-15).** Ryan, after S1 was wired into townage:
 *"they should hold hands — we say touch hands — beau right palm up and belle's left palm
@@ -61,6 +102,10 @@ result caught them:
 3. **No single constant-radius arc can do it.** The centre must lie on the dancers'
    perpendicular bisector, so the only semicircle is radius 0.5 for *both* — the collision.
    This forced giving `slide` a distance parameter.
+   🔴 *The geometry holds; the conclusion did not. A **varying**-radius arc does both, which is
+   [ADR-0013](adr/0013-the-trade-lane-rides-inside-the-arc.md) the next day — and the `slide`
+   distance parameter is gone again. Left standing here because "what the building corrected"
+   is a record of what was believed, and this entry became an example of its own point.*
 4. California Twirl's dancers are **not** on different arcs; they stay diametrically opposite
    at the same radius, which is why it needs no lane.
 

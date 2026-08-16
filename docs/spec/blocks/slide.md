@@ -31,6 +31,19 @@ at the crossing moment — a timing/collision check, not a formation requirement
   lateral into the backing ("walking a smooth circular path … slide slightly"),
   which is [`pass`](pass.md)'s `close` exit, not a discrete sidestep. If the
   Dodge family later needs partial slides, design the parameter then.
+- 🔴 **It came back anyway, as `distance`, and was removed again on 2026-08-16.**
+  Partner Trade added it on 2026-08-15 to sidestep a half lane onto its passing
+  lane — the same idea as `span: half`, under a different name, in a call whose
+  source says *walk forward* just as plainly as Dosado's does. The precedent was
+  in this file and nobody read it. Removed by
+  [ADR-0013](../../adr/0013-the-trade-lane-rides-inside-the-arc.md), which puts
+  the Trade's lane inside its arc instead.
+
+  The extra lesson, and the reason "design the parameter then" is not enough on
+  its own: `distance` arrived without touching **`BEATS`**, which is flat. A
+  half-lane slide therefore took the same beat as a full lane change and moved at
+  a sixth the speed. **Design a distance parameter and its timing together, or
+  not at all.**
 - Facing constant — **momentum delta: rotation 0**; exit flow vector is lateral
   (which arms the F6 lateral-motion rule: the next block must not move this
   dancer against that lateral direction).

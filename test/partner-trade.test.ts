@@ -16,10 +16,16 @@ function trade() {
   return applyCallToCouple("partner-trade", couple);
 }
 
+/** The pass: the middle of the call, which is also the top of the bow. */
+function midpoint(m: ReturnType<typeof trade>, key: string) {
+  const beat = partnerTrade.chartBeats / 2;
+  return m[key]?.waypoints.find((w) => Math.abs(w.beat - beat) < 1e-9);
+}
+
 describe("Partner Trade", () => {
   it("starts and ends on the couple's own standing spots", () => {
-    // The reason the slides are there at all. A single constant-radius arc cannot do
-    // this and separate the dancers — see the spec's correction.
+    // A single *constant-radius* arc cannot do this and separate the dancers, which is
+    // why the first build reached for slides. A bowed one can, and does (ADR-0013).
     const m = trade();
     // 5 places for `round`'s 1e-6 quantisation over a non-representable third.
     expect(m["beau"]?.entry.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 5);
@@ -55,12 +61,42 @@ describe("Partner Trade", () => {
 
   it("passes right shoulders — the belle inside, the beau outside", () => {
     // The asymmetry that makes it position-dependent, asserted rather than described.
+    // Beat 2 is the middle of the 4, which is both where they meet and where the bow
+    // peaks — the two coincide by construction (ADR-0013).
     const m = trade();
-    const mid = (key: string) => m[key]?.waypoints.find((w) => Math.abs(w.beat - 3) < 1e-9);
-    const beau = mid("beau");
-    const belle = mid("belle");
+    const beau = midpoint(m, "beau");
+    const belle = midpoint(m, "belle");
     expect(Math.hypot(beau?.x ?? 0, beau?.y ?? 0)).toBeCloseTo(TRADE_RADIUS_OUT, 5);
     expect(Math.hypot(belle?.x ?? 0, belle?.y ?? 0)).toBeCloseTo(TRADE_RADIUS_IN, 5);
+  });
+
+  it("🔴 never travels sideways — every step has a forward component", () => {
+    // The invariant the render watch was really asking for, and the one the slide
+    // decomposition broke: `slide` moved a dancer at exactly 90° to their facing, so
+    // at each call boundary the couple translated laterally for two beats without
+    // turning or advancing. On screen that is a standing couple swaying.
+    //
+    // Stated as a sign rather than a threshold: the dot product of each step with the
+    // facing at both ends of it must be positive. An arc's chord sits half the sampled
+    // arc off the tangent and stays comfortably inside that; pure lateral motion is
+    // exactly zero, so the defect could not squeak past.
+    const m = trade();
+    for (const key of ["beau", "belle"] as const) {
+      const wps = m[key]?.waypoints ?? [];
+      expect(wps.length).toBeGreaterThan(1);
+      for (let i = 0; i + 1 < wps.length; i += 1) {
+        const from = wps[i];
+        const to = wps[i + 1];
+        if (from === undefined || to === undefined) continue;
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        expect(Math.hypot(dx, dy)).toBeGreaterThan(1e-9);
+        for (const facing of [from.facing, to.facing]) {
+          const a = (facing * Math.PI) / 180;
+          expect(dx * Math.cos(a) + dy * Math.sin(a)).toBeGreaterThan(0);
+        }
+      }
+    }
   });
 
   it("is declared position-dependent, and really is", () => {
@@ -158,10 +194,25 @@ describe("the Trade lane follows the couple's width", () => {
     // The property the lane exists for, re-checked at the new width — the collision
     // this call would otherwise have.
     const m = applyCallToCouple("partner-trade", couple);
-    const mid = (k: string) => m[k]?.waypoints.find((w) => Math.abs(w.beat - 3) < 1e-9);
-    const a = mid("beau");
-    const b = mid("belle");
+    const a = midpoint(m, "beau");
+    const b = midpoint(m, "belle");
     expect(Math.hypot((a?.x ?? 0) - (b?.x ?? 0), (a?.y ?? 0) - (b?.y ?? 0)))
       .toBeCloseTo(2 * TRADE_LANE, 5);
+  });
+
+  it("🔴 spends the lane only where it is needed, and nothing on getting there", () => {
+    // What ADR-0013 actually changed. The lane used to be the arc's radius for the
+    // whole half circle, reached and left by a sidestep; it is now a bow that is zero
+    // at both ends and widest at the pass. The distinguishing measurement is the
+    // *ends*: a dancer who is on their standing radius at beat 0 and beat 4 paid no
+    // beats to get onto a lane, because they were never on one.
+    const m = applyCallToCouple("partner-trade", couple);
+    for (const key of ["beau", "belle"] as const) {
+      const wps = m[key]?.waypoints ?? [];
+      const first = wps[0];
+      const last = wps[wps.length - 1];
+      expect(Math.hypot(first?.x ?? 0, first?.y ?? 0)).toBeCloseTo(COUPLE_WIDTH / 2, 5);
+      expect(Math.hypot(last?.x ?? 0, last?.y ?? 0)).toBeCloseTo(COUPLE_WIDTH / 2, 5);
+    }
   });
 });
