@@ -30,7 +30,8 @@
  */
 
 import { normaliseDeg, round, type Degrees } from "./geometry.js";
-import { CALLS, applyCallToPair, type CallName } from "./calls.js";
+import { CALLS, applyCallToCouple, applyCallToPair, type CallName } from "./calls.js";
+import { coupleSet, partnerUp, type Couple } from "./couple.js";
 import { compose } from "./compose.js";
 import type { Motion, Pose } from "./types.js";
 
@@ -212,5 +213,62 @@ export function danceSequence(calls: readonly CallName[]): Sequence {
  */
 export function isZero(calls: readonly CallName[]): HomeResolution {
   const seq = danceSequence(calls);
+  return resolveHome(seq.start, seq.end);
+}
+
+/**
+ * Rebuild a couple from where its two dancers finished.
+ *
+ * The couple keeps its beau and belle: a call that starts and ends as a couple has not
+ * reshuffled anybody, it has moved them. Centre is the midpoint of the two exits and
+ * facing is the beau's — which is the belle's too, for any call that ends as a couple.
+ *
+ * 🔴 **This trusts that the call ended as a couple rather than checking it.** Formation
+ * *recognition* — looking at two poses and deciding what formation they are in — is S2's
+ * job, and inventing half of it here would be exactly the quiet widening planning
+ * ADR-0011 asked to be told about. What guards it meanwhile is a test asserting the
+ * rebuilt couple's own positions match the exits it was built from, which catches a
+ * call that ended in something else.
+ */
+export function reformCouple(couple: Couple, motions: Record<string, Motion>): Couple {
+  const beau = motions[couple.beau]?.exit;
+  const belle = motions[couple.belle]?.exit;
+  if (beau === undefined || belle === undefined) return couple;
+  return partnerUp(
+    couple.beau,
+    couple.belle,
+    { x: (beau.position.x + belle.position.x) / 2, y: (beau.position.y + belle.position.y) / 2 },
+    beau.facing,
+  );
+}
+
+/**
+ * Dance a sequence of calls with a couple.
+ *
+ * The couple counterpart of {@link danceSequence}. Each call is applied to wherever the
+ * previous one left the couple, so the two zeros S1 is built around —
+ * `partner-trade, partner-trade` and `california-twirl, california-twirl` — are one call
+ * to `isCoupleZero` away from being checked instead of asserted.
+ */
+export function danceCoupleSequence(calls: readonly CallName[], couple: Couple): Sequence {
+  const start = coupleSet(couple);
+  const steps: SequenceStep[] = [];
+  let at = couple;
+  let beat = 0;
+
+  for (const call of calls) {
+    const motions = applyCallToCouple(call, at);
+    const beats = Math.max(0, ...Object.values(motions).map((m) => m.beats));
+    steps.push({ call, startBeat: round(beat), beats: round(beats), motions });
+    beat += beats;
+    at = reformCouple(at, motions);
+  }
+
+  return { calls, steps, beats: round(beat), start, end: coupleSet(at) };
+}
+
+/** Does this sequence bring the couple back to where it started? */
+export function isCoupleZero(calls: readonly CallName[], couple: Couple): HomeResolution {
+  const seq = danceCoupleSequence(calls, couple);
   return resolveHome(seq.start, seq.end);
 }

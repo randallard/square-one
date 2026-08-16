@@ -12,6 +12,8 @@
  */
 
 import type { CatalogCall } from "./blocks/index.js";
+import { LANE_OFFSET } from "./blocks/pass.js";
+import { COUPLE_WIDTH, positionOf, type Couple, type CouplePosition } from "./couple.js";
 import { compose, ORIGIN } from "./compose.js";
 import { PLUS_Y, normaliseDeg, round, type Degrees } from "./geometry.js";
 import type { Motion, Pose } from "./types.js";
@@ -32,7 +34,49 @@ export interface CallDef {
    * the starter three are asymmetric; Star Thru is the first that will be.
    */
   readonly positionDependent: boolean;
+  /**
+   * The chain each side of a couple walks, when they differ.
+   *
+   * Present only on position-dependent calls. `chain` stays the beau's, so
+   * {@link applyCall} keeps meaning something for every call in the catalog.
+   */
+  readonly chains?: Readonly<Record<CouplePosition, readonly CatalogCall[]>>;
 }
+
+/** How far off their standing radius a Trade's dancers step to pass right shoulders. */
+export const TRADE_LANE = LANE_OFFSET;
+/** The outside dancer's arc radius, and the inside dancer's. */
+export const TRADE_RADIUS_OUT = COUPLE_WIDTH / 2 + TRADE_LANE;
+export const TRADE_RADIUS_IN = COUPLE_WIDTH / 2 - TRADE_LANE;
+
+/**
+ * One side of a Partner Trade: step onto your lane, walk the half circle, step off it.
+ *
+ * The two sides have the **same shape** and differ only in the orbit's direction and
+ * radius, which is a check on the reading — a Trade really is one figure danced two
+ * ways round. Both slide `left` then `right`, because each dancer's own left is the
+ * way onto their lane and their own right is the way off it once they have turned
+ * around.
+ */
+function tradeChain(turn: "left" | "right", radius: number): readonly CatalogCall[] {
+  return [
+    { block: "slide", params: { side: "left", distance: TRADE_LANE } },
+    { block: "orbit", params: { turn, fraction: 0.5, radius } },
+    { block: "slide", params: { side: "right", distance: TRADE_LANE } },
+  ];
+}
+
+/** The beau passes outside, the belle inside — see the spec's correction 3. */
+const BEAU_TRADE = tradeChain("right", TRADE_RADIUS_OUT);
+const BELLE_TRADE = tradeChain("left", TRADE_RADIUS_IN);
+
+export const partnerTrade: CallDef = {
+  name: "Partner Trade",
+  chartBeats: 6,
+  positionDependent: true,
+  chain: BEAU_TRADE,
+  chains: { beau: BEAU_TRADE, belle: BELLE_TRADE },
+};
 
 /** Where dancer A stands in the pair frame. */
 export const PAIR_A: Pose = { position: { x: 0, y: -0.5 }, facing: PLUS_Y };
@@ -74,6 +118,7 @@ export const CALLS = {
   dosado,
   "pass-thru": passThru,
   "allemande-left": allemandeLeft,
+  "partner-trade": partnerTrade,
 } as const;
 
 export type CallName = keyof typeof CALLS;
@@ -120,4 +165,28 @@ export function applyCallToPair(name: CallName): { a: Motion; b: Motion } {
 
 function rotateBearing(b: Degrees, by: Degrees): Degrees {
   return round(normaliseDeg(b + by));
+}
+
+/**
+ * A couple performing a call, keyed by dancer.
+ *
+ * The counterpart of {@link applyCallToPair} for the other two-dancer formation, and
+ * deliberately **not** built on it. A facing pair points opposite ways and its symmetry
+ * is a 180° rotation; a couple points the same way and its symmetry is a reflection —
+ * and a position-dependent call has neither, because its two dancers walk different
+ * figures. So each side is composed from its own chain rather than derived, which is
+ * the only thing that works for all three cases.
+ */
+export function applyCallToCouple(
+  name: CallName,
+  couple: Couple,
+): Record<string, Motion> {
+  const def = CALLS[name];
+  const out: Record<string, Motion> = {};
+  for (const position of ["beau", "belle"] as const) {
+    const chain = def.chains?.[position] ?? def.chain;
+    const key = position === "beau" ? couple.beau : couple.belle;
+    out[key] = compose(chain, positionOf(couple, position));
+  }
+  return out;
 }

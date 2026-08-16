@@ -17,7 +17,7 @@ definition rather than salvaged, and should be reviewed with that in mind.
 | Spoken variants | Trade with your partner; (as a family) Boys Trade, Girls Trade, Ends Trade |
 | Legacy app abbreviation | — (not in `moves.md`) |
 | Program | Basic Part 1 |
-| Position dependence | **None** — both dancers walk the same figure, mirrored. See "Why this is not position-dependent" below |
+| Position dependence | **Yes** — the right-shoulder pass puts one dancer inside the other. See correction 3 below |
 
 ## Formations
 
@@ -30,9 +30,12 @@ definition rather than salvaged, and should be reviewed with that in mind.
 
 | Situation | Beats |
 |---|---|
-| From a couple (point of contact) | **4** |
+| From a couple (point of contact) | **6** |
 
-Half of `arm-turn`'s 8-beat full turn, which is what the figure is geometrically — see below.
+Four for the half orbit — half of the 8-beat full turn `orbit` and `arm-turn` share — plus a
+beat each side for the lane. The chart figure for a Trade is 4 beats of *rotation*; the lane
+steps are the approach and the recovery, which is the same accounting `arm-turn` uses when it
+counts "from point of contact".
 
 ## Dance action
 
@@ -44,71 +47,135 @@ The general CALLERLAB **Trade** definition is "two adjacent dancers exchange pla
 forward in a semicircle, passing right shoulders, each ending in the other's starting position
 facing the opposite direction." Partner Trade is that figure with the pair being a couple.
 
-## What it is, geometrically
+## 🔴 Corrected 2026-08-15, by trying to build it
 
-**The couple rotates 180° about its own centre, as a unit.** That is the whole call.
+The first draft of this section said:
 
-Both dancers orbit the couple's midpoint by half a turn at their own standing radius. Since
-each keeps their side of the couple through the rotation, **the beau is still the beau and the
-belle is still the belle** — the couple has turned around, not reshuffled.
+> **The couple rotates 180° about its own centre, as a unit.** That is the whole call. …
+> The passing shoulder is *right* for both, which is what makes their two semicircles mirror
+> images about the couple's centre rather than two different actions — so this call needs no
+> beau/belle branch, and `positionDependent` is `false`.
 
-Worth stating explicitly because it is easy to read "exchange places" as a swap of sides. In
-world coordinates they have swapped; in the couple's own frame nobody has moved.
+**Right about the end positions, wrong about the paths, and wrong about the conclusion.**
+Kept visible rather than deleted: it is the kind of error that reads perfectly well, and the
+only thing that caught it was composing the blocks.
 
-## Why this is not position-dependent
+Three separate corrections fall out.
 
-Both dancers walk the same figure. The passing shoulder is *right* for both, which is what
-makes their two semicircles mirror images about the couple's centre rather than two different
-actions — so this call needs no beau/belle branch, and `positionDependent` is `false`.
+### 1. It is not a rigid rotation
 
-Contrast [California Twirl](california-twirl.md), which reaches a similar end position through
-an arch that one dancer makes and the other passes under, and *is* position-dependent.
+Under a rigid 180° rotation of the couple, each dancer's facing would turn continuously from
+`+y` to `−y` while their position swept a semicircle — and their facing would **not** be
+tangent to their path. One of them would be walking sideways or backwards for most of it. The
+CALLERLAB Trade definition is explicit that both dancers *walk forward*.
+
+### 2. The two orbits run in opposite senses
+
+Both dancers face `+y` and both walk forward, so from the couple's centre:
+
+| | starts at | walks | ends at |
+|---|---|---|---|
+| beau | position angle 180° | **clockwise**, through the front | 0° |
+| belle | position angle 0° | **counterclockwise**, through the front | 180° |
+
+Tangential facing then works out for both — beau `90° → 270°`, belle `90° → 270°` — which is
+the end state the call needs, and it is *why* the senses have to be opposite. A shared sense
+would start one of them facing the wrong way.
+
+### 3. And that is why it is position-dependent
+
+Both arcs pass through the front, so without something else the two dancers occupy the same
+point at the same beat. That is not merely bad dancing: the engine models dancers as points and
+its collision-freedom invariant is "no shared coordinate", so the property tests would catch it.
+
+**Passing right shoulders is what separates them, and it separates them asymmetrically.** At
+the meeting point the beau faces `+x` and the belle `−x`. Each must have the other on their own
+right — the beau's right is `−y` (toward the centre) and the belle's is `+y` (away from it) —
+so the **belle passes inside and the beau outside**, at radii differing by a lane.
+
+That asymmetry is the correction. A mirror about the couple's fore-aft axis maps a radius to
+itself, so it cannot produce one dancer inside and the other outside; neither can the 180°
+rotation `applyCallToPair` uses. **The two dancers genuinely walk different figures**, which is
+exactly what `positionDependent` means.
+
+## What this says about pair symmetry generally
+
+Worth recording because it outlives this call. `applyCallToPair` derives dancer B as A rotated
+180° about the pair centre, and that is right for a **facing pair** — two dancers pointing
+opposite ways. A **couple** points the same way, and its natural symmetry is a **reflection**,
+not a rotation.
+
+So the symmetry follows the formation, and the engine currently knows only one of the two.
+Partner Trade needs neither, because the right-shoulder pass breaks even the reflection — but
+the general point stands and Star Thru will need the reflection.
 
 ## Block composition
 
-🔴 **Needs a block the catalog does not have.**
+Per position, because the two walk different arcs:
 
-| # | Block | Beats | Exit |
-|---|---|---|---|
-| 1 | `orbit(right, 1/2)` — **not yet in the catalog** | 4 | the other's spot, facing reversed |
+| Position | # | Block | Beats | Exit |
+|---|---|---|---|---|
+| beau | 1 | [`slide`](../blocks/slide.md)`(left, 0.15)` | 1 | out to the far lane |
+| | 2 | [`orbit`](../blocks/orbit.md)`(right, 0.5, 0.65)` | 4 | the belle's side, facing reversed, having passed outside |
+| | 3 | [`slide`](../blocks/slide.md)`(right, 0.15)` | 1 | back in onto the belle's standing spot |
+| belle | 1 | [`slide`](../blocks/slide.md)`(left, 0.15)` | 1 | in to the near lane |
+| | 2 | [`orbit`](../blocks/orbit.md)`(left, 0.5, 0.35)` | 4 | the beau's side, facing reversed, having passed inside |
+| | 3 | [`slide`](../blocks/slide.md)`(right, 0.15)` | 1 | back out onto the beau's standing spot |
 
-`arm-turn` is the wrong block despite the obvious resemblance, and the reason is a radius.
+The two chains have the **same shape** and differ only in the orbit's direction and radius,
+which is a pleasing check on the reading: a Trade really is one figure danced two ways round.
+
+The radii are `0.5 ± LANE_OFFSET` — the same 0.15 lane `pass` uses for Dosado's shoulder pass,
+reused rather than invented so that two calls separating dancers do it by the same amount.
+
+### 🔴 Why the slides are not optional, which took building it to see
+
+The first composition was a single `orbit` per dancer, and it cannot work. For a circular arc
+from a dancer's standing spot to their partner's, the centre must lie on the **perpendicular
+bisector** of the line between them — the couple's fore-aft axis — and the only such arc that
+is a semicircle has its centre at the couple's own centre and radius `0.5`. **For both
+dancers.** Which is the collision.
+
+So no single constant-radius arc both lands on the standing spots and separates the dancers,
+and the lane has to be its own motion. That is what a real Trade looks like anyway: curve out,
+round, and back in.
+
+This also required giving [`slide`](../blocks/slide.md) a **distance** — it had a fixed
+`SLIDE_DISTANCE` of `2 × LANE_OFFSET`, which is a *full* lane change (Dosado's crossing step)
+and twice what a half-lane offset needs.
+
+**The block exists now**: [`orbit`](../blocks/orbit.md), added 2026-08-15. The reasoning that
+produced it is kept below because it is the catalog argument, not just this call's.
+
+`arm-turn` was the wrong block despite the obvious resemblance, and the reason is a radius.
 `arm-turn` has the dancers **step in** from `ENTRY_RADIUS` 0.5 to `ORBIT_RADIUS` 0.3 because
 forearms are joining; its own module doc says it is "two dancers join forearms and walk forward
 around their common pivot". Partner Trade's dancers keep their hands free and stay at their own
 radius the whole way.
 
-**Open question for the catalog, and it is ADR-0005's bet being tested.** Two shapes:
-
-1. **A new `orbit` block** — walk a fraction of a circle about a shared centre, hands free, at
-   a given radius. `arm-turn` then reads as `orbit` plus a grip plus the step-in.
-2. **A `grip` parameter on `arm-turn`** — `forearm` (today) or `none`, with the radius following
-   from it.
-
-(1) is cleaner and (2) is cheaper. (1) also invites refactoring `arm-turn`, which is
-render-validated and should not be disturbed lightly. **Not decided here** — this is a catalog
-decision, and picking it while writing one call's spec is how a catalog gets shaped by
-whichever call happened to come first.
+**Settled 2026-08-15.** The two shapes on the table were a new `orbit` block (with `arm-turn`
+reading as orbit + grip + step-in) or a `grip` parameter on `arm-turn`. Ryan: *"go with
+cleaner"* — the new block. `arm-turn` is **not** refactored onto it, being render-validated;
+the relationship is asserted by test instead, and that test corrected the claim (the step-in is
+absorbed into the same beat budget, not added to it).
 
 ## Choreography paths
 
-**Deliberately not written in the conformance-fixture format yet.** The loader keys on a
-`` `block(args)` — N beats: `` signature line and **throws** on a block it cannot find in the
-catalog ([ADR-0009](../../adr/0009-spec-markdown-is-the-conformance-fixture.md) makes an
-unmatched fixture an error rather than a skip, on purpose). Writing the table in that form
-before `orbit` exists would take the suite red for a reason that is not a defect.
+The block's own worked examples are in [`orbit.md`](../blocks/orbit.md) and are conformance
+fixtures. This call's paths are those two arcs placed in the couple frame, and are asserted in
+`test/partner-trade.test.ts` rather than restated here — the numbers below would otherwise be a
+third copy of the same geometry, and a copy is a thing that can disagree.
 
-What the fixture will assert, once the block lands — beau's path in the couple frame, couple
-centred on the origin facing `+y`, beau entering at `(−0.5, 0)`:
+Couple centred on the origin facing `+y`:
 
-| Beat | x | y | Facing | Doing |
-|---|---|---|---|---|
-| 0 | −0.5 | 0 | +y | standing as beau |
-| 2 | 0 | −0.5 | −x | quarter round, passing right shoulders at the centre-rear |
-| 4 | +0.5 | 0 | −y | arrived in the belle's spot, facing reversed |
+| | beat 0 | beat 1 | beat 3 | beat 5 | beat 6 |
+|---|---|---|---|---|---|
+| **beau** | (−0.5, 0) +y | (−0.65, 0) +y | (0, +0.65) +x | (+0.65, 0) −y | (+0.5, 0) −y |
+| **belle** | (+0.5, 0) +y | (+0.35, 0) +y | (0, +0.35) −x | (−0.35, 0) −y | (−0.5, 0) −y |
 
-The belle's path is this rotated 180° about the couple's centre — the same pair symmetry
-`applyCallToPair` already encodes, and one of the last calls for which that symmetry holds.
+The lane radii are visited in the middle and left behind: the slides put each dancer on their
+lane and take them off it again, so the call starts and ends on the couple's own standing
+positions.
 
 ## Flow
 
@@ -122,9 +189,14 @@ The belle's path is this rotated 180° about the couple's centre — the same pa
 
 ## Is it a zero?
 
-**Two Partner Trades return the couple exactly to its start**, because 180° + 180° is a full
-turn about the same centre. That is the first half of Ryan's S1 sequence, and `isZero` in
-`src/sequence.ts` is what will say so rather than this paragraph.
+**Two Partner Trades should return the couple to its start** — each dancer walks a half circle
+and then the other half of the same circle, arriving back where they began facing the way they
+began. `isZero` in `src/sequence.ts` says so rather than this paragraph; see
+`test/partner-trade.test.ts`.
+
+Note that the lane radii do not spoil it: a dancer who starts a trade at `0.5 + lane` finishes
+it at `0.5 + lane` on the far side, and the second trade brings them home along the same
+circle.
 
 ## Suspected equivalence
 
