@@ -33,7 +33,7 @@ import { normaliseDeg, round, type Degrees } from "./geometry.js";
 import { CALLS, applyCallToCouple, applyCallToPair, type CallName } from "./calls.js";
 import { coupleSet, partnerUp, type Couple } from "./couple.js";
 import { compose } from "./compose.js";
-import type { Motion, Pose } from "./types.js";
+import type { GripSpan, Motion, Pose, Waypoint } from "./types.js";
 
 /**
  * How close a dancer has to be to a position to count as standing on it.
@@ -271,4 +271,62 @@ export function danceCoupleSequence(calls: readonly CallName[], couple: Couple):
 export function isCoupleZero(calls: readonly CallName[], couple: Couple): HomeResolution {
   const seq = danceCoupleSequence(calls, couple);
   return resolveHome(seq.start, seq.end);
+}
+
+/**
+ * Flatten a danced sequence into **one motion per dancer** — what the performance
+ * stepper wants.
+ *
+ * `createPerformance` takes a motion each and advances them together, so a sequence of
+ * several calls has to become a single continuous path per dancer before it can be
+ * watched. This is `compose`'s job one level up: same concatenation, same dropped
+ * duplicate waypoint at each join, on the beat axis of the whole sequence rather than
+ * of one call.
+ *
+ * The leading waypoint of every call after the first is dropped, because it repeats the
+ * previous call's exit instant. Keeping it would put two waypoints on the same beat and
+ * a consumer interpolating between them would divide by a zero-length interval.
+ *
+ * Momentum is the **last call's**, not the sum: it describes how a dancer is moving at
+ * the end, which is what the flow rules ask about a transition. Accumulated rotation
+ * across a whole sequence is a different question (F4's), and answering it here would
+ * quietly give one field two meanings.
+ */
+export function flattenSequence(seq: Sequence): Record<string, Motion> {
+  const keys = [...new Set(seq.steps.flatMap((s) => Object.keys(s.motions)))];
+  const out: Record<string, Motion> = {};
+
+  for (const key of keys) {
+    const waypoints: Waypoint[] = [];
+    const grips: GripSpan[] = [];
+    let entry: Pose | null = null;
+    let last: Motion | null = null;
+
+    for (const step of seq.steps) {
+      const m = step.motions[key];
+      if (m === undefined) continue;
+      entry ??= m.entry;
+      const offset = step.startBeat;
+      const from = waypoints.length === 0 ? 0 : 1;
+      for (const w of m.waypoints.slice(from)) {
+        waypoints.push({ ...w, beat: round(w.beat + offset) });
+      }
+      for (const g of m.grips) {
+        grips.push({ ...g, from: round(g.from + offset), to: round(g.to + offset) });
+      }
+      last = m;
+    }
+
+    /* v8 ignore next -- `keys` comes from the steps, so at least one motion exists */
+    if (entry === null || last === null) continue;
+    out[key] = {
+      beats: seq.beats,
+      waypoints,
+      grips,
+      entry,
+      exit: last.exit,
+      momentum: last.momentum,
+    };
+  }
+  return out;
 }

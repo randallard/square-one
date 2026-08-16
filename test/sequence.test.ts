@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   HOME_FACING_TOLERANCE,
   HOME_POSITION_TOLERANCE,
+  danceCoupleSequence,
   danceSequence,
+  flattenSequence,
   isZero,
   resolveHome,
 } from "../src/sequence.js";
 import { CALLS, PAIR_A, PAIR_B } from "../src/calls.js";
+import { partnerUp } from "../src/couple.js";
 import { STEP_OUT_RADIUS } from "../src/blocks/arm-turn.js";
 import { PLUS_Y } from "../src/geometry.js";
 
@@ -164,5 +167,80 @@ describe("a danced sequence accounts for its beats", () => {
     const seq = danceSequence(["dosado"]);
     expect(seq.start.a).toEqual(PAIR_A);
     expect(seq.start.b).toEqual(PAIR_B);
+  });
+});
+
+describe("flattening a sequence for the stepper", () => {
+  // `createPerformance` takes one motion per dancer, so a sequence of several calls has
+  // to become a single continuous path before it can be watched.
+  const couple = partnerUp("a", "b");
+  const twoTrades = () =>
+    flattenSequence(danceCoupleSequence(["partner-trade", "partner-trade"], couple));
+
+  it("joins the calls onto one beat axis", () => {
+    const flat = twoTrades();
+    for (const m of Object.values(flat)) {
+      expect(m.beats).toBeCloseTo(2 * CALLS["partner-trade"].chartBeats, 6);
+      expect(m.waypoints[0]?.beat).toBe(0);
+      expect(m.waypoints[m.waypoints.length - 1]?.beat).toBeCloseTo(m.beats, 6);
+    }
+  });
+
+  it("🔴 leaves no two waypoints on the same beat", () => {
+    // The join is where a duplicate would appear — each call's first waypoint repeats
+    // the previous call's exit instant. A consumer interpolating across a zero-length
+    // interval divides by zero, and the symptom would be a single bad frame at the
+    // seam rather than anything a static read would show.
+    for (const m of Object.values(twoTrades())) {
+      const beats = m.waypoints.map((w) => w.beat);
+      expect(new Set(beats).size).toBe(beats.length);
+    }
+  });
+
+  it("keeps the whole path monotonic in beats", () => {
+    for (const m of Object.values(twoTrades())) {
+      for (let i = 1; i < m.waypoints.length; i++) {
+        expect(m.waypoints[i]?.beat ?? 0).toBeGreaterThan(m.waypoints[i - 1]?.beat ?? 0);
+      }
+    }
+  });
+
+  it("ends where it began, since two trades are a zero", () => {
+    for (const m of Object.values(twoTrades())) {
+      expect(m.exit.position.x).toBeCloseTo(m.entry.position.x, 5);
+      expect(m.exit.position.y).toBeCloseTo(m.entry.position.y, 5);
+      expect(m.exit.facing).toBeCloseTo(m.entry.facing, 5);
+    }
+  });
+
+  it("offsets the grips onto the sequence's axis too", () => {
+    // A California Twirl grips for its whole length, so two of them give two spans —
+    // the second one starting where the first call ended, not at zero again.
+    const flat = flattenSequence(
+      danceCoupleSequence(["california-twirl", "california-twirl"], couple),
+    );
+    const beats = CALLS["california-twirl"].chartBeats;
+    for (const m of Object.values(flat)) {
+      expect(m.grips).toHaveLength(2);
+      expect(m.grips[0]?.from).toBeCloseTo(0, 6);
+      expect(m.grips[1]?.from).toBeCloseTo(beats, 6);
+      expect(m.grips[1]?.to).toBeCloseTo(2 * beats, 6);
+    }
+  });
+
+  it("reports the last call's momentum, not the sum", () => {
+    // It describes how a dancer is moving at the end, which is what the flow rules ask
+    // about a transition. Accumulated rotation across a sequence is F4's question and
+    // giving one field both meanings would make neither answerable.
+    const seq = danceCoupleSequence(["partner-trade", "california-twirl"], couple);
+    const flat = flattenSequence(seq);
+    const lastStep = seq.steps[seq.steps.length - 1];
+    for (const key of ["a", "b"]) {
+      expect(flat[key]?.momentum).toEqual(lastStep?.motions[key]?.momentum);
+    }
+  });
+
+  it("is empty for an empty sequence rather than throwing", () => {
+    expect(flattenSequence(danceCoupleSequence([], couple))).toEqual({});
   });
 });
