@@ -10,4 +10,5 @@ export * from "./types.js";
 export * from "./blocks/index.js";
 export * from "./compose.js";
 export * from "./calls.js";
+export * from "./sequence.js";
 export * from "./stepper.js";
