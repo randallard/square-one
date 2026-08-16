@@ -1,8 +1,38 @@
 # Progress & Status
 
-_Last updated: 2026-07-29_
+_Last updated: 2026-08-15_
 
 ## Status / next
+
+**▶ S1 has started (2026-08-15) — sequences chain, and "are we home" exists.** Planning
+**ADR-0011** re-ordered the milestone table: NPCs dance a complete sequence before the player
+joins one, in three increments (S1 one couple, S2 two couples, S3 the full square). S1 isolates
+*sequence* from *formation*, so it needs no frame work — two dancers is what the consumer
+already drives. Narrative in
+[the eleventh journal entry](journal/2026-08-15-sequences-and-home-11.md). Commit `1e01a45`.
+**61 tests (from 44)**, lint clean, typecheck and build clean.
+
+- 🔴 **The finding that justified the increment: "are we home" was named but never built.**
+  ADR-0004 has listed home resolution as a starter-set capability since 2026-07-24; before this
+  commit the only occurrence of "home" in `src/` was a comment inside Dosado's chain. The module
+  system is *made of* zeros, so a starter set that cannot check one cannot check its own specs.
+- **`src/sequence.ts`** — `danceSequence` (chains calls across a set, each call entered at the
+  previous one's exit), `resolveHome`, `isZero`.
+- **Home is a property of the set, not of a dancer.** After Pass Thru each dancer stands where
+  *the other one* started, so "everybody is on a starting position" is true and the set is not
+  home. A per-dancer check passes that.
+- **It reports how far off, not just whether** — "not home" is a number a spec can be wrong by.
+- **Four prose claims are now checked:** Dosado is a zero (0.0000 off, and still one after
+  twelve repeats); Pass Thru misses by exactly 1; Allemande Left misses by exactly
+  `0.5 − STEP_OUT_RADIUS` and a quarter turn; calls chain with nothing between them.
+- 🔴 **`applyCallToPair` cannot express Star Thru**, found while scoping. It derives B as A
+  rotated 180°, so B's exit facing is always A's + 180° — and Star Thru ends both dancers facing
+  the *same* way. First call for which `roleDependent: true` has to mean something.
+  `danceSequence` already composes each dancer independently, so the room is there;
+  `applyCallToPair` is where the work is.
+- **Remaining in S1:** the pair-model change, then the Star Thru spec (`moves.md` carries the
+  source material), then its turn-under block — the first new block since `arm-turn`, and
+  ADR-0005's "calls get cheaper as the catalog grows" bet meeting its first real test.
 
 **Status: the engine core exists.** M1 of the planning effort's milestone table.
 `src/` implements the three specced blocks as parameterised generators, the three
