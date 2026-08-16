@@ -22,9 +22,16 @@ export interface CallDef {
    *  chain must sum to this — `beats sum to the chart's N ✓` in the specs. */
   readonly chartBeats: number;
   readonly chain: readonly CatalogCall[];
-  /** Whether the call reads differently for boys and girls (ADR-0003 roles). None
-   *  of the starter three do. */
-  readonly roleDependent: boolean;
+  /**
+   * Whether the call reads differently for the two sides of a couple —
+   * **beau and belle**, never boy and girl (ADR-0012).
+   *
+   * Renamed from `roleDependent`, which was mis-named rather than merely unused: what
+   * differs between the two dancers of an asymmetric call is their side of the couple,
+   * and a field named for roles invites the gendered branch ADR-0012 rules out. None of
+   * the starter three are asymmetric; Star Thru is the first that will be.
+   */
+  readonly positionDependent: boolean;
 }
 
 /** Where dancer A stands in the pair frame. */
@@ -35,7 +42,7 @@ export const PAIR_B: Pose = { position: { x: 0, y: 0.5 }, facing: PLUS_Y + 180 }
 export const dosado: CallDef = {
   name: "Dosado",
   chartBeats: 6,
-  roleDependent: false,
+  positionDependent: false,
   chain: [
     { block: "pass", params: { direction: "forward", shoulder: "right", exit: "lane" } },
     { block: "slide", params: { side: "right" } },
@@ -50,7 +57,7 @@ export const dosado: CallDef = {
 export const passThru: CallDef = {
   name: "Pass Thru",
   chartBeats: 2,
-  roleDependent: false,
+  positionDependent: false,
   chain: [
     { block: "pass", params: { direction: "forward", shoulder: "right", exit: "centered" } },
   ],
@@ -59,7 +66,7 @@ export const passThru: CallDef = {
 export const allemandeLeft: CallDef = {
   name: "Allemande Left",
   chartBeats: 8,
-  roleDependent: false,
+  positionDependent: false,
   chain: [{ block: "arm-turn", params: { hand: "left", fraction: 1, exit: "step-out" } }],
 };
 
