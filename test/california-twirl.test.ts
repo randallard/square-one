@@ -13,9 +13,10 @@ describe("California Twirl", () => {
     // "California twirl does change direction facing" — turning a couple around is
     // what the call is for.
     const m = twirl();
-    expect(m["beau"]?.entry.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 6);
-    expect(m["beau"]?.exit.position.x).toBeCloseTo(COUPLE_WIDTH / 2, 6);
-    expect(m["belle"]?.exit.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 6);
+    // 5 places for `round`'s 1e-6 quantisation over a non-representable third.
+    expect(m["beau"]?.entry.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 5);
+    expect(m["beau"]?.exit.position.x).toBeCloseTo(COUPLE_WIDTH / 2, 5);
+    expect(m["belle"]?.exit.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 5);
     for (const key of ["beau", "belle"] as const) {
       expect(m[key]?.entry.facing).toBeCloseTo(PLUS_Y, 6);
       expect(m[key]?.exit.facing).toBeCloseTo(MINUS_Y, 6);

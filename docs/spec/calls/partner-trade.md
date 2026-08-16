@@ -115,18 +115,27 @@ Per position, because the two walk different arcs:
 
 | Position | # | Block | Beats | Exit |
 |---|---|---|---|---|
-| beau | 1 | [`slide`](../blocks/slide.md)`(left, 0.15)` | 1 | out to the far lane |
-| | 2 | [`orbit`](../blocks/orbit.md)`(right, 0.5, 0.65)` | 4 | the belle's side, facing reversed, having passed outside |
-| | 3 | [`slide`](../blocks/slide.md)`(right, 0.15)` | 1 | back in onto the belle's standing spot |
-| belle | 1 | [`slide`](../blocks/slide.md)`(left, 0.15)` | 1 | in to the near lane |
-| | 2 | [`orbit`](../blocks/orbit.md)`(left, 0.5, 0.35)` | 4 | the beau's side, facing reversed, having passed inside |
-| | 3 | [`slide`](../blocks/slide.md)`(right, 0.15)` | 1 | back out onto the beau's standing spot |
+| beau | 1 | `slide(left, TRADE_LANE)` | 1 | out to the far lane |
+| | 2 | `orbit(right, 0.5, TRADE_RADIUS_OUT)` | 4 | the belle's side, facing reversed, having passed outside |
+| | 3 | `slide(right, TRADE_LANE)` | 1 | back in onto the belle's standing spot |
+| belle | 1 | `slide(left, TRADE_LANE)` | 1 | in to the near lane |
+| | 2 | `orbit(left, 0.5, TRADE_RADIUS_IN)` | 4 | the beau's side, facing reversed, having passed inside |
+| | 3 | `slide(right, TRADE_LANE)` | 1 | back out onto the beau's standing spot |
+
+Written as the constants rather than as numbers **on purpose**: they follow
+`COUPLE_WIDTH`, and the first version of this table hard-coded the values that fell out
+of a unit-wide couple. See below.
 
 The two chains have the **same shape** and differ only in the orbit's direction and radius,
 which is a pleasing check on the reading: a Trade really is one figure danced two ways round.
 
-The radii are `0.5 ± LANE_OFFSET` — the same 0.15 lane `pass` uses for Dosado's shoulder pass,
-reused rather than invented so that two calls separating dancers do it by the same amount.
+🔴 **The lane is a *proportion* of the couple's width, not the absolute `LANE_OFFSET`.**
+The first version used the flat 0.15 that `pass` uses for Dosado's shoulder pass. That was
+invisible while a couple was a full unit wide, and degenerate the moment it stopped being: when
+`COUPLE_WIDTH` dropped to a third so the pair could touch hands, the inside dancer's radius came
+out at **0.017** — a dancer spinning on the spot rather than walking an arc. `LANE_OFFSET` is
+calibrated against a **facing pair's** one-unit separation, so borrowing the number borrowed a
+ratio with it.
 
 ### 🔴 Why the slides are not optional, which took building it to see
 
@@ -170,8 +179,11 @@ Couple centred on the origin facing `+y`:
 
 | | beat 0 | beat 1 | beat 3 | beat 5 | beat 6 |
 |---|---|---|---|---|---|
-| **beau** | (−0.5, 0) +y | (−0.65, 0) +y | (0, +0.65) +x | (+0.65, 0) −y | (+0.5, 0) −y |
-| **belle** | (+0.5, 0) +y | (+0.35, 0) +y | (0, +0.35) −x | (−0.35, 0) −y | (−0.5, 0) −y |
+| **beau** | −½w, +y | −(½w+lane), +y | on the axis at ½w+lane, +x | +(½w+lane), −y | +½w, −y |
+| **belle** | +½w, +y | +(½w−lane), +y | on the axis at ½w−lane, −x | −(½w−lane), −y | −½w, −y |
+
+In terms of `COUPLE_WIDTH` (`w`) and `TRADE_LANE` (`lane`), because both moved once the couple
+narrowed and a table of literals would have gone stale silently.
 
 The lane radii are visited in the middle and left behind: the slides put each dancer on their
 lane and take them off it again, so the call starts and ends on the couple's own standing

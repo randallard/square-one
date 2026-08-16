@@ -5,6 +5,7 @@ import {
   belleDirection,
   coupleSet,
   opposite,
+  insideHands,
   partnerUp,
   positionIn,
   positionOf,
@@ -34,8 +35,11 @@ describe("partnering up", () => {
     // Facing +y, the dancers' right is +x. The distinction is invisible on a
     // symmetric call and wrong on every asymmetric one.
     const c = partnerUp("a", "b", { x: 0, y: 0 }, PLUS_Y);
-    expect(positionOf(c, "belle").position.x).toBeCloseTo(COUPLE_WIDTH / 2, 9);
-    expect(positionOf(c, "beau").position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 9);
+    // 5 places, not 9: `COUPLE_WIDTH` is a third, which is not representable, and
+    // `geometry.round` quantises to 1e-6. Asserting tighter than the engine's own
+    // granularity asserts the absence of a rounding scheme it chose on purpose.
+    expect(positionOf(c, "belle").position.x).toBeCloseTo(COUPLE_WIDTH / 2, 5);
+    expect(positionOf(c, "beau").position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 5);
   });
 
   it("carries left and right around with the couple as it turns", () => {
@@ -121,5 +125,46 @@ describe("a couple is a set the sequence layer can dance", () => {
     const r = resolveHome(before, after);
     expect(r.home).toBe(false);
     expect(r.worstDistance).toBeCloseTo(COUPLE_WIDTH, 6);
+  });
+});
+
+describe("touch hands — the couple stands hand in hand", () => {
+  // Ryan, 2026-08-15: "they should hold hands — we say touch hands — beau right palm up
+  // and belle's left palm down … the characters need to be a bit closer together when
+  // partnered up."
+
+  it("stands a third of a facing pair's separation apart", () => {
+    // It was a full unit, and that was wrong by more than "a bit": measured against
+    // townage's default cast at its derived frame scale of 2.60, a unit-wide couple
+    // stood 2.60 world units apart while their inside hands meet at 0.82.
+    expect(COUPLE_WIDTH).toBeCloseTo(1 / 3, 9);
+    expect(COUPLE_WIDTH).toBeLessThan(0.5);
+  });
+
+  it("names the joined hands, and they are the inside ones", () => {
+    const hands = insideHands(partnerUp("a", "b"));
+    expect(hands.beauHand).toBe("right");
+    expect(hands.belleHand).toBe("left");
+  });
+
+  it("joins them at the point between the two dancers", () => {
+    const c = partnerUp("a", "b", { x: 2, y: -3 }, 40);
+    const hands = insideHands(c);
+    const beau = positionOf(c, "beau").position;
+    const belle = positionOf(c, "belle").position;
+    expect(hands.point.x).toBeCloseTo((beau.x + belle.x) / 2, 5);
+    expect(hands.point.y).toBeCloseTo((beau.y + belle.y) / 2, 5);
+  });
+
+  it("lets a consumer with real bodies say how close, since the engine cannot know", () => {
+    // Shoulder offsets run 0.2 to 0.46 across townage's cast, so the touching distance
+    // is a property of bodies. A third is the engine's body-agnostic default.
+    const wide = partnerUp("a", "b", { x: 0, y: 0 }, PLUS_Y, 0.8);
+    expect(wide.width).toBeCloseTo(0.8, 6);
+    expect(positionOf(wide, "belle").position.x).toBeCloseTo(0.4, 5);
+  });
+
+  it("refuses a couple with no width rather than collapsing one", () => {
+    expect(() => partnerUp("a", "b", { x: 0, y: 0 }, PLUS_Y, 0)).toThrow(/width/);
   });
 });

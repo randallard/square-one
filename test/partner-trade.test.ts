@@ -21,10 +21,11 @@ describe("Partner Trade", () => {
     // The reason the slides are there at all. A single constant-radius arc cannot do
     // this and separate the dancers — see the spec's correction.
     const m = trade();
-    expect(m["beau"]?.entry.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 6);
-    expect(m["beau"]?.exit.position.x).toBeCloseTo(COUPLE_WIDTH / 2, 6);
-    expect(m["belle"]?.entry.position.x).toBeCloseTo(COUPLE_WIDTH / 2, 6);
-    expect(m["belle"]?.exit.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 6);
+    // 5 places for `round`'s 1e-6 quantisation over a non-representable third.
+    expect(m["beau"]?.entry.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 5);
+    expect(m["beau"]?.exit.position.x).toBeCloseTo(COUPLE_WIDTH / 2, 5);
+    expect(m["belle"]?.entry.position.x).toBeCloseTo(COUPLE_WIDTH / 2, 5);
+    expect(m["belle"]?.exit.position.x).toBeCloseTo(-COUPLE_WIDTH / 2, 5);
   });
 
   it("leaves both dancers facing the way the couple was not", () => {
@@ -135,5 +136,32 @@ describe("reforming the couple between calls", () => {
     expect(next.beau).toBe("beau");
     expect(next.belle).toBe("belle");
     expect(resolveHome(coupleSet(couple), coupleSet(next)).home).toBe(false);
+  });
+});
+
+describe("the Trade lane follows the couple's width", () => {
+  it("🔴 stays a proportion of it, not an absolute", () => {
+    // It was `LANE_OFFSET` flat, which was invisible while a couple was a full unit
+    // wide and degenerate the moment it stopped being: at a third-unit couple the
+    // inside dancer's radius came out at 0.017 — a dancer spinning on the spot.
+    // `LANE_OFFSET` is calibrated against a *facing pair's* one-unit separation.
+    expect(TRADE_LANE).toBeLessThan(COUPLE_WIDTH / 2);
+    expect(TRADE_RADIUS_IN).toBeGreaterThan(COUPLE_WIDTH / 4);
+    expect(TRADE_RADIUS_OUT).toBeGreaterThan(TRADE_RADIUS_IN);
+  });
+
+  it("keeps the two arcs a whole lane apart however wide the couple", () => {
+    expect(TRADE_RADIUS_OUT - TRADE_RADIUS_IN).toBeCloseTo(2 * TRADE_LANE, 9);
+  });
+
+  it("still separates the dancers at the crossing", () => {
+    // The property the lane exists for, re-checked at the new width — the collision
+    // this call would otherwise have.
+    const m = applyCallToCouple("partner-trade", couple);
+    const mid = (k: string) => m[k]?.waypoints.find((w) => Math.abs(w.beat - 3) < 1e-9);
+    const a = mid("beau");
+    const b = mid("belle");
+    expect(Math.hypot((a?.x ?? 0) - (b?.x ?? 0), (a?.y ?? 0) - (b?.y ?? 0)))
+      .toBeCloseTo(2 * TRADE_LANE, 5);
   });
 });

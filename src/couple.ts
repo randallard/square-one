@@ -48,14 +48,29 @@ export function opposite(position: CouplePosition): CouplePosition {
 /**
  * How far apart the two dancers of a couple stand, centre to centre.
  *
- * The same unit the pair frame uses for facing dancers (`calls.ts` puts them one apart),
- * so a couple and a facing pair are the same size and a call that converts one into the
- * other does not silently rescale the set.
+ * **A third of a facing pair's separation, because a couple is holding hands.** Ryan,
+ * 2026-08-15: *"they should hold hands — we say touch hands — beau right palm up and
+ * belle's left palm down … so the characters need to be a bit closer together when
+ * partnered up."*
+ *
+ * It was `1` — the same as a facing pair — and that was wrong by more than "a bit".
+ * Measured against townage's default cast at its derived frame scale of 2.60, a
+ * unit-wide couple stands **2.60 world units** apart while their inside hands meet at
+ * **0.82**: over three times too far, with the bodies not even close to touching at
+ * 0.52. A third puts them within a hair of hand contact for that cast.
+ *
+ * 🔴 **The exact touching distance is a property of bodies, and this constant cannot
+ * know them** — it depends on each dancer's shoulder offset, which runs 0.2 to 0.46
+ * across the shipped cast. A consumer with real bodies should compute it and pass it to
+ * {@link partnerUp}; a third is the engine's body-agnostic default and the ratio a
+ * caller would recognise, not a fitted number.
  */
-export const COUPLE_WIDTH = 1;
+export const COUPLE_WIDTH = 1 / 3;
 
 /** A couple: who stands where, and which way the pair of them face. */
 export interface Couple {
+  /** Centre-to-centre distance between the two dancers. */
+  readonly width: number;
   /** Midpoint between the two dancers. */
   readonly center: { readonly x: number; readonly y: number };
   /** The direction both dancers face. */
@@ -94,8 +109,11 @@ export function partnerUp(
   belle: string,
   center: { x: number; y: number } = { x: 0, y: 0 },
   facing: Degrees = PLUS_Y,
+  width: number = COUPLE_WIDTH,
 ): Couple {
+  if (width <= 0) throw new Error("partnerUp: width must be positive");
   return {
+    width: round(width),
     center: { x: round(center.x), y: round(center.y) },
     facing: round(normaliseDeg(facing)),
     beau,
@@ -103,10 +121,33 @@ export function partnerUp(
   };
 }
 
+/**
+ * The joined inside hands — what "touch hands" names.
+ *
+ * A couple stands hand in hand: the **beau's right** and the **belle's left**, meeting
+ * at the point between them. Which hands is a fact about the formation and belongs
+ * here; how they are held — palm up beneath, palm down above — is a rendering
+ * convention and belongs to whoever draws them.
+ *
+ * Returned rather than stored on {@link Couple}, because it is derivable and a stored
+ * copy is a thing that can disagree with the positions it was derived from.
+ */
+export function insideHands(couple: Couple): {
+  readonly point: { x: number; y: number };
+  readonly beauHand: "right";
+  readonly belleHand: "left";
+} {
+  return {
+    point: { x: couple.center.x, y: couple.center.y },
+    beauHand: "right",
+    belleHand: "left",
+  };
+}
+
 /** Where one side of a couple is standing. */
 export function positionOf(couple: Couple, position: CouplePosition): Pose {
   const dir = belleDirection(couple.facing);
-  const half = (COUPLE_WIDTH / 2) * (position === "belle" ? 1 : -1);
+  const half = (couple.width / 2) * (position === "belle" ? 1 : -1);
   return {
     position: {
       x: round(couple.center.x + dir.x * half),

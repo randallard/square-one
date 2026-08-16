@@ -43,8 +43,20 @@ export interface CallDef {
   readonly chains?: Readonly<Record<CouplePosition, readonly CatalogCall[]>>;
 }
 
-/** How far off their standing radius a Trade's dancers step to pass right shoulders. */
-export const TRADE_LANE = LANE_OFFSET;
+/**
+ * How far off their standing radius a Trade's dancers step to pass right shoulders.
+ *
+ * 🔴 **Proportional to the couple's width, not the absolute `LANE_OFFSET`.** It was
+ * absolute, which was invisible while a couple was a full unit wide and degenerate the
+ * moment it stopped being: at `COUPLE_WIDTH` 1/3 the inside dancer's radius came out at
+ * **0.017**, a dancer spinning on the spot rather than walking an arc.
+ *
+ * `LANE_OFFSET` is calibrated against a **facing pair's** one-unit separation — it is
+ * the lane `pass` uses for Dosado. Borrowing it for a formation a third that size
+ * borrowed a ratio along with the number. Kept as the same *proportion* so the two
+ * calls still separate dancers by the same relative amount.
+ */
+export const TRADE_LANE = COUPLE_WIDTH * LANE_OFFSET;
 /** The outside dancer's arc radius, and the inside dancer's. */
 export const TRADE_RADIUS_OUT = COUPLE_WIDTH / 2 + TRADE_LANE;
 export const TRADE_RADIUS_IN = COUPLE_WIDTH / 2 - TRADE_LANE;
