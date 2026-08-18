@@ -14,6 +14,7 @@ are the same figure at other radii.
 | `fraction` | quarter multiples — `0.25`, `0.5`, `0.75`, `1`, … | How much of the circle |
 | `radius` | any positive number | Distance from the shared centre at the arc's **ends** |
 | `lane` | any number, default `0` | How far to bow off `radius` on the way past someone walking the same circle the other way. Positive is **outward**. Zero is a constant-radius arc |
+| `hold` | a hand and a grip style, default **absent** | A hand joined for the whole arc. Absent is the hands-free arc, and that emptiness is a positive F2 fact. Present is the beau's half of a [California Twirl](../calls/california-twirl.md) — **the identical arc**, holding on |
 
 ## The lane rides inside the arc
 
@@ -88,11 +89,19 @@ sources do not describe. See [ADR-0013](../../adr/0013-the-trade-lane-rides-insi
 
 | Field | Value |
 |---|---|
-| Hands | **None**, for the whole arc — a positive fact for F2, not an omission. A Trade leaves both hands available, which is what makes it flow into anything |
-| Last hand used | `none` |
+| Hands | **None**, for the whole arc, unless `hold` names one — a positive fact for F2, not an omission. A Trade leaves both hands available, which is what makes it flow into anything |
+| Last hand used | `none`, or `hold`'s hand: what finished engaged |
 | Rotation (F4) | `fraction × ±360°`, signed by `turn` — left positive |
 | Body-flow vector | Along the final facing, which is tangential |
 | Roll | Available — the arc gives a definite rotation direction |
+
+## The hold changes nothing here
+
+`hold` emits one grip span covering the block and sets `lastHand`. It moves no waypoint, and
+that is the claim [ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md)
+rests on — a California Twirl's beau walks a Partner Trade's arc. So there is no worked example
+with a hold in it: the tables below **are** the held arc's tables, and the call spec asserts
+that by comparing the two calls waypoint for waypoint rather than by carrying a second copy.
 
 ## Worked examples
 

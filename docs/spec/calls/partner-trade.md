@@ -9,6 +9,15 @@ description, *"the leads partner trade (pass right shoulders)"*, which gives the
 shoulder and nothing else. Everything below is written from the CALLERLAB **Trade** family
 definition rather than salvaged, and should be reviewed with that in mind.
 
+🔴 **This file is behind the code, from **Dance action** down.** It still describes the pre-ADR-0014
+figure — two dancers walking the same circle in opposite senses, separated by a bowed `lane`. The
+call is now the beau's [`orbit`](../blocks/orbit.md) round a belle who steps across on
+[`step-pivot`](../blocks/step-pivot.md), with no lane at all. The authorities until this file is
+rewritten are
+[ADR-0014](../../adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md), the two block
+specs, and `test/partner-trade.test.ts`. Identity, Formations, Timing and the section below are
+current.
+
 ## Identity
 
 | Field | Value |
@@ -286,20 +295,30 @@ no lane state to carry into the next call. (Under the old constant-radius arcs i
 but for a longer reason — a dancer who started at `½w+lane` finished at `½w+lane` on the far
 side, and the second trade brought them home along the same circle.)
 
-## Equivalence with California Twirl
+## The equivalence with California Twirl is an identity of paths
 
-Partner Trade and [California Twirl](california-twirl.md) reach the **same end position** by
-different paths and different hands: a genuine choreographic equivalence, and the first member
-of ADR-0004's equivalence suite.
+Partner Trade and [California Twirl](california-twirl.md) were recorded on 2026-08-15 as reaching
+the same end position by **different** paths and different hands: a genuine choreographic
+equivalence, and the first member of ADR-0004's equivalence suite. Confirmed by the engine the
+same day, in `test/california-twirl.test.ts`.
 
-**Confirmed 2026-08-15** by the engine, in `test/california-twirl.test.ts`: either can follow
-the other and the couple still comes home.
+🔴 **They walk the same paths.** Ryan, 2026-08-18, watching both renders: *"california twirl beau
+might be same path but raise arm and have belle duck under the two held hands — belle's path might
+be the same as partner trade too."* They are, waypoint for waypoint, both dancers, position and
+facing. [ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md); the Twirl
+is this call with the inside hands joined and raised, and the chains come from one factory whose
+only parameter is the hold.
 
-They also take the **same 4 beats**, which is what makes the substitution usable — a caller
-swaps one for the other inside a phrase, so an equivalence that changed the phrase's length
-would not be one they could reach for. That was not true until 2026-08-16: the Trade was 6, and
-the test asserted the two-beat gap as though it were a property of the call rather than a
-defect in its timing.
+The test is strengthened rather than deleted: it compares every waypoint instead of the end
+states, so it can no longer pass on two figures that merely agree at the finish.
 
-What genuinely differs is the hands (a Trade leaves both free throughout; a Twirl keeps one
-joined) and the rotation (a Trade's dancers turn in opposite senses, a Twirl's the same way).
+**What is left is the hands, and it is enough to keep them two calls.** F2 asks whether the hand a
+following call needs is available. A Trade finishes with both free — which is what lets it flow
+into anything — and a Twirl finishes holding the inside hand. They take the same 4 beats, which is
+what makes the substitution usable inside a phrase.
+
+🔴 Both of the *other* differences this section used to claim were symptoms. The rotation
+difference (*"a Trade's dancers turn in opposite senses, a Twirl's the same way"*) was the Twirl's
+540° spin, gone with ADR-0017. The beats difference was the Trade's own lane, gone with ADR-0013.
+Each was written down as a characterisation of the two calls, and each was a defect describing
+itself.

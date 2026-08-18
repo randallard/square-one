@@ -8,7 +8,28 @@
  * code. The documented tables are conformance fixtures, not the source.
  */
 
-import type { Motion, Pose } from "../types.js";
+import type { GripStyle, Motion, Pose } from "../types.js";
+
+/**
+ * A hand held for the whole of a block — the parameter that turns a walk into a
+ * *joined* walk.
+ *
+ * Blocks that travel are written hands-free, because that is what most figures do and
+ * because "both hands are available" is a positive fact F2 reads. A hold is the
+ * exception stated explicitly: the figure keeps this hand engaged from the first beat
+ * to the last, and the block emits the single {@link GripSpan} that says so.
+ *
+ * 🔴 **Held for the whole block, and there is no partial span.** No call in the catalog
+ * joins hands part-way through a block, and a `from`/`to` pair here would be a second
+ * timeline running inside a block's own — which is what chaining two blocks already is.
+ * A figure that joins hands half way through chains a free block and a held one.
+ */
+export interface Hold {
+  /** Which of this dancer's hands. Never `"none"` — an absent {@link Hold} is that. */
+  readonly hand: "right" | "left";
+  /** How it is held, and therefore how it is drawn. */
+  readonly grip: GripStyle;
+}
 
 /** Every block emits its path in a local frame where the dancer enters at the
  *  origin facing `+y`. Composition rotates and translates that frame onto the
@@ -34,4 +55,4 @@ export interface ChainDefect {
   readonly reason: string;
 }
 
-export type { Motion, Pose };
+export type { GripStyle, Motion, Pose };

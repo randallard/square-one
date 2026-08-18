@@ -49,6 +49,7 @@
 
 import { normaliseDeg, polar, rad2deg, round, turnOf } from "../geometry.js";
 import type { Motion, Waypoint } from "../types.js";
+import type { Hold } from "./types.js";
 
 export interface OrbitParams {
   /** Which way round. `left` is CCW, matching `arm-turn`'s convention. */
@@ -69,6 +70,19 @@ export interface OrbitParams {
    * and exit facings exactly tangential and the pass exactly shoulder-to-shoulder.
    */
   readonly lane?: number;
+  /**
+   * A hand joined for the whole arc, when the figure walks the circle **holding on**.
+   *
+   * Absent — the default, and every use before California Twirl — is the hands-free
+   * arc a Trade walks, and that emptiness is a positive fact rather than an omission
+   * (F2 asks whether the hand a following call needs is *available*).
+   *
+   * Present is the beau's half of a California Twirl: the identical arc, with the
+   * inside hands joined and raised into an arch the belle walks under. **The path does
+   * not change** — which is the point, and is why this is a parameter here rather than
+   * a block of its own.
+   */
+  readonly hold?: Hold;
 }
 
 /** A full circle takes the same 8 beats an `arm-turn` does — the timing charts do not
@@ -90,7 +104,7 @@ export const orbit = {
   beats: (params: OrbitParams): number => params.fraction * BEATS_PER_TURN,
 
   generate(params: OrbitParams): Motion {
-    const { turn, fraction, radius, lane = 0 } = params;
+    const { turn, fraction, radius, lane = 0, hold } = params;
     if (fraction <= 0) throw new Error("orbit: fraction must be positive");
     if (radius <= 0) throw new Error("orbit: radius must be positive");
     if (radius + Math.min(0, lane) <= 0) {
@@ -159,17 +173,21 @@ export const orbit = {
     return {
       beats: round(beats),
       waypoints,
-      // Hands free for the whole arc — a positive fact for F2, which asks whether the
-      // hand a following call needs is *available*. A Trade leaves both available,
-      // and that is exactly what makes it flow into anything.
-      grips: [],
+      // Hands free for the whole arc unless the figure names one — a positive fact for
+      // F2, which asks whether the hand a following call needs is *available*. A Trade
+      // leaves both available, and that is exactly what makes it flow into anything; a
+      // California Twirl walks the same arc with the inside hand joined throughout.
+      grips: hold === undefined
+        ? []
+        : [{ hand: hold.hand, grip: hold.grip, from: 0, to: round(beats) }],
       entry: { position: { x: entry.x, y: entry.y }, facing: entry.facing },
       exit: { position: { x: exit.x, y: exit.y }, facing: exit.facing },
       momentum: {
         rotation,
         roll: turnOf(rotation),
         bodyFlow: exit.facing,
-        lastHand: "none",
+        // What *finished* engaged, which is the hand held to the last beat, or none.
+        lastHand: hold?.hand ?? "none",
       },
     };
   },

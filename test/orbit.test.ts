@@ -50,6 +50,27 @@ describe("orbit — walking a circle with your hands free", () => {
     expect(m.momentum.lastHand).toBe("none");
   });
 
+  it("🔴 takes a hold without moving a waypoint", () => {
+    // The claim ADR-0017 rests on: a California Twirl's beau walks a Partner Trade's arc.
+    // Asserted at the block, because this is where it could stop being true — a hold that
+    // nudged the geometry would make the two calls quietly diverge, and the call spec's
+    // waypoint-for-waypoint comparison would then be checking two wrong figures against
+    // each other.
+    const params = { turn: "right", fraction: 0.5, radius: 0.5 } as const;
+    const free = orbit.generate(params);
+    const held = orbit.generate({ ...params, hold: { hand: "right", grip: "arch" } });
+    expect(held.waypoints).toEqual(free.waypoints);
+    expect(held.beats).toBe(free.beats);
+    expect(held.momentum.rotation).toBe(free.momentum.rotation);
+
+    // What it does change: one span covering the whole block, and the hand that finished
+    // engaged. F2 reads both.
+    expect(held.grips).toEqual([
+      { hand: "right", grip: "arch", from: 0, to: held.beats },
+    ]);
+    expect(held.momentum.lastHand).toBe("right");
+  });
+
   it("takes 4 beats for a half turn — the Trade family's timing", () => {
     expect(orbit.beats({ turn: "right", fraction: 0.5, radius: 0.5 })).toBe(4);
     expect(orbit.beats({ turn: "right", fraction: 1, radius: 0.5 })).toBe(8);

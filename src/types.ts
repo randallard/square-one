@@ -59,23 +59,40 @@ export interface Momentum {
 }
 
 /**
+ * How a joined hand is held — the shape a renderer has to draw, named by the engine
+ * because the engine is what knows which figure is being danced.
+ *
+ * - `forearm` — the arm-turn family. Two **horizontal, antiparallel** forearms along
+ *   the line between the pair, each hand at the other's elbow, pinned to the shared
+ *   pivot and rotating with it while the bodies move around it. A consumer should
+ *   **place** the named forearm into the grip, not aim it at the grip point: townage
+ *   tried aiming first and the arms came out pointing sideways at each other, because
+ *   in an arm turn the gripping shoulder is already nearly over the pivot. See
+ *   the-lot's `src/dance/arm-pose.ts`.
+ * - `arch` — the arch family. Palms joined and **raised clear of the head**, high
+ *   enough that a dancer can walk beneath the join. California Twirl is the first;
+ *   Star Thru and Box the Gnat are the same hold.
+ *
+ * 🔴 A plain side-by-side handhold — a couple simply standing hand in hand — is
+ * deliberately **not** in this union. It is not something a call engages: it is what
+ * being a couple *is*, and a consumer that knows where two bodies are can see it
+ * (the-lot infers it from the live placements, `touchingSide`). A grip span is for a
+ * hold the **figure** imposes, which the placements cannot reveal — and an arch is
+ * exactly that, because two dancers with their hands over their heads are standing
+ * where two dancers with their hands down would be. Palm grips for Right and Left
+ * Grand arrive when that call does.
+ */
+export type GripStyle = "forearm" | "arch";
+
+/**
  * A span of beats during which one of this dancer's hands is engaged in a grip.
  *
  * This is F2's per-beat data: `Momentum.lastHand` says what *finished* engaged;
- * grips say what is engaged *now*. `grip` is the style — forearm for the
- * arm-turn family; palm grips arrive with Right and Left Grand.
- *
- * A consumer rendering arms should **place** the named forearm into the grip for
- * the span, not aim it at the grip point: townage tried aiming first and the arms
- * came out pointing sideways at each other, because in an arm turn the gripping
- * shoulder is already nearly over the pivot. A forearm grip is two horizontal,
- * antiparallel forearms along the line between the pair, each hand at the other's
- * elbow, pinned to the pivot and rotating with it while the bodies move around it.
- * See the-lot's `src/dance/arm-pose.ts`.
+ * grips say what is engaged *now*. `grip` is the style — see {@link GripStyle}.
  */
 export interface GripSpan {
   readonly hand: Hand;
-  readonly grip: "forearm";
+  readonly grip: GripStyle;
   readonly from: number;
   readonly to: number;
 }

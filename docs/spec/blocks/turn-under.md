@@ -6,6 +6,20 @@ The arch figure. **California Twirl, Star Thru and Box the Gnat are all this blo
 different parameters** — which is the prediction ADR-0005's "the catalog makes later calls
 cheaper" bet is being tested on, stated here so it can be checked rather than assumed.
 
+🔴 **No call uses this block, as of 2026-08-18.** California Twirl was its one consumer and is
+now a [Partner Trade](../calls/partner-trade.md) with the hands joined — `orbit` and
+`step-pivot`, each carrying a `hold`
+([ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md)). The prediction
+above is therefore **open again rather than won**: what looked like the arch family's shared
+block turned out to be one call's rigid-rotation model, and the arch turned out to be a *hold* on
+figures the catalog already had.
+
+The block, its spec and its conformance vectors are kept because **Star Thru** is what will
+settle it — a call from a facing pair, where the two dancers genuinely do rotate about their
+joined hands rather than exchange sides of a couple. If Star Thru needs this, the bet is good and
+the Twirl was simply not a member of the family. If it does not, this is a candidate for
+deletion, on the same terms `orbit`'s `lane` has carried since ADR-0014.
+
 ## Parameters
 
 | Parameter | Values | Meaning |

@@ -43,6 +43,7 @@
 
 import { PLUS_Y, normaliseDeg, round, turnOf } from "../geometry.js";
 import type { Motion, Waypoint } from "../types.js";
+import type { Hold } from "./types.js";
 
 export interface StepPivotParams {
   /** Which way the dancer steps — their **own** left or right. */
@@ -53,6 +54,16 @@ export interface StepPivotParams {
   readonly turn: "right" | "left";
   /** Quarter multiples of the turn. A Partner Trade's belle is `0.5`. */
   readonly fraction: number;
+  /**
+   * A hand joined for the whole step, when the figure steps across **holding on**.
+   *
+   * Absent is a Partner Trade's belle, who lets go and takes nothing. Present is a
+   * California Twirl's: the identical step and pivot, with her inside hand joined to
+   * the beau's and raised — so what she is walking under is her own held hand, and the
+   * step across is the duck under the arch. The path is the same either way, which is
+   * why the hold is a parameter and not a second block.
+   */
+  readonly hold?: Hold;
 }
 
 /** The catalog's shared rotation budget: a full turn is 8 beats, a half 4. Same number
@@ -70,7 +81,7 @@ export const stepPivot = {
   beats: (params: StepPivotParams): number => params.fraction * BEATS_PER_TURN,
 
   generate(params: StepPivotParams): Motion {
-    const { side, distance, turn, fraction } = params;
+    const { side, distance, turn, fraction, hold } = params;
     if (fraction <= 0) throw new Error("step-pivot: fraction must be positive");
     if (distance < 0) {
       throw new Error("step-pivot: distance must not be negative — use `side` for direction");
@@ -106,9 +117,12 @@ export const stepPivot = {
 
     return {
       beats: round(beats),
-      // Hands free. The belle's Partner Trade releases the handhold and takes nothing:
-      // the F2 fact that lets a Trade flow into anything is true of this half too.
-      grips: [],
+      // Hands free unless the figure names one. The belle's Partner Trade releases the
+      // handhold and takes nothing — the F2 fact that lets a Trade flow into anything is
+      // true of this half too. Her California Twirl keeps it, and it is the same step.
+      grips: hold === undefined
+        ? []
+        : [{ hand: hold.hand, grip: hold.grip, from: 0, to: round(beats) }],
       waypoints,
       entry: { position: { x: entry.x, y: entry.y }, facing: entry.facing },
       exit: { position: { x: exit.x, y: exit.y }, facing: exit.facing },
@@ -119,7 +133,8 @@ export const stepPivot = {
         // way they are going, which is the whole point of the pivot. Not the lateral
         // vector `slide` reports, because by the exit the step is no longer lateral.
         bodyFlow: exit.facing,
-        lastHand: "none",
+        // What *finished* engaged, which is the hand held to the last beat, or none.
+        lastHand: hold?.hand ?? "none",
       },
     };
   },

@@ -20,8 +20,12 @@ fixtures and [ADR-0001](../../adr/0001-typescript-provable-lite.md)'s salvage is
 rather than an authority. This is the third error the salvage has produced; the pattern is
 worth more than any one correction.
 
-The salvaged **description** is retained below and is believed correct — only the ending
-formation line was wrong.
+🔴 **And on 2026-08-18 the salvaged *description* turned out to be wrong too** — it has the
+belle turning **CW**, and she turns CCW. The sentence below that used to read "the salvaged
+description is retained below and is believed correct, only the ending formation line was wrong"
+is kept as an example of how that belief reads right up until it fails. The description is
+retained, and it is a source rather than an authority; see **Dance action** for the correction
+and [ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md) for why.
 
 ## Identity
 
@@ -31,7 +35,7 @@ formation line was wrong.
 | Spoken variants | California Twirl; (historically) Frontier Whirl |
 | Legacy app abbreviation | `catw` (from `moves.md`) |
 | Program | Basic Part 1 |
-| Position dependence | **Yes** — the beau makes the arch, the belle turns under it. First call in the catalog to set `positionDependent` |
+| Position dependence | **Yes** — the beau walks round, the belle steps across under the arch. First call in the catalog to set `positionDependent` |
 
 ## Formations
 
@@ -55,82 +59,118 @@ alongside:
 > the arch (turning CW from her perspective) while the gent stays in place or steps through.
 > They end side-by-side, having reversed which side each dancer is on."
 
-**Positional:** the **beau** raises the joined inside hands into an arch and walks around;
-the **belle** walks forward and under the arch, turning clockwise from her own point of view.
-They end side by side, on each other's former sides, facing the opposite direction.
+**Positional:** the **beau** raises the joined inside hands into an arch and walks forward round
+the belle; the **belle** steps across under the arch, turning 180° to her own left. They end side
+by side, on each other's former sides, facing the opposite direction.
 
-The translation is the substantive work ADR-0012 asks for, and it is where a translation error
-would hide — which is why the original stays.
+🔴 **The translation says *left* where the original says CW, and that is a second correction to
+the salvage, not a translation slip.** Ryan, 2026-08-18, watching it turn the other way: *"she
+needs to start the turn to the left — ccw — and make it only a 180 degree turn. The way it's
+running now the belle is doing 540 degree turn cw."* Her joined hand is her **left** and she
+travels to her **left**; turning right through that step wraps the arm across her body, turning
+left unwinds it. See [ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md).
+The original stays above because the translation is the substantive work ADR-0012 asks for, and
+it is where an error would hide — as one just did.
 
 ## What it is, geometrically
 
 The couple ends where a 180° rotation about its own centre would put it: both dancers in the
 other's spot, both facing reversed.
 
-**The paths are not a rotation, and that is the difference from
-[Partner Trade](partner-trade.md).** The belle turns under a fixed arch — a tight turn about
-the joined hands — while the beau walks the larger arc around her. One dancer is turned by the
-other; in Partner Trade neither is.
+🔴 **The paths are a [Partner Trade](partner-trade.md)'s, exactly — and that is now the whole
+account of the figure** (ADR-0017). The beau walks one forward semicircle round the belle, on the
+circle the couple is standing on. The belle steps the couple's whole width to her left, pivoting
+180° left through the step, going nowhere forward. What the hands are doing is the only thing
+that distinguishes this call from that one.
+
+**Because his hand is over the middle of the diameter she crosses, her step across *is* the duck
+under.** Nothing has to be arranged for it. That is the sense in which the arch is a **hold**
+rather than a figure: the dancers are not doing anything they would not do without it.
 
 ## Position dependence, concretely
 
 | | beau | belle |
 |---|---|---|
 | Hands | Raises the joined inside hands; keeps the grip | Passes under, keeps the grip |
-| Path | The outer arc around the belle | The tighter turn under the arch |
-| Own rotation | Follows the arc | A full turn under the hands, CW from her own view |
+| Path | One forward semicircle round the belle, on the couple's own circle | A step the couple's whole width to her left, going nowhere forward |
+| Own rotation | 180° CW, tangential — he is walking forward | 180° CCW, pivoting through the step |
 
 This is the first call for which `positionDependent` is `true`, and therefore the first real
 use of the vocabulary ADR-0012 introduced.
 
 ## Block composition
 
-Built 2026-08-15. Per position, one block each:
+Rebuilt 2026-08-18 (ADR-0017). Per position, one block each — the Partner Trade's own two, with a
+`hold`:
 
 | Position | Block | Beats | Exit |
 |---|---|---|---|
-| beau | [`turn-under`](../blocks/turn-under.md)`(right, right, 0.5, 0.5, 0, right)` | 4 | the belle's spot, facing reversed, having made the arch |
-| belle | [`turn-under`](../blocks/turn-under.md)`(left, right, 0.5, 0.5, 1, left)` | 4 | the beau's spot, facing reversed, having turned under once |
+| beau | [`orbit`](../blocks/orbit.md)`(right, 0.5, width / 2, hold: right / arch)` | 4 | the belle's spot, facing reversed, having carried the arch round |
+| belle | [`step-pivot`](../blocks/step-pivot.md)`(left, width, left, 0.5, hold: left / arch)` | 4 | the beau's spot, facing reversed, having stepped under the arch |
 
-**No lane, unlike [Partner Trade](partner-trade.md).** The two stay diametrically opposite
-across the joined hands for the whole rotation, so nothing has to separate them — which shows
-the lane is a property of the *figure* rather than of exchanging places.
+Both come from one factory in `calls.ts`, whose only parameter is the hold. A reader asking how
+the two couple calls differ reads one argument.
 
-`turn-under` is the arch figure: two dancers with joined hands, one passing beneath while the
-other walks around. It is the block **Star Thru and Box the Gnat also need**, which is why it
-was worth designing once rather than per call — ADR-0005's bet that the catalog makes later
-calls cheaper, stated as a prediction that can be checked:
+**`width` is the couple's own**, not `COUPLE_WIDTH` — the chains are instantiated at the engine's
+body-agnostic default for the workshop and the fixtures, and re-instantiated at the width of the
+pair actually dancing.
 
-- **California Twirl** — from a couple, ends a couple, facing reversed
-- **Star Thru** — from facing dancers, ends a couple
-- **Box the Gnat** — from facing dancers, ends facing dancers, having exchanged
+### The hold
 
-If one `turn-under` with parameters covers all three, the bet is good. If each needs its own
-block, ADR-0011's consequence applies and S2 should say so rather than absorbing it.
+`GripSpan.grip` has a second style, **`arch`**: palms joined and raised clear of the head, high
+enough to walk beneath. It is not `forearm` — a renderer that drew the arm-turn grip here would
+draw an Allemande — and it is not a plain side-by-side handhold, which is not something a call
+engages but what being a couple *is*.
+
+**How high the arch is, is not in this engine.** It is a body measurement, and this library has
+no bodies (ADR-0002). "Clear of the head" is the contract; the consumer that knows how tall
+anybody is works out the rest, exactly as it does for `COUPLE_WIDTH`.
+
+### What this replaced, and why it is worth recording
+
+The first build (2026-08-15) was a **rigid rotation of the pair about their joined hands**: both
+dancers diametrically opposite on a circle of radius `width / 2` centred on the join, facings
+turning with the body rather than following the path, and the belle carrying `spin: 1` — a whole
+extra turn under a fixed arch, for **−540°** accumulated.
+
+Three things were wrong with it and only one was the number Ryan read off the screen:
+
+1. **540° in 4 beats** is a spin, not a walk under an arm.
+2. **The direction wound her arm up** rather than unwinding it. The rigid model could not see
+   this, because it never asked which way anyone travelled.
+3. 🔴 **The figure had no clearance in it at all.** Held diametrically opposite at a constant
+   `width` apart, the two dancers never pass each other — and this spec called that a feature.
+   It was the same defect [ADR-0014](../../adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md)
+   had just found in the Trade, wearing the opposite disguise: there, two dancers sharing a lane;
+   here, two dancers who never approach because neither crosses the floor between them.
+
+The block it used, [`turn-under`](../blocks/turn-under.md), keeps its spec and its conformance
+vectors — it was built for **Star Thru** and **Box the Gnat** as much as for this call — but it
+now has **no consumer**, and ADR-0005's bet that the catalog makes later calls cheaper is open
+again rather than won on it.
 
 ## Choreography paths
 
-The block's own worked examples in [`turn-under.md`](../blocks/turn-under.md) **are** this
-call's two paths and are conformance fixtures. Not restated here — a third copy is a thing that
-can disagree.
+The two blocks' own worked examples — [`orbit.md`](../blocks/orbit.md) and
+[`step-pivot.md`](../blocks/step-pivot.md) — **are** this call's two paths and are conformance
+fixtures. Not restated here: a third copy is a thing that can disagree.
 
-🔴 The earlier draft of this section sketched the beau on an outer arc and the belle on a
-tighter one, marked "illustrative, not derived". It was wrong, and worth recording as wrong:
-the two are **diametrically opposite at the same radius** the whole way. The sketch had
-imported Partner Trade's inside/outside asymmetry into a figure that does not have it.
+They are also **Partner Trade's**, and `test/california-twirl.test.ts` asserts that by comparing
+the two calls waypoint for waypoint, both dancers, position and facing, rather than by comparing
+end states.
 
-🔴 The intermediate path remains **provisional until rendered**, the marker `dosado.md` carried
-before its own watch. `moves.md` says the beau "stays in place or steps through", which is
-loose; the rigid-rotation reading here is the one consistent with the end state and with the
-hands staying joined, and only a render will settle it.
+🔴 The two earlier drafts of this section are both worth remembering. The first sketched the beau
+on an outer arc and the belle on a tighter one, marked "illustrative, not derived", and was
+wrong. The second replaced it with "the two are **diametrically opposite at the same radius** the
+whole way", stated with confidence, backed by tests, and also wrong. The first draft was closer.
 
 ## Flow
 
 | Field | Value |
 |---|---|
-| Hands | Inside hands joined throughout — beau's and belle's adjacent hands |
-| Last hand used | The joined inside hand, released at the end |
-| Rotation (F4) | 180° for the couple; the belle accumulates more, turning under |
+| Hands | Inside hands joined throughout, raised — the beau's right and the belle's left, which is what [`insideHands`](../../../src/couple.ts) names |
+| Last hand used | The joined inside hand, released at the end. **The one thing a Partner Trade answers differently** |
+| Rotation (F4) | ∓180°: opposite senses, equal magnitude, as any pair exchanging places by walking forward |
 | Body-flow vector | Along the final facing |
 | Roll | Available |
 
@@ -140,29 +180,36 @@ hands staying joined, and only a render will settle it.
 exchanges. That is the second half of Ryan's S1 sequence, and `isZero` settles it rather than
 this paragraph.
 
-## Equivalence with Partner Trade — confirmed 2026-08-15
+## The equivalence with Partner Trade turned out to be an identity — 2026-08-18
 
-Both calls appear to end with the couple facing reversed and the two dancers in each other's
-spots. If the end positions match exactly, it is a real equivalence — a caller can substitute —
-and it belongs in [ADR-0004](../../adr/0004-starter-scope-zero-box-triple.md)'s equivalence
-suite alongside the Square Thru set.
+Recorded on 2026-08-15 in both specs as a question for the engine, then confirmed as an
+equivalence: two different figures landing in the same place, and the first member of
+[ADR-0004](../../adr/0004-starter-scope-zero-box-triple.md)'s equivalence suite.
 
-They are **not** the same call: the hands differ, the paths differ, and one turns a dancer
-while the other does not. Equivalence is about where you end up, and that is exactly the kind
-of claim this engine now has the machinery to check.
+**It is the same figure.** ADR-0017; and it came from Ryan looking at the two renders, not from
+the engine — *"california twirl beau might be same path … belle's path might be the same as
+partner trade too."* The suite's first result is that one of its members was two calls' worth of
+geometry for one figure.
 
-**Verified.** `test/california-twirl.test.ts` dances both from the same couple and resolves one
-end state against the other: identical. Either can follow the other and the couple still comes
-home. It is the first member of ADR-0004's equivalence suite.
+The test is strengthened rather than deleted. An equivalence test compares end states and would
+pass on two quite different figures; the replacement compares **every waypoint of both dancers**,
+so it cannot.
 
-And the engine says how they differ, in three measurable ways:
+And the difference table that used to have three rows has one:
 
 | | Partner Trade | California Twirl |
 |---|---|---|
-| Hands | both free throughout | one joined throughout |
-| The two dancers' rotation | **opposite senses**, equal magnitude (∓180°) | **same sense**, different magnitude (−180° / −540°) |
-| Beats | 6 — two of them paying for the lane | 4 |
+| Hands | both free throughout | the inside pair joined and raised throughout |
+| Paths | *identical* | *identical* |
+| Beats | 4 | 4 |
 
-🔴 The rotation row corrected a comment written while building this. The first version said a
-Trade's dancers "accumulate alike"; they accumulate *oppositely*, because they walk forward in
-opposite senses. That is the sharper characterisation and the test now carries it.
+🔴 **Both of the deleted rows were describing defects.** The rotation row said a Trade's dancers
+turn in opposite senses and a Twirl's in the same sense with different magnitudes — the second
+half of which was the 540° spin. The beats row said 6 against 4, and the Trade's extra two were
+ours ([ADR-0013](../../adr/0013-the-trade-lane-rides-inside-the-arc.md)). Each was written as a
+characterisation of the calls and each was a symptom.
+
+**One row is still enough to keep them two calls.** F2 asks whether the hand a following call
+needs is available, and these two answer differently: a Trade finishes with both free, which is
+what lets it flow into anything, and a Twirl finishes holding the inside hand. A caller
+substituting one for the other inside a phrase is doing something real.

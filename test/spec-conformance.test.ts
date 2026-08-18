@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { armTurn, orbit, pass, slide, turnUnder } from "../src/blocks/index.js";
+import { armTurn, orbit, pass, slide, stepPivot, turnUnder } from "../src/blocks/index.js";
 import { compose } from "../src/compose.js";
 import { CALLS, PAIR_A } from "../src/calls.js";
 import type { Motion } from "../src/types.js";
@@ -42,6 +42,15 @@ function invoke(v: SpecVector): Motion {
         // Optional in the signature as it is in the block: `orbit(right, 0.5, 0.5)` is
         // the constant-radius arc, a fourth argument bows it (ADR-0013).
         lane: Number(v.args[3] ?? 0),
+      });
+    case "step-pivot":
+      // `hold` takes no positional slot: it moves no waypoint, so a fixture that carried
+      // one would be asserting the same table twice (ADR-0017).
+      return stepPivot.generate({
+        side: a as "right" | "left",
+        distance: Number(b),
+        turn: c as "right" | "left",
+        fraction: Number(v.args[3] ?? 0.5),
       });
     case "turn-under":
       return turnUnder.generate({

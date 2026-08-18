@@ -98,6 +98,28 @@ describe("step-pivot — stepping to one side while turning on the spot", () => 
     ).toThrow(/fraction/);
   });
 
+  it("🔴 takes a hold without moving a waypoint", () => {
+    // The claim ADR-0017 rests on: a California Twirl's belle walks a Partner Trade's step.
+    // Asserted **here**, at the block, because that is where it could stop being true — a
+    // hold that nudged the geometry would make the two calls quietly diverge, and the call
+    // spec's waypoint-for-waypoint comparison would then be checking two wrong figures
+    // against each other.
+    const free = half();
+    const held = half({ hold: { hand: "left", grip: "arch" } });
+    expect(held.waypoints).toEqual(free.waypoints);
+    expect(held.beats).toBe(free.beats);
+    expect(held.momentum.rotation).toBe(free.momentum.rotation);
+
+    // What it does change: one span covering the whole block, and the hand that finished
+    // engaged. F2 reads both.
+    expect(free.grips).toHaveLength(0);
+    expect(free.momentum.lastHand).toBe("none");
+    expect(held.grips).toEqual([
+      { hand: "left", grip: "arch", from: 0, to: held.beats },
+    ]);
+    expect(held.momentum.lastHand).toBe("left");
+  });
+
   it("is not `slide`, and the difference is the turn", () => {
     // Kept as a comparison rather than a comment: `slide` is the same lateral travel with
     // the facing held still, which is what reads as sway when it lasts two beats.

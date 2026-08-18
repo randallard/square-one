@@ -11,7 +11,7 @@
  * 180° about the origin.
  */
 
-import type { CatalogCall } from "./blocks/index.js";
+import type { CatalogCall, Hold } from "./blocks/index.js";
 import { COUPLE_WIDTH, positionOf, type Couple, type CouplePosition } from "./couple.js";
 import { compose, ORIGIN } from "./compose.js";
 import { PLUS_Y, normaliseDeg, round, type Degrees } from "./geometry.js";
@@ -85,38 +85,92 @@ export interface CallDef {
 export const TRADE_PASS_SEPARATION = COUPLE_WIDTH / 2;
 
 /**
- * The **beau's** half of a Partner Trade: one forward semicircle, all the way round the
- * belle, on the circle the couple is already standing on.
+ * The **beau's** half of a couple's 180° exchange: one forward semicircle, all the way
+ * round the belle, on the circle the couple is already standing on.
  *
- * No lane. He needs no bow because she is no longer coming the other way round the same
- * circle — she is crossing its diameter, and the arc clears her by its own radius.
+ * No lane. He needs no bow because she is not coming the other way round the same circle —
+ * she is crossing its diameter, and the arc clears her by its own radius.
+ *
+ * `hold` is what makes this a California Twirl rather than a Partner Trade, and it is the
+ * *only* thing (ADR-0017): the arc is the same arc, walked with the inside hands joined and
+ * raised into an arch.
  */
-function beauTrade(width: number): readonly CatalogCall[] {
-  return [{ block: "orbit", params: { turn: "right", fraction: 0.5, radius: width / 2 } }];
-}
-
-/**
- * The **belle's** half: a step to her left and a 180° pivot, going nowhere forward.
- *
- * Ryan, 2026-08-18, watching it: *"really the belle should not move forward hardly at all
- * in this, since that makes the beau have to move even farther out to get around — for the
- * belle this is really a step left and pivot 180."* ADR-0014.
- *
- * She steps the couple's whole width, which is the distance between the two standing spots,
- * turning left through the step so that by its middle she is facing the way she is going.
- */
-function belleTrade(width: number): readonly CatalogCall[] {
+function beauHalf(width: number, hold?: Hold): readonly CatalogCall[] {
   return [
-    { block: "step-pivot", params: { side: "left", distance: width, turn: "left", fraction: 0.5 } },
+    {
+      block: "orbit",
+      params: {
+        turn: "right",
+        fraction: 0.5,
+        radius: width / 2,
+        ...(hold === undefined ? {} : { hold }),
+      },
+    },
   ];
 }
 
-const TRADE_CHAINS_AT = (
-  width: number,
-): Readonly<Record<CouplePosition, readonly CatalogCall[]>> => ({
-  beau: beauTrade(width),
-  belle: belleTrade(width),
+/**
+ * The **belle's** half: a step to her left and a 180° pivot to the left, going nowhere
+ * forward.
+ *
+ * Ryan, 2026-08-18, watching a Trade: *"really the belle should not move forward hardly at
+ * all in this, since that makes the beau have to move even farther out to get around — for
+ * the belle this is really a step left and pivot 180."* ADR-0014. And, later the same day,
+ * watching a Twirl: *"belle's path might be the same as partner trade too — but she needs
+ * to start the turn to the left, ccw, and make it only a 180 degree turn."* ADR-0017.
+ *
+ * She steps the couple's whole width, which is the distance between the two standing spots,
+ * turning left through the step so that by its middle she is facing the way she is going.
+ *
+ * `hold` is again the whole difference between the two calls. Held, the step across *is*
+ * the duck under the arch: she walks the diameter, and her own joined hand is over it.
+ */
+function belleHalf(width: number, hold?: Hold): readonly CatalogCall[] {
+  return [
+    {
+      block: "step-pivot",
+      params: {
+        side: "left",
+        distance: width,
+        turn: "left",
+        fraction: 0.5,
+        ...(hold === undefined ? {} : { hold }),
+      },
+    },
+  ];
+}
+
+/**
+ * The couple's exchange at a given width, with or without the hands joined — **one figure,
+ * and the hold is the parameter** (ADR-0017).
+ *
+ * Both couple calls in the catalog are instantiations of this. That is not a tidy-up: it is
+ * the finding. Partner Trade and California Twirl were built as separate figures and
+ * declared *equivalent* because they landed in the same place; they are the same paths, and
+ * what distinguishes them is whether the dancers let go.
+ */
+const EXCHANGE_CHAINS_AT = (
+  hold?: { readonly beau: Hold; readonly belle: Hold },
+) => (width: number): Readonly<Record<CouplePosition, readonly CatalogCall[]>> => ({
+  beau: beauHalf(width, hold?.beau),
+  belle: belleHalf(width, hold?.belle),
 });
+
+/**
+ * The arch a California Twirl is danced under: the couple's **inside** hands — the beau's
+ * right and the belle's left, exactly the pair {@link insideHands} names — joined and
+ * raised clear of the head for the whole call.
+ *
+ * Which hands is a fact about the formation and comes from there rather than being restated
+ * per call; how high, and what it looks like, belongs to whoever draws it.
+ */
+const TWIRL_ARCH = {
+  beau: { hand: "right", grip: "arch" },
+  belle: { hand: "left", grip: "arch" },
+} as const satisfies Readonly<Record<CouplePosition, Hold>>;
+
+const TRADE_CHAINS_AT = EXCHANGE_CHAINS_AT();
+const TWIRL_CHAINS_AT = EXCHANGE_CHAINS_AT(TWIRL_ARCH);
 
 export const partnerTrade: CallDef = {
   name: "Partner Trade",
@@ -125,7 +179,7 @@ export const partnerTrade: CallDef = {
   // chart measures from. It was 6 while the lane cost a beat at each end (ADR-0013).
   chartBeats: 4,
   positionDependent: true,
-  chain: beauTrade(COUPLE_WIDTH),
+  chain: TRADE_CHAINS_AT(COUPLE_WIDTH).beau,
   chains: TRADE_CHAINS_AT(COUPLE_WIDTH),
   chainsAt: TRADE_CHAINS_AT,
 };
@@ -167,54 +221,34 @@ export const allemandeLeft: CallDef = {
 };
 
 /**
- * California Twirl — the couple turns around under a raised arch.
+ * California Twirl — the couple's 180° exchange, danced **holding on**, under a raised arch.
  *
- * The **same net effect** as a Partner Trade (positions swapped, facings reversed) by a
- * different route: hands stay joined, the pair rotates as a unit about them, and the
- * belle takes a full turn under the arch on the way. That difference lives in
- * `momentum.rotation` rather than in the end pose, which is why the two calls are
- * candidates for an equivalence rather than duplicates.
+ * 🔴 **The same two paths as a {@link partnerTrade}, and the joined hands are the
+ * whole difference** (ADR-0017). Ryan, 2026-08-18, watching both: *"partner trade looks
+ * good — california twirl beau might be same path but raise arm and have belle duck under
+ * the two held hands."* So the beau walks his forward semicircle round the belle and the
+ * belle steps across the diameter pivoting 180° to her left — and because his hand is over
+ * the middle of that diameter, her step across **is** the duck under.
  *
- * No lane is needed. The dancers stay diametrically opposite across the joined hands
- * for the whole rotation, so unlike Partner Trade there is nothing to separate — which
- * is a nice illustration that the lane is a property of the *figure*, not of exchanging
- * places.
+ * This replaced a rigid rotation of the pair about the joined hands, in which the belle took
+ * a full extra turn under a fixed arch and accumulated 540° clockwise. Ryan, of that: *"the
+ * way it's running now the belle is doing 540 degree turn cw."* She turns 180° CCW, like any
+ * belle exchanging places.
  *
- * 🔴 The intermediate path is **provisional until rendered**, the same marker
- * `dosado.md` carried before its own watch. `moves.md`'s description says the beau
- * "stays in place or steps through", which is loose, and the rigid-rotation reading here
- * is the one consistent with the end state and with the hands staying joined.
+ * The two calls therefore differ in exactly one measurable: **F2's hands**. A Trade leaves
+ * both free, which is what lets it flow into anything; a Twirl finishes with the inside hand
+ * the last one used, which is what a following call has to work around. That is a smaller
+ * difference than the catalog used to claim and a real one — and it is why the pair are
+ * still two calls rather than one with an alias.
  */
 export const californiaTwirl: CallDef = {
   name: "California Twirl",
   chartBeats: 4,
   positionDependent: true,
-  chain: twirlChains(COUPLE_WIDTH).beau,
-  chains: twirlChains(COUPLE_WIDTH),
-  chainsAt: twirlChains,
+  chain: TWIRL_CHAINS_AT(COUPLE_WIDTH).beau,
+  chains: TWIRL_CHAINS_AT(COUPLE_WIDTH),
+  chainsAt: TWIRL_CHAINS_AT,
 };
-
-/**
- * The Twirl's two halves at a given couple width. Same width-dependence as the Trade's, and
- * fixed at the same time for the same reason (ADR-0015) — the two calls are each other's
- * declared **equivalence**, so a disagreement about how wide the couple is would have made
- * the equivalence test a comparison of two differently-sized figures.
- */
-function twirlChains(
-  width: number,
-): Readonly<Record<CouplePosition, readonly CatalogCall[]>> {
-  const radius = width / 2;
-  return {
-    // The beau makes the arch: no spin, joined right hand, hands on his right.
-    beau: [
-      { block: "turn-under", params: { pivot: "right", turn: "right", fraction: 0.5, radius, hand: "right", spin: 0 } },
-    ],
-    // The belle passes under it: one full turn, joined left hand, hands on her left.
-    belle: [
-      { block: "turn-under", params: { pivot: "left", turn: "right", fraction: 0.5, radius, hand: "left", spin: 1 } },
-    ],
-  };
-}
 
 export const CALLS = {
   dosado,

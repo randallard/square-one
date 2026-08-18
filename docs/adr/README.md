@@ -93,3 +93,6 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0012](0012-calls-key-off-couple-position-not-role.md) | Calls key off couple position (beau/belle), not role | Accepted |
 | [0013](0013-the-trade-lane-rides-inside-the-arc.md) | A Trade's passing lane rides inside the arc, not as steps around it | Accepted — but its lane has no consumer since [0014](0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md) |
 | [0014](0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md) | The belle's half of a Partner Trade is a step and a pivot, not a semicircle | Accepted |
+| 0015 | *(referenced in `couple.ts`, `calls.ts` and `sequence.ts`; **not yet written**)* — the chains are sized to the couple actually dancing them | Owed |
+| 0016 | *(referenced in `couple.ts`; **not yet written**)* — a couple carries the clearance its bodies need | Owed |
+| [0017](0017-a-california-twirl-is-a-partner-trade-holding-on.md) | A California Twirl is a Partner Trade danced holding on | Accepted |
