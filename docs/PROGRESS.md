@@ -1,8 +1,69 @@
 # Progress & Status
 
-_Last updated: 2026-08-16_
+_Last updated: 2026-08-18_
 
 ## Status / next
+
+**▶ RIGHT NOW (2026-08-18) — the two couple calls turned out to be one figure. Both of today's
+chunks are LANDED** — `813be1f` (ADR-0014, the Trade) and `bd93203` (ADR-0017, the Twirl) —
+**and watched**: Ryan, on the pair of them plus the-lot's arch, *"looks pretty good."* **176 tests**
+(from 148), lint / typecheck / build clean. `pnpm dev` in the-lot, `#dance=two-twirls`, and
+`#dance=trade-twirl` for the pair.
+
+- ✅ **[ADR-0017](adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md) — a California
+  Twirl is a Partner Trade danced holding on.** Ryan: *"california twirl beau might be same path
+  but raise arm and have belle duck under the two held hands — belle's path might be the same as
+  partner trade too — but she needs to start the turn to the left, ccw, and make it only a 180
+  degree turn — the way it's running now the belle is doing 540 degree turn cw."* Narrative in
+  [the fifteenth journal entry](journal/2026-08-18-a-california-twirl-is-a-trade-holding-on-15.md).
+  - The Twirl was a **rigid rotation of the pair about their joined hands**, with the belle
+    carrying `spin: 1` — a whole extra turn under a fixed arch. It is now `EXCHANGE_CHAINS_AT`,
+    one factory whose only parameter is the hold, instantiated twice.
+  - 🔑 **The 540° was the smallest of three defects.** The direction wound her arm up rather than
+    unwinding it, and the figure had **no clearance in it at all** — two dancers held
+    diametrically opposite never pass each other, which this spec had written up as a *feature*.
+    Both invisible because the engine's collision invariant is "no shared coordinate" and neither
+    figure ever shared one.
+  - 🔑 **A declared equivalence is a place to look for a duplicate.** The Trade ≡ Twirl
+    equivalence was ADR-0004's first suite member; the suite's first result is that one member
+    was a second copy of the other's geometry. An equivalence test compares end states, which is
+    the one claim that is true both when two figures differ and when they are the same figure
+    written twice. Replaced by a **waypoint-for-waypoint** comparison of both dancers.
+  - `GripSpan.grip` gains **`arch`** beside `forearm`; `orbit` and `step-pivot` gain an optional
+    `hold` that emits the span, sets `lastHand`, and **moves no waypoint** — asserted at both
+    blocks, because it is what the call-level comparison rests on.
+  - 🔴 **`turn-under` has no consumer.** ADR-0005's showcase block; **Star Thru** now settles
+    whether the arch family has a block or the arch is a hold on figures we already have. Same
+    status `orbit`'s `lane` has carried since ADR-0014.
+
+- ✅ **[ADR-0014](adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md) — the belle's half
+  of a Partner Trade is a step and a pivot.** Ryan: *"for the belle this is really a step left and
+  pivot 180."* Watched and accepted: *"partner trade looks good."* New `step-pivot` block; the
+  lane and its three constants deleted; pass separation 0.3 → 0.5 of the couple's width.
+  🔴 **This chunk is under-documented** — see owed, below.
+
+### ⚠️ Owed
+
+1. 🔴 **ADR-0015 and ADR-0016 are referenced in `couple.ts`, `calls.ts` and `sequence.ts` and
+   have never been written.** 0015 is *the chains are sized to the couple actually dancing them*
+   (the width flows through `chainsAt`); 0016 is *a couple carries the clearance its bodies
+   need*. Both decisions are made and implemented; only the files are missing. The numbers are
+   reserved for them, which is why this chunk took **0017**.
+2. 🔴 **`docs/spec/calls/partner-trade.md` is behind the code from *Dance action* down** — it
+   still describes two dancers on one circle separated by a bowed lane. A staleness banner is at
+   the top of the file naming ADR-0014 and the block specs as the authorities until it is
+   rewritten.
+3. 🔴 **No journal entry for the ADR-0014 chunk.** Entry 15 is this chunk's; the numbering has no
+   gap for it. What that chunk was is in its ADR and `813be1f`; the narrative is what is missing.
+4. ✅ **the-lot draws the arch** as of its ADR-0028 — and found that on the default cast the pair
+   cannot physically make one, so they either reshape their torsos or let go, drawn at random per
+   execution. Nothing in this repo changes: how high an arch is remains a body measurement, and
+   this library has no bodies (ADR-0002).
+5. 🔴 **The pass still does not clear the heads**, unchanged by today and now true of both couple
+   calls: half the couple's width is 0.55 world units on the default cast against the 0.71
+   `lateralClearance` wants. Pinned by tests in the-lot's `dance-performance.test.ts`.
+
+---
 
 **▶ Partner Trade is 4 beats and one block per dancer (2026-08-16).** Ryan, watching
 `#dance=two-trades` in townage: *"I'm wondering about the sway when just standing — it seems 2x
