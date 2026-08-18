@@ -229,6 +229,14 @@ export function isZero(calls: readonly CallName[]): HomeResolution {
  * ADR-0011 asked to be told about. What guards it meanwhile is a test asserting the
  * rebuilt couple's own positions match the exits it was built from, which catches a
  * call that ended in something else.
+ *
+ * 🔴 **Width is measured, not carried, and it used to be neither** (ADR-0015). This called
+ * `partnerUp` without a width, so every rebuilt couple came back at `COUPLE_WIDTH` whatever
+ * the pair had actually been standing at — a consumer passing its own width lost it at the
+ * first call boundary. Measuring the two exits is the honest answer and it is strictly
+ * better than carrying `couple.width` forward: a call that changes the pair's separation
+ * says so in the couple it produces, rather than having the old number asserted over it.
+ * That is the property which would have caught this.
  */
 export function reformCouple(couple: Couple, motions: Record<string, Motion>): Couple {
   const beau = motions[couple.beau]?.exit;
@@ -239,6 +247,10 @@ export function reformCouple(couple: Couple, motions: Record<string, Motion>): C
     couple.belle,
     { x: (beau.position.x + belle.position.x) / 2, y: (beau.position.y + belle.position.y) / 2 },
     beau.facing,
+    Math.hypot(
+      belle.position.x - beau.position.x,
+      belle.position.y - beau.position.y,
+    ),
   );
 }
 

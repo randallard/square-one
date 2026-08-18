@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  TRADE_LANE,
-  TRADE_RADIUS_IN,
-  TRADE_RADIUS_OUT,
+  TRADE_PASS_SEPARATION,
   applyCallToCouple,
   partnerTrade,
 } from "../src/calls.js";
 import { COUPLE_WIDTH, coupleSet, partnerUp, positionOf } from "../src/couple.js";
 import { danceCoupleSequence, isCoupleZero, reformCouple, resolveHome } from "../src/sequence.js";
-import { MINUS_Y, PLUS_Y } from "../src/geometry.js";
+import { MINUS_Y, PLUS_Y, deltaDeg } from "../src/geometry.js";
+import type { Waypoint } from "../src/types.js";
 
 const couple = partnerUp("beau", "belle");
 
@@ -44,9 +43,15 @@ describe("Partner Trade", () => {
 
   it("🔴 never puts the two dancers on the same spot", () => {
     // The engine models dancers as points, so its collision-freedom invariant is "no
-    // shared coordinate". Both arcs pass through the front of the couple, and the
-    // right-shoulder lane is the only thing keeping them apart — which is exactly why
-    // this call is position-dependent. Sampled at every beat both dancers emit.
+    // shared coordinate". Sampled at every beat both dancers emit.
+    //
+    // 🔴 The floor is a **whole radius** now, not a lane. It was `2 × TRADE_LANE` — 0.3 of
+    // the couple's width — because both dancers walked the same circle in opposite senses
+    // and a bow was the only thing between them. The belle crosses the diameter instead,
+    // so the arc clears her by its own radius: 0.5 of the width, from the shape of the
+    // figure rather than from a tuned proportion (ADR-0014). Rendered at townage's default
+    // cast that is the difference between 0.34 world units and 0.57, against two bodies
+    // needing 0.52 — which is to say between a collision and a clearance.
     const m = trade();
     const beau = m["beau"];
     const belle = m["belle"];
@@ -55,31 +60,63 @@ describe("Partner Trade", () => {
     for (const a of beau?.waypoints ?? []) {
       const b = belle?.waypoints.find((w) => Math.abs(w.beat - a.beat) < 1e-9);
       if (b === undefined) continue;
-      expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(2 * TRADE_LANE - 1e-9);
+      // 1e-5, not 1e-9: waypoints are quantised to `round`'s 1e-6 over a couple width that
+      // is a non-representable third, exactly as the standing-spot test above notes.
+      expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(TRADE_PASS_SEPARATION - 1e-5);
     }
   });
 
-  it("passes right shoulders — the belle inside, the beau outside", () => {
-    // The asymmetry that makes it position-dependent, asserted rather than described.
-    // Beat 2 is the middle of the 4, which is both where they meet and where the bow
-    // peaks — the two coincide by construction (ADR-0013).
+  it("🔴 keeps the belle off the front entirely — she steps across, she does not walk round", () => {
+    // Ryan, 2026-08-18: *"really the belle should not move forward hardly at all in this,
+    // since that makes the beau have to move even farther out to get around — for the belle
+    // this is really a step left and pivot 180."* Asserted as **zero** rather than "hardly
+    // any", because the step is along the couple's own axis and there is nothing to put a
+    // forward component in it. Her old arc took her `COUPLE_WIDTH / 2 − TRADE_LANE` forward
+    // at the middle, which is what pushed the beau's arc out to meet her.
+    const m = trade();
+    for (const w of m["belle"]?.waypoints ?? []) expect(w.y).toBeCloseTo(0, 9);
+    // ...and she travels the whole distance between the two standing spots.
+    const xs = (m["belle"]?.waypoints ?? []).map((w) => w.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(COUPLE_WIDTH, 5);
+  });
+
+  it("🔴 passes right shoulders, asserted as shoulders rather than as radii", () => {
+    // The asymmetry that makes it position-dependent. **Stated as the thing the source
+    // actually says** — each dancer has the other on their own right at the pass — rather
+    // than as the two radii that used to implement it. The old assertion could only be
+    // satisfied by the old mechanism; this one is satisfied by any figure that passes
+    // correctly, which is why the rewrite (ADR-0014) could be checked against it.
     const m = trade();
     const beau = midpoint(m, "beau");
     const belle = midpoint(m, "belle");
-    expect(Math.hypot(beau?.x ?? 0, beau?.y ?? 0)).toBeCloseTo(TRADE_RADIUS_OUT, 5);
-    expect(Math.hypot(belle?.x ?? 0, belle?.y ?? 0)).toBeCloseTo(TRADE_RADIUS_IN, 5);
+    expect(beau).toBeDefined();
+    expect(belle).toBeDefined();
+    /** How far `other` lies to `w`'s own right — positive is on the right. */
+    const toTheRightOf = (w: Waypoint, other: Waypoint): number => {
+      const r = ((w.facing - 90) * Math.PI) / 180;
+      return (other.x - w.x) * Math.cos(r) + (other.y - w.y) * Math.sin(r);
+    };
+    expect(toTheRightOf(beau as Waypoint, belle as Waypoint)).toBeGreaterThan(0);
+    expect(toTheRightOf(belle as Waypoint, beau as Waypoint)).toBeGreaterThan(0);
+
+    // And the shape of it: at the pass he is at the top of the arc, she is at the couple's
+    // own centre. A whole radius, with nothing tuned to make it so.
+    expect(Math.hypot(beau?.x ?? 0, beau?.y ?? 0)).toBeCloseTo(TRADE_PASS_SEPARATION, 5);
+    expect(Math.hypot(belle?.x ?? 0, belle?.y ?? 0)).toBeCloseTo(0, 5);
   });
 
-  it("🔴 never travels sideways — every step has a forward component", () => {
-    // The invariant the render watch was really asking for, and the one the slide
-    // decomposition broke: `slide` moved a dancer at exactly 90° to their facing, so
-    // at each call boundary the couple translated laterally for two beats without
-    // turning or advancing. On screen that is a standing couple swaying.
+  it("🔴 never sways — a step with no forward component comes with a turn", () => {
+    // The invariant the 2026-08-16 render watch produced, **restated** by ADR-0014.
     //
-    // Stated as a sign rather than a threshold: the dot product of each step with the
-    // facing at both ends of it must be positive. An arc's chord sits half the sampled
-    // arc off the tangent and stays comfortably inside that; pure lateral motion is
-    // exactly zero, so the defect could not squeak past.
+    // It said *every step has a forward component*, and that was the right cure for the
+    // wrong reason. What reads as sway on screen is lateral travel with the facing
+    // **constant** — the couple sliding bodily sideways for two beats. It is the absence of
+    // turning that makes it sway, not the presence of sideways travel: the belle's step
+    // across is entirely lateral at the instant it starts and is a pivot, not a sway,
+    // because she is rotating through the whole of it.
+    //
+    // So the test now says the thing the watch was really about. Every step either goes
+    // forward or turns, and none of them stands still.
     const m = trade();
     for (const key of ["beau", "belle"] as const) {
       const wps = m[key]?.waypoints ?? [];
@@ -91,12 +128,47 @@ describe("Partner Trade", () => {
         const dx = to.x - from.x;
         const dy = to.y - from.y;
         expect(Math.hypot(dx, dy)).toBeGreaterThan(1e-9);
-        for (const facing of [from.facing, to.facing]) {
+        const forward = [from.facing, to.facing].every((facing) => {
           const a = (facing * Math.PI) / 180;
-          expect(dx * Math.cos(a) + dy * Math.sin(a)).toBeGreaterThan(0);
-        }
+          return dx * Math.cos(a) + dy * Math.sin(a) > 0;
+        });
+        const turning = Math.abs(deltaDeg(from.facing, to.facing)) > 1e-9;
+        expect(forward || turning).toBe(true);
       }
     }
+  });
+
+  it("keeps the beau walking forward for every step of it", () => {
+    // The original invariant, kept in full where it still applies. He walks an arc; his
+    // facing is tangent to it; every chord of it points where he is going. The belle is the
+    // dancer the restatement above is for, and confining the strong form to the beau is
+    // what stops the restatement from being a licence.
+    const wps = trade()["beau"]?.waypoints ?? [];
+    for (let i = 0; i + 1 < wps.length; i += 1) {
+      const from = wps[i];
+      const to = wps[i + 1];
+      if (from === undefined || to === undefined) continue;
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      for (const facing of [from.facing, to.facing]) {
+        const a = (facing * Math.PI) / 180;
+        expect(dx * Math.cos(a) + dy * Math.sin(a)).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("turns the belle steadily through her step, so the pivot is the whole 180°", () => {
+    // Not a step then a turn, and not a turn then a step: the two run together, which is
+    // what puts her facing along her travel by the middle of the call and what makes the
+    // right-shoulder pass come out without anything being placed to make it.
+    const wps = trade()["belle"]?.waypoints ?? [];
+    expect(wps.length).toBeGreaterThan(2);
+    const first = wps[0];
+    const last = wps[wps.length - 1];
+    expect(Math.abs(deltaDeg(first?.facing ?? 0, last?.facing ?? 0))).toBeCloseTo(180, 5);
+    // Steady: equal turn between equally spaced waypoints.
+    const steps = wps.slice(1).map((w, i) => Math.abs(deltaDeg(wps[i]?.facing ?? 0, w.facing)));
+    for (const t of steps) expect(t).toBeCloseTo(steps[0] ?? 0, 5);
   });
 
   it("is declared position-dependent, and really is", () => {
@@ -107,10 +179,16 @@ describe("Partner Trade", () => {
     expect(partnerTrade.chains?.beau).not.toEqual(partnerTrade.chains?.belle);
   });
 
-  it("gives both sides the same shape, one figure danced two ways round", () => {
+  it("🔴 gives the two sides genuinely different figures", () => {
+    // This asserted the **opposite** until 2026-08-18: *"gives both sides the same shape,
+    // one figure danced two ways round"*, which was the pleasing check on the old reading
+    // and is exactly what was wrong with it. A Partner Trade danced by a couple is two
+    // different actions — he walks a semicircle, she steps across and pivots — and the
+    // symmetry the old test was admiring is what put them in each other's way (ADR-0014).
     const beau = partnerTrade.chains?.beau ?? [];
     const belle = partnerTrade.chains?.belle ?? [];
-    expect(beau.map((c) => c.block)).toEqual(belle.map((c) => c.block));
+    expect(beau.map((c) => c.block)).toEqual(["orbit"]);
+    expect(belle.map((c) => c.block)).toEqual(["step-pivot"]);
   });
 
   it("sums to its chart beats", () => {
@@ -175,29 +253,79 @@ describe("reforming the couple between calls", () => {
   });
 });
 
-describe("the Trade lane follows the couple's width", () => {
-  it("🔴 stays a proportion of it, not an absolute", () => {
-    // It was `LANE_OFFSET` flat, which was invisible while a couple was a full unit
-    // wide and degenerate the moment it stopped being: at a third-unit couple the
-    // inside dancer's radius came out at 0.017 — a dancer spinning on the spot.
-    // `LANE_OFFSET` is calibrated against a *facing pair's* one-unit separation.
-    expect(TRADE_LANE).toBeLessThan(COUPLE_WIDTH / 2);
-    expect(TRADE_RADIUS_IN).toBeGreaterThan(COUPLE_WIDTH / 4);
-    expect(TRADE_RADIUS_OUT).toBeGreaterThan(TRADE_RADIUS_IN);
+describe("🔴 a Trade is danced at the couple's own width", () => {
+  // ADR-0015. `COUPLE_WIDTH` has documented itself as a body-agnostic default since
+  // 2026-08-15 — *"a consumer with real bodies should compute it and pass it to
+  // partnerUp"* — and townage does, passing 0.438. The chains were written against the
+  // constant, so every couple call was danced at a third of a unit however far apart the
+  // pair were standing. Nothing caught it because every test here used the default.
+  const WIDE = 0.4385;
+  const wide = partnerUp("beau", "belle", { x: 0, y: 0 }, PLUS_Y, WIDE);
+
+  it("lands each dancer on the other's standing spot, at any width", () => {
+    // The property that was broken. At `WIDE` both used to finish at ±0.114 instead of
+    // ±0.219 — the couple **halving** on every call.
+    for (const couple of [partnerUp("beau", "belle"), wide]) {
+      const m = applyCallToCouple("partner-trade", couple);
+      for (const [position, other] of [["beau", "belle"], ["belle", "beau"]] as const) {
+        const want = positionOf(couple, other).position;
+        expect(m[position]?.exit.position.x).toBeCloseTo(want.x, 5);
+        expect(m[position]?.exit.position.y).toBeCloseTo(want.y, 5);
+      }
+    }
   });
 
-  it("keeps the two arcs a whole lane apart however wide the couple", () => {
-    expect(TRADE_RADIUS_OUT - TRADE_RADIUS_IN).toBeCloseTo(2 * TRADE_LANE, 9);
+  it("keeps the couple the same width it started, call after call", () => {
+    // The visible symptom, stated as the invariant it violates. Four Trades at a
+    // non-default width: under the bug the pair ended a sixteenth as far apart.
+    let couple = wide;
+    for (let i = 0; i < 4; i++) {
+      couple = reformCouple(couple, applyCallToCouple("partner-trade", couple));
+      expect(couple.width).toBeCloseTo(WIDE, 4);
+    }
   });
 
-  it("still separates the dancers at the crossing", () => {
-    // The property the lane exists for, re-checked at the new width — the collision
-    // this call would otherwise have.
+  it("scales the pass separation with the width too", () => {
+    const m = applyCallToCouple("partner-trade", wide);
+    const a = midpoint(m, "beau");
+    const b = midpoint(m, "belle");
+    expect(Math.hypot((a?.x ?? 0) - (b?.x ?? 0), (a?.y ?? 0) - (b?.y ?? 0)))
+      .toBeCloseTo(WIDE / 2, 4);
+  });
+
+  it("still comes home at a non-default width", () => {
+    expect(isCoupleZero(["partner-trade", "partner-trade"], wide).home).toBe(true);
+  });
+
+  it("leaves the serialisable `chains` at the default width, as the fixtures expect", () => {
+    // `chainsAt` is what gets danced; `chains` stays the COUPLE_WIDTH instantiation so the
+    // workshop and the spec-conformance fixtures keep reading concrete data (ADR-0005).
+    const belle = partnerTrade.chains?.belle[0];
+    expect(belle?.block).toBe("step-pivot");
+    expect((belle?.params as { distance: number }).distance).toBeCloseTo(COUPLE_WIDTH, 9);
+    const danced = partnerTrade.chainsAt?.(WIDE).belle[0];
+    expect((danced?.params as { distance: number }).distance).toBeCloseTo(WIDE, 9);
+  });
+});
+
+describe("the pass separation follows the couple's width", () => {
+  it("🔴 is half the width, and is not a tuned proportion", () => {
+    // 🔴 This suite used to be *"the Trade lane follows the couple's width"* and asserted
+    // three constants — `TRADE_LANE`, `TRADE_RADIUS_IN`, `TRADE_RADIUS_OUT` — that are gone
+    // with the lane. The lane was `COUPLE_WIDTH × LANE_OFFSET`, a proportion borrowed from a
+    // *facing pair's* one-unit separation and then scaled; it separated the dancers by 0.3
+    // of the couple's width. The separation is now 0.5 of it and comes from the figure:
+    // he is at the top of the arc, she is at its centre (ADR-0014).
+    expect(TRADE_PASS_SEPARATION).toBeCloseTo(COUPLE_WIDTH / 2, 9);
+  });
+
+  it("separates the dancers at the crossing by exactly that", () => {
+    // The property the lane used to exist for, now a consequence of the shape.
     const m = applyCallToCouple("partner-trade", couple);
     const a = midpoint(m, "beau");
     const b = midpoint(m, "belle");
     expect(Math.hypot((a?.x ?? 0) - (b?.x ?? 0), (a?.y ?? 0) - (b?.y ?? 0)))
-      .toBeCloseTo(2 * TRADE_LANE, 5);
+      .toBeCloseTo(TRADE_PASS_SEPARATION, 5);
   });
 
   it("🔴 spends the lane only where it is needed, and nothing on getting there", () => {

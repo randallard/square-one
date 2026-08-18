@@ -80,6 +80,21 @@ export const COUPLE_WIDTH = 1 / 3;
 export interface Couple {
   /** Centre-to-centre distance between the two dancers. */
   readonly width: number;
+  /**
+   * How far apart the two dancers must be to **pass each other** without touching.
+   *
+   * The second body-derived number a couple carries, and it exists for the same reason
+   * {@link width} does: the engine models dancers as points, so its own collision invariant is
+   * "no shared coordinate" and two points a hair apart satisfy it. A consumer that knows how
+   * wide anybody is knows better, and a figure whose dancers pass — a Trade — has to be built
+   * from that number rather than from a proportion (ADR-0015).
+   *
+   * Defaults to `width / 2`, the couple's own radius, which is what a Partner Trade's arc gives
+   * for free — so the body-agnostic engine asks for no extra room and behaves exactly as it did
+   * before this existed. townage passes its cast's real clearance, and the beau's arc bows out
+   * to meet it (ADR-0016).
+   */
+  readonly clearance: number;
   /** Midpoint between the two dancers. */
   readonly center: { readonly x: number; readonly y: number };
   /** The direction both dancers face. */
@@ -119,10 +134,13 @@ export function partnerUp(
   center: { x: number; y: number } = { x: 0, y: 0 },
   facing: Degrees = PLUS_Y,
   width: number = COUPLE_WIDTH,
+  clearance: number = width / 2,
 ): Couple {
   if (width <= 0) throw new Error("partnerUp: width must be positive");
+  if (clearance <= 0) throw new Error("partnerUp: clearance must be positive");
   return {
     width: round(width),
+    clearance: round(clearance),
     center: { x: round(center.x), y: round(center.y) },
     facing: round(normaliseDeg(facing)),
     beau,

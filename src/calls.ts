@@ -12,7 +12,6 @@
  */
 
 import type { CatalogCall } from "./blocks/index.js";
-import { LANE_OFFSET } from "./blocks/pass.js";
 import { COUPLE_WIDTH, positionOf, type Couple, type CouplePosition } from "./couple.js";
 import { compose, ORIGIN } from "./compose.js";
 import { PLUS_Y, normaliseDeg, round, type Degrees } from "./geometry.js";
@@ -39,55 +38,85 @@ export interface CallDef {
    *
    * Present only on position-dependent calls. `chain` stays the beau's, so
    * {@link applyCall} keeps meaning something for every call in the catalog.
+   *
+   * **Instantiated at {@link COUPLE_WIDTH}**, the engine's body-agnostic default. It is the
+   * serialisable form — what the workshop shows and what the spec fixtures check — and it is
+   * *not* what a couple of some other width dances. See {@link chainsAt}.
    */
   readonly chains?: Readonly<Record<CouplePosition, readonly CatalogCall[]>>;
+  /**
+   * The chains for a couple standing `width` apart — the same figure, sized to the pair
+   * actually dancing it.
+   *
+   * 🔴 **Needed because a couple's width is a parameter and these chains contain
+   * distances.** `COUPLE_WIDTH`'s own documentation has said since 2026-08-15 that it is a
+   * body-agnostic default and *"a consumer with real bodies should compute it and pass it to
+   * `partnerUp`"* — and townage does, passing 0.438. But the chains were written against the
+   * constant, so every couple call was danced at one third of a unit however far apart the
+   * pair were standing. At townage's width a Partner Trade landed both dancers at ±0.114
+   * instead of ±0.219: the couple **narrowed by half on every call**, and two Trades still
+   * came home only because both sides were wrong by the same amount (ADR-0015).
+   *
+   * Present on the couple calls whose geometry is width-dependent, which is all of them so
+   * far. Absent means the chain is the same at any width, and `chains`/`chain` stand.
+   */
+  readonly chainsAt?: (
+    width: number,
+  ) => Readonly<Record<CouplePosition, readonly CatalogCall[]>>;
 }
 
 /**
- * How far off their standing radius a Trade's dancers **bow** to pass right shoulders.
+ * How far each dancer is from the couple's centre at the pass — the separation the
+ * right-shoulder pass actually gets, now the two dancers walk different figures.
  *
- * 🔴 **Proportional to the couple's width, not the absolute `LANE_OFFSET`.** It was
- * absolute, which was invisible while a couple was a full unit wide and degenerate the
- * moment it stopped being: at `COUPLE_WIDTH` 1/3 the inside dancer's radius came out at
- * **0.017**, a dancer spinning on the spot rather than walking an arc.
+ * **It is `COUPLE_WIDTH / 2` and it is not a parameter.** The beau walks the circle the
+ * couple is already standing on and the belle steps straight across its diameter, so at
+ * the middle of the call he is at the top of the arc and she is at the centre — a whole
+ * radius apart, with nothing tuned to make it so (ADR-0014).
  *
- * `LANE_OFFSET` is calibrated against a **facing pair's** one-unit separation — it is
- * the lane `pass` uses for Dosado. Borrowing it for a formation a third that size
- * borrowed a ratio along with the number. Kept as the same *proportion* so the two
- * calls still separate dancers by the same relative amount.
+ * 🔴 The three constants that used to live here — `TRADE_LANE`, `TRADE_RADIUS_OUT`,
+ * `TRADE_RADIUS_IN` — are gone with the lane they described. They separated the two arcs
+ * by `2 × COUPLE_WIDTH × LANE_OFFSET`, which is **0.3 × the couple's width**; this is
+ * 0.5 of it, from the shape of the figure rather than from a proportion borrowed off a
+ * facing pair. `orbit`'s `lane` survives as a block capability for the wider Trade family
+ * (Boys Trade, Ends Trade), whose dancers are a full unit apart and for whom the
+ * symmetric reading of the figure is the right one.
  */
-export const TRADE_LANE = COUPLE_WIDTH * LANE_OFFSET;
-/**
- * How far each dancer is from the couple's centre **at the pass** — the top of the
- * bow, and the only instant either of them is off their standing radius (ADR-0013).
- *
- * 🔴 These were the dancers' *arc* radii, constant for the whole half circle, reached
- * by a sidestep at each end. They are now the peak of a radius that varies along the
- * arc, which is why the call starts and ends on `COUPLE_WIDTH / 2` and no longer pays
- * two beats for the trip.
- */
-export const TRADE_RADIUS_OUT = COUPLE_WIDTH / 2 + TRADE_LANE;
-export const TRADE_RADIUS_IN = COUPLE_WIDTH / 2 - TRADE_LANE;
+export const TRADE_PASS_SEPARATION = COUPLE_WIDTH / 2;
 
 /**
- * One side of a Partner Trade: **one** forward semicircle, bowed to the passing side.
+ * The **beau's** half of a Partner Trade: one forward semicircle, all the way round the
+ * belle, on the circle the couple is already standing on.
  *
- * Both dancers walk the circle the couple is already standing on — radius
- * `COUPLE_WIDTH / 2`, centred on the couple's centre — and the right-shoulder pass is
- * the lane bowing them apart at the middle and returning them to their own radius by
- * the end. The two sides have the **same shape** and differ only in the direction they
- * walk and which way they bow, which is the check on the reading: a Trade really is
- * one figure danced two ways round.
+ * No lane. He needs no bow because she is no longer coming the other way round the same
+ * circle — she is crossing its diameter, and the arc clears her by its own radius.
  */
-function tradeChain(turn: "left" | "right", lane: number): readonly CatalogCall[] {
+function beauTrade(width: number): readonly CatalogCall[] {
+  return [{ block: "orbit", params: { turn: "right", fraction: 0.5, radius: width / 2 } }];
+}
+
+/**
+ * The **belle's** half: a step to her left and a 180° pivot, going nowhere forward.
+ *
+ * Ryan, 2026-08-18, watching it: *"really the belle should not move forward hardly at all
+ * in this, since that makes the beau have to move even farther out to get around — for the
+ * belle this is really a step left and pivot 180."* ADR-0014.
+ *
+ * She steps the couple's whole width, which is the distance between the two standing spots,
+ * turning left through the step so that by its middle she is facing the way she is going.
+ */
+function belleTrade(width: number): readonly CatalogCall[] {
   return [
-    { block: "orbit", params: { turn, fraction: 0.5, radius: COUPLE_WIDTH / 2, lane } },
+    { block: "step-pivot", params: { side: "left", distance: width, turn: "left", fraction: 0.5 } },
   ];
 }
 
-/** The beau passes outside, the belle inside — see the spec's correction 3. */
-const BEAU_TRADE = tradeChain("right", TRADE_LANE);
-const BELLE_TRADE = tradeChain("left", -TRADE_LANE);
+const TRADE_CHAINS_AT = (
+  width: number,
+): Readonly<Record<CouplePosition, readonly CatalogCall[]>> => ({
+  beau: beauTrade(width),
+  belle: belleTrade(width),
+});
 
 export const partnerTrade: CallDef = {
   name: "Partner Trade",
@@ -96,8 +125,9 @@ export const partnerTrade: CallDef = {
   // chart measures from. It was 6 while the lane cost a beat at each end (ADR-0013).
   chartBeats: 4,
   positionDependent: true,
-  chain: BEAU_TRADE,
-  chains: { beau: BEAU_TRADE, belle: BELLE_TRADE },
+  chain: beauTrade(COUPLE_WIDTH),
+  chains: TRADE_CHAINS_AT(COUPLE_WIDTH),
+  chainsAt: TRADE_CHAINS_AT,
 };
 
 /** Where dancer A stands in the pair frame. */
@@ -159,20 +189,32 @@ export const californiaTwirl: CallDef = {
   name: "California Twirl",
   chartBeats: 4,
   positionDependent: true,
-  chain: [
-    { block: "turn-under", params: { pivot: "right", turn: "right", fraction: 0.5, radius: COUPLE_WIDTH / 2, hand: "right", spin: 0 } },
-  ],
-  chains: {
+  chain: twirlChains(COUPLE_WIDTH).beau,
+  chains: twirlChains(COUPLE_WIDTH),
+  chainsAt: twirlChains,
+};
+
+/**
+ * The Twirl's two halves at a given couple width. Same width-dependence as the Trade's, and
+ * fixed at the same time for the same reason (ADR-0015) — the two calls are each other's
+ * declared **equivalence**, so a disagreement about how wide the couple is would have made
+ * the equivalence test a comparison of two differently-sized figures.
+ */
+function twirlChains(
+  width: number,
+): Readonly<Record<CouplePosition, readonly CatalogCall[]>> {
+  const radius = width / 2;
+  return {
     // The beau makes the arch: no spin, joined right hand, hands on his right.
     beau: [
-      { block: "turn-under", params: { pivot: "right", turn: "right", fraction: 0.5, radius: COUPLE_WIDTH / 2, hand: "right", spin: 0 } },
+      { block: "turn-under", params: { pivot: "right", turn: "right", fraction: 0.5, radius, hand: "right", spin: 0 } },
     ],
     // The belle passes under it: one full turn, joined left hand, hands on her left.
     belle: [
-      { block: "turn-under", params: { pivot: "left", turn: "right", fraction: 0.5, radius: COUPLE_WIDTH / 2, hand: "left", spin: 1 } },
+      { block: "turn-under", params: { pivot: "left", turn: "right", fraction: 0.5, radius, hand: "left", spin: 1 } },
     ],
-  },
-};
+  };
+}
 
 export const CALLS = {
   dosado,
@@ -244,8 +286,12 @@ export function applyCallToCouple(
 ): Record<string, Motion> {
   const def = CALLS[name];
   const out: Record<string, Motion> = {};
+  // Sized to **this** couple, not to `COUPLE_WIDTH` (ADR-0015). The static `chains` are the
+  // default-width instantiation and are what the workshop and the spec fixtures read; what
+  // gets danced is the figure at the width the pair are actually standing at.
+  const chains = def.chainsAt?.(couple.width) ?? def.chains;
   for (const position of ["beau", "belle"] as const) {
-    const chain = def.chains?.[position] ?? def.chain;
+    const chain = chains?.[position] ?? def.chain;
     const key = position === "beau" ? couple.beau : couple.belle;
     out[key] = compose(chain, positionOf(couple, position));
   }
