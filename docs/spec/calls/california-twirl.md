@@ -105,7 +105,7 @@ Rebuilt 2026-08-18 (ADR-0017). Per position, one block each — the Partner Trad
 
 | Position | Block | Beats | Exit |
 |---|---|---|---|
-| beau | [`orbit`](../blocks/orbit.md)`(right, 0.5, width / 2, hold: right / arch)` | 4 | the belle's spot, facing reversed, having carried the arch round |
+| beau | [`orbit`](../blocks/orbit.md)`(right, 0.5, width / 2, lane, hold: right / arch)` | 4 | the belle's spot, facing reversed, having carried the arch round |
 | belle | [`step-pivot`](../blocks/step-pivot.md)`(left, width, left, 0.5, hold: left / arch)` | 4 | the beau's spot, facing reversed, having stepped under the arch |
 
 Both come from one factory in `calls.ts`, whose only parameter is the hold. A reader asking how
@@ -125,6 +125,45 @@ engages but what being a couple *is*.
 **How high the arch is, is not in this engine.** It is a body measurement, and this library has
 no bodies (ADR-0002). "Clear of the head" is the contract; the consumer that knows how tall
 anybody is works out the rest, exactly as it does for `COUPLE_WIDTH`.
+
+### The arch needs more room than the bodies do — 2026-08-19
+
+🔴 **The two calls are the same figure and they are not the same size** ([ADR-0018](../../adr/0018-the-arch-needs-a-hands-room-between-two-heads.md)).
+
+With hands free, two dancers passing have to clear each other. With hands joined and raised there
+is a **joined hand up in the gap as well**, at head height — where a head is the widest thing
+either of them has — and it belongs to neither dancer, so neither dancer's own width accounts for
+it. The room a Twirl's pass needs is strictly more than the room a Trade's does, out of the same
+two bodies.
+
+The couple carries both numbers, and the figure picks by its hold: `hold?.grip === "arch"` reads
+`archClearance`, anything else reads `clearance`. The hold already says which call this is, so
+nothing is told twice and the two chains stay one factory with one parameter.
+
+Measured in the-lot, in world units, against a couple who stand **1.140** apart:
+
+| what has to fit through the gap | wants |
+|---|---|
+| two torsos, side by side | 0.520 |
+| two heads | 0.710 |
+| two heads with a joined hand between them | **1.084** |
+
+`orbit`'s `lane` is what delivers it — the bow rides inside the arc, so a wider pass costs speed
+and not beats, and a dancer still starts and finishes on their own standing spot. Two properties of
+that bow are not obvious and are load-bearing:
+
+- **It is solved, not computed.** `wanted − radius` is exactly right for the separation *at* the
+  pass and wrong for the figure: the lane is `sin²` and the belle crosses at a constant rate, so a
+  large bow makes them nearest each other on the **way** to the pass. On this cast the arithmetic
+  left the closest approach 3% short.
+- **It is capped at one couple-width.** At both ends of the call the two dancers are on their
+  standing spots, so the separation there is exactly the couple's width whatever the bow does in
+  between — a clearance at or above that width cannot be delivered by any bow, and one near it
+  costs an unbounded one. On this cast the arch wants 0.951 of the standing width; the beau's arc
+  peaks at **1.152×** it, and the pass goes from 0.570 to 1.314 world units.
+
+A couple who ask for nothing get `clearance = archClearance = width / 2`, the arc's own radius, and
+therefore no lane at all — which is why every fixture and worked example below is unchanged.
 
 ### What this replaced, and why it is worth recording
 
@@ -200,8 +239,14 @@ And the difference table that used to have three rows has one:
 | | Partner Trade | California Twirl |
 |---|---|---|
 | Hands | both free throughout | the inside pair joined and raised throughout |
-| Paths | *identical* | *identical* |
+| Paths | *identical* — see below | *identical* — see below |
 | Beats | 4 | 4 |
+
+🔴 **"Identical" was true of every couple in August and is now true of the body-agnostic one only**
+(ADR-0018, 2026-08-19). The two calls are the same *figure* — same blocks, same belle, same beats —
+and on a couple who carry real bodies the beau's arc is wider under the arch, because the joined
+hand needs room the Trade's pass does not. Same figure, sized to what it carries. The
+waypoint-for-waypoint test is scoped to the default couple, where the identity still holds exactly.
 
 🔴 **Both of the deleted rows were describing defects.** The rotation row said a Trade's dancers
 turn in opposite senses and a Twirl's in the same sense with different magnitudes — the second

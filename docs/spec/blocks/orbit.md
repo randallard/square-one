@@ -36,6 +36,26 @@ The profile is `sin²` of the fraction walked — zero at both ends, peaking at 
   the widest point of the bow is the moment of the pass. Flat there too, so they pass
   exactly shoulder to shoulder.
 
+### Who chooses the number — 2026-08-19
+
+The lane was a **constant of the figure** when this was written: `TRADE_LANE`, a proportion of the
+couple's width, deleted with [ADR-0014](../../adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md)
+along with the two-dancers-on-one-circle reading that needed it. It left this block with no
+consumer at all for a day, and a deletion note on it.
+
+It has one again, and the number is now **solved rather than named**
+([ADR-0016](../../adr/0016-a-couple-carries-the-clearance-its-bodies-need.md)). A couple carries
+how far apart its dancers must be to pass; when that is more than the arc's own radius, the call
+bisects for the smallest bow whose **minimum separation over the whole arc** meets it. Two
+consequences for a reader of this block:
+
+- **The bow is not `wanted − radius`.** That is right for the widest instant and wrong for the
+  figure, because the other dancer is crossing the diameter at a constant rate while this profile
+  is `sin²` — at a large bow the closest moment moves off the middle.
+- **A bow can be asked for that no arc can deliver.** Both dancers are on their standing spots at
+  the ends, so the separation there is fixed however wide the middle gets. The call caps the bow at
+  the couple's own width for that reason; nothing in this block bounds it.
+
 **Facing is solved from the velocity, not from the circle.** With a lane the dancer is
 travelling outward as well as round, and *walking forward* means facing where they are
 actually going — so facing is the tangent to the **path**, which sits a few degrees off the
@@ -102,6 +122,14 @@ that is the claim [ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trad
 rests on — a California Twirl's beau walks a Partner Trade's arc. So there is no worked example
 with a hold in it: the tables below **are** the held arc's tables, and the call spec asserts
 that by comparing the two calls waypoint for waypoint rather than by carrying a second copy.
+
+🔴 **It changes nothing *here*, and it decides something one level up** — 2026-08-19,
+[ADR-0018](../../adr/0018-the-arch-needs-a-hands-room-between-two-heads.md). A raised arch puts a
+joined hand in the gap the two dancers pass through, so the *call* reads the hold to decide which
+of its couple's two clearances the pass has to make, and hands the answer down as `lane`. From
+inside this block that is an ordinary lane like any other: same `sin²`, same zero at the ends, same
+no beats. The block still knows nothing about why it is that wide, which is the property worth
+keeping.
 
 ## Worked examples
 

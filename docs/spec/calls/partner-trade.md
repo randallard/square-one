@@ -9,14 +9,13 @@ description, *"the leads partner trade (pass right shoulders)"*, which gives the
 shoulder and nothing else. Everything below is written from the CALLERLAB **Trade** family
 definition rather than salvaged, and should be reviewed with that in mind.
 
-🔴 **This file is behind the code, from **Dance action** down.** It still describes the pre-ADR-0014
-figure — two dancers walking the same circle in opposite senses, separated by a bowed `lane`. The
-call is now the beau's [`orbit`](../blocks/orbit.md) round a belle who steps across on
-[`step-pivot`](../blocks/step-pivot.md), with no lane at all. The authorities until this file is
-rewritten are
-[ADR-0014](../../adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md), the two block
-specs, and `test/partner-trade.test.ts`. Identity, Formations, Timing and the section below are
-current.
+**Brought current 2026-08-19** for [ADR-0014](../../adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md)
+(the belle steps and pivots), [ADR-0015](../../adr/0015-a-call-is-sized-to-the-couple-that-dances-it.md)
+(the figure is sized to the couple dancing it) and
+[ADR-0016](../../adr/0016-a-couple-carries-the-clearance-its-bodies-need.md) (the pass is sized to
+the room the bodies need). The sections marked **superseded** below are kept as history, per
+[ADR-0009](../../adr/0009-spec-markdown-is-the-conformance-fixture.md) — their geometry is correct
+and is what the current answer had to satisfy.
 
 ## Identity
 
@@ -61,9 +60,21 @@ and there was nothing to add to it. See the second correction below.
 
 ## Dance action
 
-Each dancer walks **forward in a semicircle**, passing **right shoulders**, and ends in the
-other's starting spot facing the opposite direction. Hands are free throughout; nobody is
-turned by anybody.
+The two dancers exchange places, passing **right shoulders**, each ending in the other's starting
+spot facing the opposite direction. Hands are free throughout; nobody is turned by anybody.
+
+🔴 **They do not walk the same figure, and that is the whole call** (ADR-0014). Ryan, watching it
+for the third time: *"really the belle should not move forward hardly at all in this, since that
+makes the beau have to move even farther out to get around — for the belle this is really a step
+left and pivot 180."*
+
+- The **beau** walks one forward semicircle round the belle, on the circle the couple is already
+  standing on.
+- The **belle** steps the couple's whole width to her left, pivoting 180° left through the step,
+  going nowhere forward.
+
+So he goes round and she goes across, and the pass is a whole radius wide out of the shape of the
+figure rather than out of a tuned separation.
 
 The general CALLERLAB **Trade** definition is "two adjacent dancers exchange places by walking
 forward in a semicircle, passing right shoulders, each ending in the other's starting position
@@ -105,6 +116,11 @@ CALLERLAB Trade definition is explicit that both dancers *walk forward*.
 
 ### 2. The two orbits run in opposite senses
 
+**Superseded 2026-08-18 by [ADR-0014](../../adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md).**
+There is one orbit now — the beau's — and the belle does not walk an arc at all. Kept because the
+tangential-facing argument below is correct and is what `step-pivot` had to reproduce for her, and
+because the symmetry it establishes is still the reason the call is position-dependent.
+
 Both dancers face `+y` and both walk forward, so from the couple's centre:
 
 | | starts at | walks | ends at |
@@ -127,6 +143,10 @@ the meeting point the beau faces `+x` and the belle `−x`. Each must have the o
 right — the beau's right is `−y` (toward the centre) and the belle's is `+y` (away from it) —
 so the **belle passes inside and the beau outside**, at radii differing by a lane.
 
+🔴 **The conclusion survived ADR-0014; the mechanism did not.** She passes inside and he passes
+outside because she crosses the middle while he goes round it — the asymmetry is now the *figure*
+rather than a lane bowing two dancers off one shared circle.
+
 That asymmetry is the correction. A mirror about the couple's fore-aft axis maps a radius to
 itself, so it cannot produce one dancer inside and the other outside; neither can the 180°
 rotation `applyCallToPair` uses. **The two dancers genuinely walk different figures**, which is
@@ -145,33 +165,69 @@ the general point stands and Star Thru will need the reflection.
 
 ## Block composition
 
-Per position, because the two walk different arcs:
+Per position, because the two dance different figures — one block each:
 
 | Position | # | Block | Beats | Exit |
 |---|---|---|---|---|
-| beau | 1 | `orbit(right, 0.5, COUPLE_WIDTH / 2, +TRADE_LANE)` | 4 | the belle's standing spot, facing reversed, having passed outside |
-| belle | 1 | `orbit(left, 0.5, COUPLE_WIDTH / 2, −TRADE_LANE)` | 4 | the beau's standing spot, facing reversed, having passed inside |
+| beau | 1 | [`orbit`](../blocks/orbit.md)`(right, 0.5, width / 2, lane)` | 4 | the belle's standing spot, facing reversed, having gone round the outside |
+| belle | 1 | [`step-pivot`](../blocks/step-pivot.md)`(left, width, left, 0.5)` | 4 | the beau's standing spot, facing reversed, having crossed the middle |
 
-Both walk the circle the couple is **already standing on** — radius `COUPLE_WIDTH / 2`,
-centred on the couple's centre — and the right-shoulder pass is the lane bowing them apart at
-the middle and returning them to their own radius by the end
-([ADR-0013](../../adr/0013-the-trade-lane-rides-inside-the-arc.md)).
+He walks the circle the couple is **already standing on** — radius `width / 2`, centred on the
+couple's centre. She steps straight across its diameter, pivoting 180° through the step and going
+nowhere forward.
 
-Written as the constants rather than as numbers **on purpose**: they follow
-`COUPLE_WIDTH`, and the first version of this table hard-coded the values that fell out
-of a unit-wide couple. See below.
+**`width` is the couple's own**, not `COUPLE_WIDTH` ([ADR-0015](../../adr/0015-a-call-is-sized-to-the-couple-that-dances-it.md)).
+The static `chain`/`chains` a reader sees in the catalog are the body-agnostic instantiation, and
+what actually gets danced is `chainsAt(couple)` — the figure at the width the pair are standing at.
+Both chains come from `EXCHANGE_CHAINS_AT`, whose only parameter is the hold; a
+[California Twirl](california-twirl.md) is this call with one supplied.
 
-The two chains have the **same shape** and differ only in which way round they walk and which
-way they bow, which is a pleasing check on the reading: a Trade really is one figure danced
-two ways round.
+### The pass, and the lane that widens it
 
-🔴 **The lane is a *proportion* of the couple's width, not the absolute `LANE_OFFSET`.**
-The first version used the flat 0.15 that `pass` uses for Dosado's shoulder pass. That was
-invisible while a couple was a full unit wide, and degenerate the moment it stopped being: when
-`COUPLE_WIDTH` dropped to a third so the pair could touch hands, the inside dancer's radius came
-out at **0.017** — a dancer spinning on the spot rather than walking an arc. `LANE_OFFSET` is
-calibrated against a **facing pair's** one-unit separation, so borrowing the number borrowed a
-ratio with it.
+**The separation comes from the shape of the figure, not from a parameter.** At the middle of the
+call he is at the top of the arc and she is at its centre — **a whole radius apart**, with nothing
+tuned to make it so, which is `TRADE_PASS_SEPARATION = COUPLE_WIDTH / 2`.
+
+🔴 **That is the floor, not the answer** ([ADR-0016](../../adr/0016-a-couple-carries-the-clearance-its-bodies-need.md)).
+The engine models dancers as points and its collision invariant is "no shared coordinate", so a
+radius that reads as generous can still be a figure walking two heads through each other. ADR-0014
+pinned exactly that: on the-lot's cast the couple stand 1.140 world units apart, so the pass gets
+**0.570**, against the **0.710** two heads actually need.
+
+A couple therefore carries a `clearance`, supplied by whoever knows the bodies, and when it is more
+than the radius the **beau's arc bows outward** to deliver it — `orbit`'s `lane`, which rides
+inside the arc so a wider pass costs speed and not beats
+([ADR-0013](../../adr/0013-the-trade-lane-rides-inside-the-arc.md)). The bow is:
+
+- **the beau's alone.** The belle keeps crossing the middle and going nowhere forward, which is
+  what makes this a pass rather than a pair rotating.
+- **zero by default**, because the default clearance *is* the arc's own radius. Every worked
+  example and conformance vector in this repo is a couple who ask for nothing.
+- **solved, not computed**, and **capped at one couple-width** — both for reasons that only show up
+  at large bows, set out in [`california-twirl.md`](california-twirl.md#the-arch-needs-more-room-than-the-bodies-do--2026-08-19)
+  and [ADR-0018](../../adr/0018-the-arch-needs-a-hands-room-between-two-heads.md).
+
+🔴 **the-lot does not pass this call's clearance yet**, deliberately: switching it on would bow a
+figure Ryan has already watched and accepted, which is a look rather than a number. So ADR-0014's
+head overlap is fixable and not yet fixed.
+
+### 🔴 Superseded — the lane as the only thing between two dancers
+
+**Superseded 2026-08-18 by [ADR-0014](../../adr/0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md).**
+Until then both dancers walked the same circle in opposite senses, at radii differing by a
+`TRADE_LANE` of 0.3 of the couple's width — 0.34 world units between two torsos needing 0.52. The
+symmetry was the defect: two dancers on one circle leave the lane as the *only* thing separating
+them, and it survived because two points a tenth apart satisfy "no shared coordinate".
+`TRADE_LANE`, `TRADE_RADIUS_OUT` and `TRADE_RADIUS_IN` are deleted with it.
+
+Kept because one thing in it outlived it. 🔴 **The lane had to be a *proportion* of the couple's
+width, not the absolute `LANE_OFFSET`.** The first version used the flat 0.15 that `pass` uses for
+Dosado's shoulder pass, which was invisible while a couple was a full unit wide and degenerate the
+moment it stopped being: when `COUPLE_WIDTH` dropped to a third so the pair could touch hands, the
+inside dancer's radius came out at **0.017** — a dancer spinning on the spot rather than walking an
+arc. `LANE_OFFSET` is calibrated against a **facing pair's** one-unit separation, so borrowing the
+number borrowed a ratio with it. The same trap is why the bow is solved from the couple's own
+numbers today and capped at the couple's own width.
 
 ### 🔴 Why the slides are not optional, which took building it to see — and then were
 
@@ -248,17 +304,24 @@ Couple centred on the origin facing `+y`:
 
 | | beat 0 | beat 2 | beat 4 |
 |---|---|---|---|
-| **beau** | −½w, +y | on the axis at ½w+lane, +x | +½w, −y |
-| **belle** | +½w, +y | on the axis at ½w−lane, −x | −½w, −y |
+| **beau** | −½w, +y | on the axis at ½w + lane, +x | +½w, −y |
+| **belle** | +½w, +y | **the centre**, −x | −½w, −y |
 
-In terms of `COUPLE_WIDTH` (`w`) and `TRADE_LANE` (`lane`), because both moved once the couple
-narrowed and a table of literals would have gone stale silently.
+In terms of the couple's own width `w` and the bow `lane`, which is **zero** unless the couple
+carries a clearance wider than `½w` (ADR-0016). A table of literals would have gone stale silently
+when the couple narrowed, and would go stale again for every consumer with bodies.
 
 **Beats 0, 2 and 4 are the only ones with anything to say**, which is itself the shape of the
-call: the dancers start and finish on `½w` — their own standing radius, never a lane — and the
-one instant they are off it is the pass at the middle, which is also the top of the bow. Beats
-1 and 3 are mid-bow and mid-crab and are left to the tests, for the reason
-[`orbit.md`](../blocks/orbit.md) gives about its own missing rows.
+call: both dancers start and finish on `½w` — their own standing spots, whatever the bow does —
+and the one instant the beau is off it is the middle, which is the top of the bow. She is at the
+couple's centre there, going nowhere forward, which is why the pass is a whole radius wide with
+nothing tuned to make it so. Beats 1 and 3 are mid-arc and mid-step and are left to the tests, for
+the reason [`orbit.md`](../blocks/orbit.md) gives about its own missing rows.
+
+🔴 **"The top of the bow" stops being "the closest moment" once the bow is large** — she crosses at
+a constant rate and the lane is `sin²`, so a heavily bowed beau is nearest her on the *way* to the
+middle. It is why the bow is solved over the whole call rather than computed at beat 2
+([ADR-0018](../../adr/0018-the-arch-needs-a-hands-room-between-two-heads.md)).
 
 🔴 **This table used to run to beat 6**, with a `beat 1` and a `beat 5` column in which each
 dancer sat on their lane radius still facing `+y` — the sidestep, written down. That those two
@@ -311,6 +374,14 @@ only parameter is the hold.
 
 The test is strengthened rather than deleted: it compares every waypoint instead of the end
 states, so it can no longer pass on two figures that merely agree at the finish.
+
+🔴 **And the identity is now the body-agnostic couple's alone** — 2026-08-19,
+[ADR-0018](../../adr/0018-the-arch-needs-a-hands-room-between-two-heads.md). It is the same
+*figure* either way: same blocks, same belle, same beats. But the arch puts a **joined hand in the
+gap** the two dancers pass through, at head height, so a Twirl's pass needs strictly more room than
+a Trade's out of the same two bodies — and the beau's arc bows wider for it. "Identical paths"
+becomes "same figure, sized to what it carries", and the waypoint-for-waypoint test is scoped to a
+couple who ask for nothing, where it is still exactly true.
 
 **What is left is the hands, and it is enough to keep them two calls.** F2 asks whether the hand a
 following call needs is available. A Trade finishes with both free — which is what lets it flow

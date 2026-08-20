@@ -237,6 +237,16 @@ export function isZero(calls: readonly CallName[]): HomeResolution {
  * better than carrying `couple.width` forward: a call that changes the pair's separation
  * says so in the couple it produces, rather than having the old number asserted over it.
  * That is the property which would have caught this.
+ *
+ * 🔴 **Clearance is carried, and that is the opposite of what width does — on purpose.** The
+ * same bug came back one field over the moment clearance had a consumer (ADR-0019): a rebuilt
+ * couple got the body-agnostic *defaults*, so a pair with real bodies danced their bow on the
+ * first call of a sequence and the bare radius on every one after it — a second California
+ * Twirl that visibly ducked closer than the first. Width is measured because a call may
+ * legitimately change how far apart the two stand and the couple it produces should say so.
+ * Clearance cannot be measured from two exit poses at all: it is a fact about the **bodies**,
+ * not about the floor, and dancers do not get narrower between calls. So the number that
+ * arrives is the number that leaves.
  */
 export function reformCouple(couple: Couple, motions: Record<string, Motion>): Couple {
   const beau = motions[couple.beau]?.exit;
@@ -251,6 +261,8 @@ export function reformCouple(couple: Couple, motions: Record<string, Motion>): C
       belle.position.x - beau.position.x,
       belle.position.y - beau.position.y,
     ),
+    couple.clearance,
+    couple.archClearance,
   );
 }
 

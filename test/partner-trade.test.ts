@@ -303,7 +303,7 @@ describe("🔴 a Trade is danced at the couple's own width", () => {
     const belle = partnerTrade.chains?.belle[0];
     expect(belle?.block).toBe("step-pivot");
     expect((belle?.params as { distance: number }).distance).toBeCloseTo(COUPLE_WIDTH, 9);
-    const danced = partnerTrade.chainsAt?.(WIDE).belle[0];
+    const danced = partnerTrade.chainsAt?.(wide).belle[0];
     expect((danced?.params as { distance: number }).distance).toBeCloseTo(WIDE, 9);
   });
 });

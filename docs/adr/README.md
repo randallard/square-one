@@ -91,8 +91,10 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0010](0010-wait-out-the-age-gate-rather-than-except-it.md) | When the audit gate and the age gate conflict, wait rather than except | Superseded by [0011](0011-configure-the-age-gate-where-pnpm-reads-it.md) |
 | [0011](0011-configure-the-age-gate-where-pnpm-reads-it.md) | Configure the age gate where pnpm actually reads it, at pnpm's recommended window | Accepted |
 | [0012](0012-calls-key-off-couple-position-not-role.md) | Calls key off couple position (beau/belle), not role | Accepted |
-| [0013](0013-the-trade-lane-rides-inside-the-arc.md) | A Trade's passing lane rides inside the arc, not as steps around it | Accepted — but its lane has no consumer since [0014](0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md) |
+| [0013](0013-the-trade-lane-rides-inside-the-arc.md) | A Trade's passing lane rides inside the arc, not as steps around it | Accepted — its lane has a consumer again as of [0016](0016-a-couple-carries-the-clearance-its-bodies-need.md) |
 | [0014](0014-the-belles-half-of-a-trade-is-a-step-and-a-pivot.md) | The belle's half of a Partner Trade is a step and a pivot, not a semicircle | Accepted |
-| 0015 | *(referenced in `couple.ts`, `calls.ts` and `sequence.ts`; **not yet written**)* — the chains are sized to the couple actually dancing them | Owed |
-| 0016 | *(referenced in `couple.ts`; **not yet written**)* — a couple carries the clearance its bodies need | Owed |
+| [0015](0015-a-call-is-sized-to-the-couple-that-dances-it.md) | A call is sized to the couple that dances it | Accepted (reconstructed 2026-08-19) |
+| [0016](0016-a-couple-carries-the-clearance-its-bodies-need.md) | A couple carries the clearance its bodies need, and the beau's arc bows out to meet it | Accepted (reconstructed 2026-08-19) |
 | [0017](0017-a-california-twirl-is-a-partner-trade-holding-on.md) | A California Twirl is a Partner Trade danced holding on | Accepted |
+| [0018](0018-the-arch-needs-a-hands-room-between-two-heads.md) | An arch needs a hand's room between two heads, so a couple carries a second clearance | Accepted |
+| [0019](0019-a-couples-clearances-are-carried-across-a-call-boundary.md) | A couple's clearances are carried across a call boundary, not measured | Accepted |

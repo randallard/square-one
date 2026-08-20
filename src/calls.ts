@@ -12,7 +12,14 @@
  */
 
 import type { CatalogCall, Hold } from "./blocks/index.js";
-import { COUPLE_WIDTH, positionOf, type Couple, type CouplePosition } from "./couple.js";
+import {
+  COUPLE_WIDTH,
+  DEFAULT_COUPLE_SHAPE,
+  positionOf,
+  type Couple,
+  type CoupleShape,
+  type CouplePosition,
+} from "./couple.js";
 import { compose, ORIGIN } from "./compose.js";
 import { PLUS_Y, normaliseDeg, round, type Degrees } from "./geometry.js";
 import type { Motion, Pose } from "./types.js";
@@ -61,18 +68,24 @@ export interface CallDef {
    * far. Absent means the chain is the same at any width, and `chains`/`chain` stand.
    */
   readonly chainsAt?: (
-    width: number,
+    couple: CoupleShape,
   ) => Readonly<Record<CouplePosition, readonly CatalogCall[]>>;
 }
 
 /**
- * How far each dancer is from the couple's centre at the pass — the separation the
- * right-shoulder pass actually gets, now the two dancers walk different figures.
+ * The separation the pass gets **on a body-agnostic couple** — the arc's own radius,
+ * `COUPLE_WIDTH / 2`.
  *
- * **It is `COUPLE_WIDTH / 2` and it is not a parameter.** The beau walks the circle the
- * couple is already standing on and the belle steps straight across its diameter, so at
- * the middle of the call he is at the top of the arc and she is at the centre — a whole
- * radius apart, with nothing tuned to make it so (ADR-0014).
+ * The beau walks the circle the couple is already standing on and the belle steps straight
+ * across its diameter, so at the middle of the call he is at the top of the arc and she is at
+ * the centre: a whole radius apart, with nothing tuned to make it so (ADR-0014).
+ *
+ * 🔴 **It stopped being the whole story on 2026-08-18.** ADR-0014 said this radius "is not a
+ * parameter", and pinned in the same breath that it does not clear the *heads* on real bodies.
+ * It is now the **floor** rather than the answer: a couple carries the clearance its bodies
+ * need, and the beau's arc bows out to meet it when the radius is not enough (ADR-0016,
+ * ADR-0018). This constant is what a couple who ask for nothing get, and it is what every
+ * spec fixture is still written against.
  *
  * 🔴 The three constants that used to live here — `TRADE_LANE`, `TRADE_RADIUS_OUT`,
  * `TRADE_RADIUS_IN` — are gone with the lane they described. They separated the two arcs
@@ -95,19 +108,98 @@ export const TRADE_PASS_SEPARATION = COUPLE_WIDTH / 2;
  * *only* thing (ADR-0017): the arc is the same arc, walked with the inside hands joined and
  * raised into an arch.
  */
-function beauHalf(width: number, hold?: Hold): readonly CatalogCall[] {
+function beauHalf(couple: CoupleShape, hold?: Hold): readonly CatalogCall[] {
+  const radius = couple.width / 2;
+  // Which clearance the figure has to make is decided by **what is passing**: two bodies, or
+  // two bodies with a joined hand up between their heads (ADR-0018). The `hold` already says
+  // which, so nothing has to be told twice.
+  const wanted = hold?.grip === "arch" ? couple.archClearance : couple.clearance;
+  const lane = laneForClearance(couple.width, wanted);
   return [
     {
       block: "orbit",
       params: {
         turn: "right",
         fraction: 0.5,
-        radius: width / 2,
+        radius,
+        ...(lane > 0 ? { lane } : {}),
         ...(hold === undefined ? {} : { hold }),
       },
     },
   ];
 }
+
+/**
+ * The bow that gives this figure `wanted` room at its **closest moment**.
+ *
+ * 🔴 **Not `wanted − radius`, and the difference is the whole reason this is a function.** That
+ * is the arithmetic for the separation *at the pass*, and the pass stops being the closest
+ * moment as soon as the bow is large. `orbit`'s lane is `sin²`, widest at the middle; the belle
+ * crosses the diameter at a constant rate. Bow him far enough out and the two of them are
+ * nearest each other on the **way** to the pass rather than at it — measured at townage's arch
+ * clearance, the closest approach came out 3% under the number the arithmetic promised, and 3%
+ * is a hand inside a head.
+ *
+ * So it is solved rather than computed: the smallest bow whose *minimum* separation over the
+ * whole call is at least `wanted`. Bisection, because the separation is monotonic in the bow —
+ * the belle never leaves the disc the beau walks around, so pushing his arc outward moves him
+ * further from her at every instant — and monotonic is all bisection needs.
+ *
+ * Zero when the figure already has the room, which is every body-agnostic couple: the arc's own
+ * radius is the default clearance, so nothing here fires until a consumer with bodies says
+ * otherwise (ADR-0016).
+ */
+function laneForClearance(width: number, wanted: number): number {
+  const radius = width / 2;
+  if (!(wanted > radius)) return 0;
+
+  /** How far apart the two of them are, `t` through the call, for a bow of `lane`. */
+  const separation = (lane: number, t: number): number => {
+    const a = Math.PI * t;
+    const r = radius + lane * Math.sin(a) ** 2;
+    // He walks the half circle from `−x` through `+y`; she crosses the diameter at a
+    // constant rate. Both in the couple's own frame, centred between their standing spots.
+    return Math.hypot(r * Math.cos(a) + radius * (1 - 2 * t), r * Math.sin(a));
+  };
+
+  /** The closest they get, over a sampling fine enough that the minimum is not stepped over. */
+  const closest = (lane: number): number => {
+    let worst = Infinity;
+    for (let i = 0; i <= SEPARATION_SAMPLES; i++) {
+      worst = Math.min(worst, separation(lane, i / SEPARATION_SAMPLES));
+    }
+    return worst;
+  };
+
+  // The bracket: the difference is a lower bound (it is exactly right at the pass, and the
+  // minimum is never above the pass), and twice it has always been enough.
+  // 🔴 **The bow cannot separate two dancers who are standing on their spots.** At both ends of
+  // the call the separation is exactly the couple's own width, whatever the bow does in
+  // between, so the minimum only ever *approaches* that width — a clearance near it costs an
+  // unbounded bow for a vanishing gain, and one at or above it cannot be met at all. Measured
+  // before this was bounded: townage's arch clearance came out at 1.003 of the width and the
+  // beau orbited at **73 times** it.
+  //
+  // So the bow is capped at the couple's own width. Past that he is not dancing round his
+  // partner, he is running a lap — and the cap is the couple's, not a number anybody picked. A
+  // pair who want more get the widest bow the figure has, and the standing hold answers for the
+  // ends, which is where it was solved.
+  const cap = width;
+  let lo = Math.min(cap, wanted - radius);
+  let hi = cap;
+  if (closest(hi) < wanted) return round(hi);
+  for (let i = 0; i < BISECTION_STEPS; i++) {
+    const mid = (lo + hi) / 2;
+    if (closest(mid) < wanted) lo = mid;
+    else hi = mid;
+  }
+  return round(hi);
+}
+
+/** How finely the separation is sampled when solving for the bow. */
+const SEPARATION_SAMPLES = 256;
+/** Enough to land the bow inside `round`'s own 1e-6 from any bracket this takes. */
+const BISECTION_STEPS = 40;
 
 /**
  * The **belle's** half: a step to her left and a 180° pivot to the left, going nowhere
@@ -125,13 +217,13 @@ function beauHalf(width: number, hold?: Hold): readonly CatalogCall[] {
  * `hold` is again the whole difference between the two calls. Held, the step across *is*
  * the duck under the arch: she walks the diameter, and her own joined hand is over it.
  */
-function belleHalf(width: number, hold?: Hold): readonly CatalogCall[] {
+function belleHalf(couple: CoupleShape, hold?: Hold): readonly CatalogCall[] {
   return [
     {
       block: "step-pivot",
       params: {
         side: "left",
-        distance: width,
+        distance: couple.width,
         turn: "left",
         fraction: 0.5,
         ...(hold === undefined ? {} : { hold }),
@@ -151,9 +243,9 @@ function belleHalf(width: number, hold?: Hold): readonly CatalogCall[] {
  */
 const EXCHANGE_CHAINS_AT = (
   hold?: { readonly beau: Hold; readonly belle: Hold },
-) => (width: number): Readonly<Record<CouplePosition, readonly CatalogCall[]>> => ({
-  beau: beauHalf(width, hold?.beau),
-  belle: belleHalf(width, hold?.belle),
+) => (couple: CoupleShape): Readonly<Record<CouplePosition, readonly CatalogCall[]>> => ({
+  beau: beauHalf(couple, hold?.beau),
+  belle: belleHalf(couple, hold?.belle),
 });
 
 /**
@@ -179,8 +271,8 @@ export const partnerTrade: CallDef = {
   // chart measures from. It was 6 while the lane cost a beat at each end (ADR-0013).
   chartBeats: 4,
   positionDependent: true,
-  chain: TRADE_CHAINS_AT(COUPLE_WIDTH).beau,
-  chains: TRADE_CHAINS_AT(COUPLE_WIDTH),
+  chain: TRADE_CHAINS_AT(DEFAULT_COUPLE_SHAPE).beau,
+  chains: TRADE_CHAINS_AT(DEFAULT_COUPLE_SHAPE),
   chainsAt: TRADE_CHAINS_AT,
 };
 
@@ -245,8 +337,8 @@ export const californiaTwirl: CallDef = {
   name: "California Twirl",
   chartBeats: 4,
   positionDependent: true,
-  chain: TWIRL_CHAINS_AT(COUPLE_WIDTH).beau,
-  chains: TWIRL_CHAINS_AT(COUPLE_WIDTH),
+  chain: TWIRL_CHAINS_AT(DEFAULT_COUPLE_SHAPE).beau,
+  chains: TWIRL_CHAINS_AT(DEFAULT_COUPLE_SHAPE),
   chainsAt: TWIRL_CHAINS_AT,
 };
 
@@ -323,7 +415,7 @@ export function applyCallToCouple(
   // Sized to **this** couple, not to `COUPLE_WIDTH` (ADR-0015). The static `chains` are the
   // default-width instantiation and are what the workshop and the spec fixtures read; what
   // gets danced is the figure at the width the pair are actually standing at.
-  const chains = def.chainsAt?.(couple.width) ?? def.chains;
+  const chains = def.chainsAt?.(couple) ?? def.chains;
   for (const position of ["beau", "belle"] as const) {
     const chain = chains?.[position] ?? def.chain;
     const key = position === "beau" ? couple.beau : couple.belle;

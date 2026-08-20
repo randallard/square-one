@@ -76,6 +76,27 @@ export function opposite(position: CouplePosition): CouplePosition {
  */
 export const COUPLE_WIDTH = 1 / 3;
 
+/**
+ * The measurements a call's chains are sized against — everything about a couple that has a
+ * length, and nothing about who or where they are.
+ *
+ * Split out from {@link Couple} because it is what `CallDef.chainsAt` needs and all a chain can
+ * legitimately depend on. A chain that could see `center` or `facing` would be a chain that
+ * could bake the floor into the figure.
+ */
+export interface CoupleShape {
+  readonly width: number;
+  readonly clearance: number;
+  readonly archClearance: number;
+}
+
+/** The body-agnostic defaults: a third of a unit apart, passing at the arc's own radius. */
+export const DEFAULT_COUPLE_SHAPE: CoupleShape = {
+  width: COUPLE_WIDTH,
+  clearance: COUPLE_WIDTH / 2,
+  archClearance: COUPLE_WIDTH / 2,
+};
+
 /** A couple: who stands where, and which way the pair of them face. */
 export interface Couple {
   /** Centre-to-centre distance between the two dancers. */
@@ -95,6 +116,23 @@ export interface Couple {
    * to meet it (ADR-0016).
    */
   readonly clearance: number;
+  /**
+   * How far apart the two dancers must be to pass each other **under a raised arch** — with a
+   * joined hand up between their two heads.
+   *
+   * A third body-derived number, and it exists because the arch changes what is passing. With
+   * hands free the two dancers have to clear each other; with hands joined and raised there is a
+   * **hand in the gap as well**, at head height, and it belongs to neither of them. So the room
+   * a Twirl's pass needs is strictly more than the room a Trade's does, out of the same bodies.
+   *
+   * Measured in townage on the shipped cast: bodies want 0.520, heads want 0.710, and heads
+   * with a hand between them want **1.084** — against a couple who stand 1.140 apart. An arch
+   * very nearly forbids the pair to approach each other at all (ADR-0018).
+   *
+   * Defaults to {@link clearance}, so a consumer who does not know about arches gets exactly the
+   * behaviour they had before this existed.
+   */
+  readonly archClearance: number;
   /** Midpoint between the two dancers. */
   readonly center: { readonly x: number; readonly y: number };
   /** The direction both dancers face. */
@@ -135,12 +173,15 @@ export function partnerUp(
   facing: Degrees = PLUS_Y,
   width: number = COUPLE_WIDTH,
   clearance: number = width / 2,
+  archClearance: number = clearance,
 ): Couple {
   if (width <= 0) throw new Error("partnerUp: width must be positive");
   if (clearance <= 0) throw new Error("partnerUp: clearance must be positive");
+  if (archClearance <= 0) throw new Error("partnerUp: archClearance must be positive");
   return {
     width: round(width),
     clearance: round(clearance),
+    archClearance: round(archClearance),
     center: { x: round(center.x), y: round(center.y) },
     facing: round(normaliseDeg(facing)),
     beau,
