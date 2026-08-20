@@ -1,14 +1,89 @@
 # Progress & Status
 
-_Last updated: 2026-08-18_
+_Last updated: 2026-08-19_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-08-18) — the two couple calls turned out to be one figure. Both of today's
-chunks are LANDED** — `813be1f` (ADR-0014, the Trade) and `bd93203` (ADR-0017, the Twirl) —
-**and watched**: Ryan, on the pair of them plus the-lot's arch, *"looks pretty good."* **176 tests**
-(from 148), lint / typecheck / build clean. `pnpm dev` in the-lot, `#dance=two-twirls`, and
-`#dance=trade-twirl` for the pair.
+**▶ RIGHT NOW (2026-08-19) — the arch has a hand in the gap, and the second Twirl had lost the
+bow. Both LANDED, committed as `b3a02eb` — still awaiting Ryan's verify.** **193 tests** (from
+176), lint / typecheck / build clean. `pnpm dev` in the-lot, **`#dance=two-twirls`** — that is
+the watch this chunk is waiting on.
+
+- ✅ **[ADR-0018](adr/0018-the-arch-needs-a-hands-room-between-two-heads.md) — an arch needs a
+  hand's room between two heads, so a couple carries a second clearance.** Ryan, on the arch:
+  *"the beau's hand clips through the belle's head — it shouldn't push into the beau's own head
+  either though."* Narrative in
+  [the sixteenth journal entry](journal/2026-08-19-the-hand-in-the-gap-and-the-second-twirl-16.md).
+  - 🔑 **The gap has a third thing in it.** Hands free, two dancers must clear each other;
+    hands joined and raised, there is a **joined hand up between their heads** — where a head is
+    widest — belonging to neither of them. On the-lot's cast, against a couple standing **1.140**
+    apart: torsos want 0.520, heads 0.710, **heads with a hand between them 1.084**.
+  - `Couple.archClearance` beside `clearance`, defaulting to it. `beauHalf` picks by the hold —
+    `hold?.grip === "arch"` — so the two calls stay one factory with one parameter. The three
+    sizeable measurements are named `CoupleShape`, which is what `chainsAt` now takes.
+  - 🔑 **The bow is solved, not computed.** `wanted − radius` is exact for the separation *at*
+    the pass and wrong for the figure: the lane is `sin²` and the belle crosses at a constant rate,
+    so a large bow makes them nearest on the **way** to the pass. It left the closest approach 3%
+    short — a hand inside a head. Bisected on the minimum over the whole call.
+  - 🔑 **And capped at one couple-width.** Both dancers stand on their spots at the ends, so the
+    minimum only *approaches* the couple's width — unsatisfiable requests had the beau orbiting at
+    **73×** it. On this cast the arch wants 0.951 of the width: inside the cap, only just, and the
+    arc peaks at **1.152×** the width (pass 0.570 → 1.314 world).
+
+- ✅ **[ADR-0019](adr/0019-a-couples-clearances-are-carried-across-a-call-boundary.md) — a
+  couple's clearances are carried across a call boundary, not measured.** Ryan, watching
+  `#dance=two-twirls`: *"it looks like the first california twirl is good but the second still has
+  the smaller path."* Measured: Twirl #1 passed at 0.333 (clearing the 0.317 the arch wants),
+  Twirl #2 at **0.167** — the bare radius.
+  - `reformCouple` called `partnerUp` with a width and nothing else, so both clearances came back
+    at their body-agnostic defaults. **ADR-0015's own bug, one field over, on the day that field
+    got its first reader.**
+  - 🔑 **Width is measured because two exit poses contain it; clearance is carried because they
+    never will.** Clearance is a fact about *bodies*, and dancers do not get narrower between
+    calls. Not a compromise between two policies — it is what the two fields are.
+  - 🔑 **Measure the thing you are going to watch.** The bow was measured end to end the day
+    before — beat by beat, both accommodations — and the harness walked **one call**. Ryan was
+    watching a sequence. `isCoupleZero` passed throughout, because the bow is zero at both ends and
+    a home check is blind to the middle of a figure.
+  - 🔑 **A default that is also the right answer everywhere you test hides its own loss.** Every
+    test in this repo dances the body-agnostic couple, where the dropped number and the default are
+    the same number. True of the original width bug too.
+
+- ✅ **The two owed ADRs are written** —
+  [0015](adr/0015-a-call-is-sized-to-the-couple-that-dances-it.md) (a call is sized to the couple
+  that dances it) and [0016](adr/0016-a-couple-carries-the-clearance-its-bodies-need.md) (a couple
+  carries the clearance its bodies need, and the beau's arc bows out to meet it). Reconstructed
+  from the code, `813be1f` and `3c8ed43`, and marked as such at the top of each file.
+
+- ✅ **`docs/spec/calls/partner-trade.md` is current again**, from *Dance action* down: the belle
+  steps and pivots, the beau orbits, the figure is sized to the couple, and the pass is sized to
+  the clearance. The superseded readings are kept as history with banners rather than deleted.
+  `california-twirl.md` and `blocks/orbit.md` updated for the arch clearance and for the lane
+  having a consumer again.
+
+### ⚠️ Owed
+
+1. 🔴 **Watch `#dance=two-twirls`.** The beau's arc is now **1.152×** the couple's width where it
+   was 0.5×, covered in the same 4 beats. Whether he reads as *sprinting* is the one number a
+   render decides, and no test can answer it.
+2. 🔴 **the-lot still does not pass the Partner Trade's own clearance.** The mechanism now exists
+   to close ADR-0014's head overlap (0.570 delivered against 0.710 wanted), and switching it on
+   would bow a figure Ryan has already watched and accepted. A look, not a number — flagged on
+   `useDancePerformance`'s `archClearance` doc.
+3. 🔴 **No journal entry for the ADR-0014 chunk.** Entry 15 is ADR-0017's and 16 is this one; the
+   numbering has no gap for it. What that chunk was is in its ADR and `813be1f`; the narrative is
+   what is missing.
+4. 🔴 **`turn-under` still has no consumer.** ADR-0005's showcase block; **Star Thru** settles
+   whether the arch family has a block or the arch is a hold on figures we already have.
+   `orbit`'s `lane` is off this list — ADR-0016 made it load-bearing again.
+
+---
+
+**▶ The two couple calls turned out to be one figure (2026-08-18). Both chunks LANDED** —
+`813be1f` (ADR-0014, the Trade) and `bd93203` (ADR-0017, the Twirl) — **and watched**: Ryan, on
+the pair of them plus the-lot's arch, *"looks pretty good."* **176 tests** (from 148), lint /
+typecheck / build clean. `pnpm dev` in the-lot, `#dance=two-twirls`, and `#dance=trade-twirl` for
+the pair.
 
 - ✅ **[ADR-0017](adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md) — a California
   Twirl is a Partner Trade danced holding on.** Ryan: *"california twirl beau might be same path
@@ -42,7 +117,7 @@ chunks are LANDED** — `813be1f` (ADR-0014, the Trade) and `bd93203` (ADR-0017,
   lane and its three constants deleted; pass separation 0.3 → 0.5 of the couple's width.
   🔴 **This chunk is under-documented** — see owed, below.
 
-### ⚠️ Owed
+### ⚠️ Owed at the time — see the current list at the top of this file
 
 1. 🔴 **ADR-0015 and ADR-0016 are referenced in `couple.ts`, `calls.ts` and `sequence.ts` and
    have never been written.** 0015 is *the chains are sized to the couple actually dancing them*
