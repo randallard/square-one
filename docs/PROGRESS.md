@@ -5,7 +5,7 @@ _Last updated: 2026-08-21_
 ## Status / next
 
 **▶ RIGHT NOW (2026-08-21, second chunk) — the bow was solved against a curve nobody walks.
-BUILT AND GREEN, 🔴 NOT YET COMMITTED.** **223 tests** (from 220), lint / typecheck / build clean;
+LANDED as `8d436cd` and released as **v0.3.0**, still awaiting Ryan's verify in the scene.** **223 tests** (from 220), lint / typecheck / build clean;
 the-lot 627 (from 626), lint 0 errors, build clean. Ryan, watching the generalisation: *"I looked
 at `#dance=two-trades` and it's still too tight — if we're generalizing correctly it should be
 like `#dance=two-twirls`."*
@@ -66,8 +66,8 @@ like `#dance=two-twirls`."*
 
 ---
 
-**▶ 2026-08-21, first chunk — every call in the catalog is sized to the bodies dancing it. BUILT
-AND GREEN, 🔴 NOT YET COMMITTED — held with the chunk above.** **220 tests** (from 193), lint / typecheck / build clean;
+**▶ 2026-08-21, first chunk — every call in the catalog is sized to the bodies dancing it. LANDED
+in the same commit `8d436cd` as the chunk above.** **220 tests** (from 193), lint / typecheck / build clean;
 the-lot builds and its 626 tests pass against the rebuilt engine. 🔴 **Nothing on screen changes
 by default** — this chunk opens the seam, it does not switch anything on. The watches it opens are
 in the owed list.
