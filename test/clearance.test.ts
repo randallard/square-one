@@ -9,9 +9,11 @@
 
 import { describe, expect, it } from "vitest";
 import { TRADE_PASS_SEPARATION, applyCallToCouple, californiaTwirl } from "../src/calls.js";
-import { COUPLE_WIDTH, partnerUp } from "../src/couple.js";
+import { partnerUp } from "../src/couple.js";
+import { COUPLE_WIDTH } from "../src/shape.js";
 import { danceCoupleSequence, isCoupleZero, reformCouple } from "../src/sequence.js";
-import type { Waypoint } from "../src/types.js";
+import { sampleMotion } from "../src/stepper.js";
+import type { Motion, Waypoint } from "../src/types.js";
 
 const W = COUPLE_WIDTH;
 
@@ -45,6 +47,59 @@ describe("a couple who ask for nothing dance exactly what they danced before", (
       const m = applyCallToCouple(call, plain);
       expect(closest(m)).toBeCloseTo(TRADE_PASS_SEPARATION, 5);
     }
+  });
+});
+
+describe("the room is delivered to the dancers, not just to the waypoints", () => {
+  // 🔴 ADR-0022's guard, and the one instrument here that measures what a **consumer** gets.
+  // Every other check in this file pairs the two dancers up at their shared waypoint beats;
+  // `sampleMotion` is what the stepper actually runs, and between two marks it walks a
+  // straight line. While `orbit` sampled every 45° those two answers differed by 5.6% — the
+  // solver hit 0.710 on the curve and the dancers got 0.670 — and nothing in this file could
+  // see it, because the sag lives *between* the marks that both checks were built from.
+  const HEADS = (0.71 / 1.14) * W;
+  const ARCH = (1.084 / 1.14) * W;
+
+  /** The closest the two get along the path the **stepper** walks, sampled far finer than it. */
+  function closestWalked(motions: Record<string, Motion>): number {
+    const beau = motions["beau"];
+    const belle = motions["belle"];
+    if (beau === undefined || belle === undefined) return NaN;
+    let worst = Infinity;
+    for (let i = 0; i <= 4000; i++) {
+      const beat = (beau.beats * i) / 4000;
+      const a = sampleMotion(beau, beat).position;
+      const b = sampleMotion(belle, beat).position;
+      worst = Math.min(worst, Math.hypot(a.x - b.x, a.y - b.y));
+    }
+    return worst;
+  }
+
+  it("🔴 walks a Partner Trade at the clearance it was solved for", () => {
+    const couple = partnerUp("beau", "belle", { x: 0, y: 0 }, 90, W, HEADS, ARCH);
+    const walked = closestWalked(applyCallToCouple("partner-trade", couple));
+    // Not `toBeGreaterThan(HEADS)`: a polyline through an arc is inside it by *something*, and
+    // a check that pretended otherwise would be a check tuned to today's sampling. What is
+    // asserted is that the something is negligible — at 7.5° the chord sags 3.4e-4 of the
+    // radius, and this bounds the whole figure's shortfall at a fifth of a percent.
+    expect(walked).toBeGreaterThan(HEADS * 0.998);
+    // And that it is not merely close by accident: the 45° sampling this replaced was 5.6% low,
+    // which is more than twenty times the bound above.
+    expect(walked).toBeGreaterThan(HEADS * 0.95);
+  });
+
+  it("🔴 walks a California Twirl at its own, larger one", () => {
+    const couple = partnerUp("beau", "belle", { x: 0, y: 0 }, 90, W, HEADS, ARCH);
+    const walked = closestWalked(applyCallToCouple("california-twirl", couple));
+    expect(walked).toBeGreaterThan(ARCH * 0.998);
+  });
+
+  it("🔴 leaves a couple who ask for nothing on their own radius", () => {
+    // The compatibility claim, measured the same way. A body-agnostic couple gets no bow, so
+    // what the dancers walk is the plain arc — and the sag is what separates the two answers.
+    const walked = closestWalked(applyCallToCouple("partner-trade", partnerUp("beau", "belle")));
+    expect(walked).toBeGreaterThan(TRADE_PASS_SEPARATION * 0.998);
+    expect(walked).toBeLessThan(TRADE_PASS_SEPARATION * 1.0001);
   });
 });
 

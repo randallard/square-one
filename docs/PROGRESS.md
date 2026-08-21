@@ -1,11 +1,156 @@
 # Progress & Status
 
-_Last updated: 2026-08-19_
+_Last updated: 2026-08-21_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-08-19) — the arch has a hand in the gap, and the second Twirl had lost the
-bow. Both LANDED, committed as `b3a02eb` — still awaiting Ryan's verify.** **193 tests** (from
+**▶ RIGHT NOW (2026-08-21, second chunk) — the bow was solved against a curve nobody walks.
+BUILT AND GREEN, 🔴 NOT YET COMMITTED.** **223 tests** (from 220), lint / typecheck / build clean;
+the-lot 627 (from 626), lint 0 errors, build clean. Ryan, watching the generalisation: *"I looked
+at `#dance=two-trades` and it's still too tight — if we're generalizing correctly it should be
+like `#dance=two-twirls`."*
+
+- ✅ **[ADR-0022](adr/0022-the-waypoints-are-the-path-so-the-arc-is-sampled-to-be-one.md) — the
+  waypoints are the path, so an arc is sampled fine enough to be one.** Narrative in
+  [the eighteenth journal entry](journal/2026-08-21-the-solver-was-right-about-a-curve-nobody-walks-18.md).
+  - 🔑 **`laneForClearance` measures the arc; the dancers walk a polyline.** `orbit` marked a
+    waypoint every 45° and `sampleMotion` runs straight lines between them, so the chords sag
+    `r(1 − cos 22.5°)` — **7.6% of the radius** — inside the curve. A Trade solved to exactly the
+    0.710 its heads want **delivered 0.670**.
+  - 🔑 **ADR-0018 was underneath this the whole time.** That chunk hardened the bow from arithmetic
+    into a bisection because a **3%** error was "a hand inside a head". This was 5.6%, and the
+    bisection could not see it — it was bisecting the wrong curve.
+  - 🔑 **Every instrument was blind in the same place.** All three suites pair the dancers **by
+    beat**, at the marks the generators emit; the sag lives strictly between them, so more checks
+    of that kind would have returned the same wrong number with more confidence. The new guard runs
+    `sampleMotion` — what a consumer calls. **Measure with the thing the consumer uses.**
+  - 🔑 **The obvious fix was wrong.** Solving the bow against the chords is exact and broke five
+    tests that were all right: the body-agnostic couple's default clearance *is* the arc's own
+    radius, so chord-solving put a bow on a pair who asked for nothing — making the beau swing
+    wider forever to conceal a polygon. The defect was the emitted path, not the solver.
+  - `orbit` and `step-pivot` now sample every **7.5°** (a forty-eighth of a turn), where the sag is
+    `3.4e-4 × r` — under `round`'s own sixth decimal. A half turn carries 25 marks instead of 5.
+    Density chosen so **whole beats stay on sample boundaries** (the ADR-0009 fixtures look rows up
+    by exact beat), and marks are built as `k / n` rather than accumulated.
+  - `step-pivot` has no sag of its own — she moves linearly in the beat — but was refined to match
+    for the **beat alignment**: leaving her at 45° would have cut the clearance instrument to five
+    samples per call. `arm-turn` is deliberately untouched (render-validated; nothing solves a
+    clearance against it).
+  - **Landed: 0.709 against 0.710 wanted.** A residual remains — up to 0.32% at the heaviest bow —
+    asserted as a bound rather than as strict clearance, because the latter would be a test tuned
+    to a sampling constant.
+
+- ✅ **the-lot passes the hands-free clearance** (its ADR-0031), which is the other half of Ryan's
+  observation and closes owed item 2 from the chunk below. Its three pinned tripwires all fired,
+  including the one claiming wide bodies were *structurally* unable to dance a Trade at
+  handholding distance.
+
+### ⚠️ Owed
+
+1. 🔴 **Watch `#dance=two-trades`, then `#dance=two-twirls`.** The Trade bows **less** than the
+   Twirl and should: same bodies, but only the Twirl has a joined hand up between two heads. The
+   beau's path over four beats runs **1.789** world with no bodies → **2.033** for a Trade →
+   **3.387** for a Twirl. If the Trade reads right the generalisation is landed; if he reads as
+   hurrying, that is two-twirls' sprint question at 14% rather than 89%.
+2. 🔴 **square-one is not tagged**, so the-lot cannot import ADR-0020's new exports. Its dependency
+   is `github:randallard/square-one#v0.2.0` and only the local symlink makes today's build work.
+   Needed before the-lot can retire its hand-copied `ENGINE_LANE_OFFSET` or size its pair calls.
+3. 🔴 **`arm-turn` still samples every quarter turn**, with the same sag ADR-0022 removed from
+   `orbit`. Harmless today because nothing solves a clearance against it; the day something does,
+   ADR-0022 applies to it.
+4. 🔴 **No journal entry for the ADR-0014 chunk.** Carried; entries 15–18 are the four since.
+5. 🔴 **`turn-under` still has no consumer.** **Star Thru** settles whether the arch family has a
+   block or the arch is a hold on figures we already have.
+6. 🔴 **A shape a call does not read is silently ignored** (ADR-0020). Assert on the figure, not
+   the argument.
+
+---
+
+**▶ 2026-08-21, first chunk — every call in the catalog is sized to the bodies dancing it. BUILT
+AND GREEN, 🔴 NOT YET COMMITTED — held with the chunk above.** **220 tests** (from 193), lint / typecheck / build clean;
+the-lot builds and its 626 tests pass against the rebuilt engine. 🔴 **Nothing on screen changes
+by default** — this chunk opens the seam, it does not switch anything on. The watches it opens are
+in the owed list.
+
+- ✅ **[ADR-0020](adr/0020-every-call-is-sized-to-the-bodies-that-dance-it.md) — every call is
+  sized to the bodies that dance it.** Ryan: *"we've got california twirl working great and
+  allowing for head and arm and body where beau path is pushed out but we need to generalize that
+  to all the moves we have created — make sure they all allow for varying body, head and arm and
+  handhold where necessary."* Narrative in
+  [the seventeenth journal entry](journal/2026-08-21-every-call-takes-a-body-17.md).
+  - 🔑 **The seam reached two calls out of five.** `chainsAt` was declared on Partner Trade and
+    California Twirl; Dosado and Pass Thru passed at a fixed `LANE_OFFSET` 0.15 and Allemande Left
+    gripped at a fixed `ORBIT_RADIUS` 0.3. The only lever for the other three was **make the floor
+    bigger** — the-lot's own `minScaleForGap`, which divides by a hand-copied duplicate of this
+    repo's private constant and spends one pair's accommodation on the whole square.
+  - **`CoupleShape` → `FigureShape`, in its own `shape.ts`**, because a facing pair dances a
+    Dosado and a facing pair is not a couple. Four fields, and they are Ryan's four things:
+    `width` (handhold), `clearance` (body, and the head that makes it widest), `archClearance`
+    (head with a joined hand between two of them), **`gripRadius` (arm — new)**.
+  - **`CallDef.chainAt(shape)`** beside `chainsAt`; every call declares one or the other, asserted
+    over the catalog rather than call by call. `chainsAt` wins where present; `chainAt` is what
+    lets a *couple* dance a Pass Thru at their own clearance.
+  - **Blocks take the measurement, not the figure**: `pass.clearance`, `slide.distance`,
+    `arm-turn.gripRadius` / `.standoff`, `turn-under.grip`. Their constants are **exported** now —
+    `PASS_CLEARANCE`, `LANE_OFFSET`, `SLIDE_DISTANCE`, `ORBIT_RADIUS`, `ENTRY_RADIUS`,
+    `STEP_OUT_RADIUS`, `STEP_OUT_FRACTION` — because a floor a consumer must beat is contract.
+  - 🔑 **The output is unchanged and that is asserted, not observed.** A measurement is spread into
+    a block's params only when it asks for more than the block's own default (`beauHalf`'s idiom
+    from ADR-0016, generalised into `sized()`). All 193 existing tests passed untouched and not one
+    spec fixture moved.
+  - 🔑 **Beats are untouched at every size.** A wider pass is a longer stride inside the chart's
+    timing — ADR-0013's bow riding inside the arc, ADR-0014's step riding inside its rotation.
+  - `partnerUp`'s width slot now also takes a `Partial<FigureShape>`; passing both forms throws
+    rather than picking a winner. `reformCouple` carries `gripRadius` (ADR-0019's rule, applied to
+    the new field **before** it had a reader).
+
+- ✅ **[ADR-0021](adr/0021-a-body-widens-a-figure-and-never-narrows-it.md) — a body measurement
+  widens a figure and never narrows it.**
+  - 🔑 **A small measurement is ignored, and that is what makes a shape safe to pass anywhere.**
+    Read naively a shape is an instruction, and two children's clearance would shrink a Dosado's
+    lane to 0.1 — geometrically legal under "no shared coordinate", and the shape of no call at
+    all. `laneForClearance` has behaved this way since ADR-0016; it is a rule now, as
+    `atLeast(figure, wanted)`, in every block that takes one.
+  - 🔑 **`gripRadius` is the single exception.** A clearance is room a figure has to *find*; a
+    grip radius is where two people's arms actually *put* them. Flooring it would draw a hold the
+    pair cannot reach.
+
+- ✅ **`turn-under` had the wrong handhold, and no consumer to notice.** It emitted `forearm` — a
+  grip at elbow height — for a figure whose own first line is *"one passing beneath the other's
+  raised arch"*. Written before ADR-0017 added `arch` to `GripStyle`. Now a `grip` parameter
+  defaulting to `arch`; the waypoints are asserted identical either way.
+
+- ✅ **Specs updated for the parameters**: `blocks/pass.md`, `blocks/slide.md` (the third arrival of
+  `distance`, argued rather than slipped in), `blocks/arm-turn.md`, `blocks/turn-under.md`, and a
+  *Sized to the pair / to the arms* section in `calls/dosado.md`, `calls/pass-thru.md`,
+  `calls/allemande-left.md`.
+
+### ⚠️ Owed at the time — see the current list at the top of this file
+
+1. 🔴 **Watch `#dance=two-twirls`.** Unchanged from the last chunk and still the oldest open watch.
+   The beau's arc is **1.152×** the couple's width where it was 0.5×, covered in the same 4 beats.
+   Whether he reads as *sprinting* is the one number a render decides.
+2. 🔴 **the-lot passes neither the hands-free clearance nor a grip radius, and now both are
+   reachable.** Passing the pair calls a clearance would open a Pass Thru's lane and could let the
+   square stop scaling itself up for one wide dancer — two figures Ryan has watched and accepted at
+   the current spacing. A look, not a number.
+3. 🔴 **square-one is not tagged, so the-lot cannot import the new exports.** Its dependency is
+   `github:randallard/square-one#v0.2.0`; only the local symlink makes today's build work. Any
+   the-lot change that uses `PASS_CLEARANCE`, `FigureShape` or `shapeOf` needs a tag first —
+   including replacing its hand-copied `ENGINE_LANE_OFFSET`.
+4. 🔴 **No journal entry for the ADR-0014 chunk.** Carried from the last two chunks; entries 15, 16
+   and 17 are the three since, and the numbering has no gap for it.
+5. 🔴 **`turn-under` still has no consumer.** ADR-0005's showcase block; **Star Thru** settles
+   whether the arch family has a block or the arch is a hold on figures we already have. Its grip
+   defect this chunk found is what a block with no consumer looks like.
+6. 🔴 **A shape a call does not read is silently ignored** (ADR-0020's own note). Passing an arch
+   clearance to a Dosado gets a Dosado, correctly — but "I passed the number" is not evidence the
+   number was used. Assert on the figure, not the argument.
+
+---
+
+**▶ The arch got a hand in the gap (2026-08-19), and the second Twirl had lost the bow. Both
+LANDED, committed as `b3a02eb`.** **193 tests** (from
 176), lint / typecheck / build clean. `pnpm dev` in the-lot, **`#dance=two-twirls`** — that is
 the watch this chunk is waiting on.
 
@@ -61,7 +206,7 @@ the watch this chunk is waiting on.
   `california-twirl.md` and `blocks/orbit.md` updated for the arch clearance and for the lane
   having a consumer again.
 
-### ⚠️ Owed
+### ⚠️ Owed at the time — see the current list at the top of this file
 
 1. 🔴 **Watch `#dance=two-twirls`.** The beau's arc is now **1.152×** the couple's width where it
    was 0.5×, covered in the same 4 beats. Whether he reads as *sprinting* is the one number a

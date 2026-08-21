@@ -131,6 +131,20 @@ inside this block that is an ordinary lane like any other: same `sin²`, same ze
 no beats. The block still knows nothing about why it is that wide, which is the property worth
 keeping.
 
+## The marks are the path, and they are 7.5° apart
+
+🔴 **A consumer walks straight lines between these waypoints** (`sampleMotion`), so the emitted
+polyline *is* the figure — the circle is what it approximates, not what anybody dances. At the 45°
+spacing this block used until 2026-08-21 the chords sagged `r(1 − cos 22.5°)` inside the arc, 7.6%
+of the radius, and every clearance solved against the curve was right on paper and short on the
+floor: a Partner Trade solved to 0.710 gave the dancers **0.670**.
+
+Sampling is a forty-eighth of a turn now — **7.5°**, a sag of `3.4e-4 × r`, under the engine's own
+rounding. A half turn carries 25 marks rather than 5. Whole beats stay on sample boundaries (a
+forty-eighth of a turn is a sixth of a beat), which is what lets the fixtures below keep looking
+their rows up by exact beat. See
+[ADR-0022](../../adr/0022-the-waypoints-are-the-path-so-the-arc-is-sampled-to-be-one.md).
+
 ## Worked examples
 
 **The `Facing` column is not optional here.** The loader only checks facing when the table

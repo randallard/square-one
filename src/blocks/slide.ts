@@ -5,15 +5,35 @@
  * Dodge family and adjustments.
  */
 
-import { PLUS_Y, round } from "../geometry.js";
+import { PLUS_Y, atLeast, round } from "../geometry.js";
 import type { Motion } from "../types.js";
 import { LANE_OFFSET } from "./pass.js";
 
 export interface SlideParams {
   readonly side: "right" | "left";
+  /**
+   * How far to step, when the bodies want more than the figure gives — **a body
+   * measurement**, and the resurrection of a parameter this block has had before.
+   *
+   * A Dosado's slide is a full lane change: the dancer crosses from their own lane into
+   * the other, which is exactly the room the two of them needed to pass. So when a
+   * consumer widens that pass it widens this step by the same number, and `dosado` hands
+   * both of them the pair's own clearance (ADR-0020).
+   *
+   * 🔴 **This is not the parameter ADR-0013 removed, and the difference is the floor.**
+   * That one let Partner Trade ask for a *sixth* of a Dosado's distance while still
+   * paying a flat beat for it, and the render watch caught the step crawling. This one
+   * cannot ask for less than {@link SLIDE_DISTANCE} (ADR-0021): it only ever lengthens the stride
+   * inside the same beat, which is what a bigger dancer covering more ground looks like.
+   * The standing instruction that ADR-0013 left — *"design the parameter **and its
+   * timing** together"* — is answered by that asymmetry rather than ignored: a longer
+   * step in a beat is a longer step, and a shorter one in a beat is a crawl.
+   */
+  readonly distance?: number;
 }
 
-/** A full lane change: across both lanes, so twice the `pass` offset. */
+/** A full lane change: across both lanes, so twice the `pass` offset — and therefore
+ *  exactly the room `pass` gives two dancers to pass in (`PASS_CLEARANCE`). */
 export const SLIDE_DISTANCE = 2 * LANE_OFFSET;
 
 /**
@@ -37,7 +57,7 @@ export const slide = {
   beats: (): number => BEATS,
 
   generate(params: SlideParams): Motion {
-    const dx = (params.side === "right" ? 1 : -1) * SLIDE_DISTANCE;
+    const dx = (params.side === "right" ? 1 : -1) * atLeast(SLIDE_DISTANCE, params.distance);
 
     return {
       beats: BEATS,

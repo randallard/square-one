@@ -74,6 +74,23 @@ this chain** — no separate authoring. Parts for fractionalization are named
 subsequences: "once and a half" is the full chain followed by blocks 1–2 again,
 ending back-to-back on swapped spots (net ≡ Pass Thru, CALLERLAB-listed).
 
+## Sized to the pair (ADR-0020)
+
+The chain above is the **body-agnostic** instantiation, and `dosado.chainAt(shape)` is what a
+pair with bodies dance. One measurement reaches it — `shape.clearance`, the room the two of them
+need to pass — and it lands in two places that are the same number twice:
+
+| # | Block | What the clearance does |
+|---|---|---|
+| 1 | `pass(forward, right, lane)` | splits into two lanes, half each, so they pass `clearance` apart |
+| 2 | `slide(right)` | a **full** lane change, which is that whole clearance |
+| 3 | `pass(backward, left, close)` | the same lane, returned along |
+
+Below `PASS_CLEARANCE` (0.30) nothing changes — bodies widen a figure and never narrow it
+(ADR-0021), so the tables below stand for every pair who can already pass in the room this is
+drawn with. **The chart's 6 beats are untouched at any width**: a wider Dosado is a longer
+stride, not a slower call.
+
 ## Choreography paths
 
 **Frame convention (established here for all 2-dancer calls):** local frame

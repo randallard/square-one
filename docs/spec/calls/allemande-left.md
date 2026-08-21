@@ -50,6 +50,19 @@ resolves the fraction from entry/exit bearings — the chart's fraction rows are
 the beat table. Approach to the corner is entry travel per the chart convention.
 Mirror = Allemande Right (exists as a call at higher usage; free via transform).
 
+## Sized to the arms (ADR-0020)
+
+The catalog's one figure whose body measurement is **not** a clearance. Nobody passes anybody in
+an arm turn: the two of them grip and walk a circle, and what decides its radius is how far a
+joined forearm holds them off the shared pivot. `allemandeLeft.chainAt(shape)` passes
+`shape.gripRadius` down to the block.
+
+🔴 **Unlike every clearance in the catalog it is not floored** (ADR-0021) — short arms genuinely
+dance a tighter Allemande, and flooring it would draw a circle the pair cannot reach. The
+`standoff` is deliberately *not* passed: where they stand before stepping in is the pair frame's
+own half unit, a fact about the floor, and `shape.width` is a **couple's** handhold span which a
+facing pair does not have.
+
 ## Choreography paths
 
 The composition is the path — the `arm-turn(left, full, step-out)` fragment in

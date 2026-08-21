@@ -93,10 +93,46 @@ export const BEATS_PER_TURN = 8;
 /** The dancer starts due south of the centre, as `arm-turn` does. */
 const START_ANGLE = 270;
 
-/** How often a waypoint is emitted, in turns. Every eighth of a circle — twice
- *  `arm-turn`'s quarter, because nothing steps in here to mark the arc's start and a
- *  half turn would otherwise carry only three points. */
-const SAMPLE_TURNS = 0.125;
+/**
+ * How often a waypoint is emitted, in turns — **a forty-eighth of a circle, 7.5°**.
+ *
+ * 🔴 **It was an eighth — 45° — and that is a defect rather than a coarse setting**
+ * (ADR-0022). The waypoints are the path: `sampleMotion` runs a straight line between
+ * consecutive marks, so what a dancer walks is a **polyline**, and a chord across 45° of arc
+ * sags `r(1 − cos 22.5°)` inside the curve — 7.6% of the radius. Everything that reasons about
+ * this block reasons about the circle, and none of it was true of the thing being danced.
+ *
+ * It surfaced through the clearance. `laneForClearance` solves the beau's bow so the couple's
+ * *minimum* separation is the room their bodies need; on townage's cast a Partner Trade solved
+ * to exactly the 0.710 its heads want, and delivered **0.670** — the sag, to three decimals.
+ * Ryan saw it as the figure being tight: *"I looked at `#dance=two-trades` and it's still too
+ * tight."*
+ *
+ * At 7.5° the sag is `3.4e-4 × r`, which is under `round`'s own sixth decimal for any radius
+ * this engine uses, so the polyline **is** the arc as far as anything downstream can tell. The
+ * cost is waypoints: a half turn carries 25 marks instead of 5.
+ *
+ * 🔴 Chosen so that **whole beats stay on sample boundaries**. A full turn is 8 beats, so a
+ * forty-eighth of a turn is a sixth of a beat and every integer beat is a mark — which the spec
+ * fixtures need, since they look their rows up by exact beat.
+ */
+const SAMPLE_TURNS = 1 / 48;
+
+/**
+ * The turns at which this block emits a waypoint, for a given `fraction`.
+ *
+ * Built as `k / n` rather than by accumulating `+= SAMPLE_TURNS`, because 24 accumulations of
+ * a forty-eighth do not land on a half and the fixtures look their rows up by **exact** beat.
+ * The final mark is the arc's end whether or not it falls on a boundary, so the last segment
+ * may be shorter than the rest.
+ */
+function sampleTurns(fraction: number): readonly number[] {
+  const n = Math.max(1, Math.round(fraction / SAMPLE_TURNS));
+  const turns: number[] = [];
+  for (let k = 0; k < n; k++) turns.push((k * fraction) / n);
+  turns.push(fraction);
+  return turns;
+}
 
 export const orbit = {
   name: "orbit",
@@ -161,11 +197,8 @@ export const orbit = {
       };
     };
 
-    const waypoints: Waypoint[] = [at(0)];
-    for (let turns = SAMPLE_TURNS; turns < fraction - 1e-9; turns += SAMPLE_TURNS) {
-      waypoints.push(at(turns));
-    }
-    waypoints.push(at(fraction));
+    const marks = sampleTurns(fraction);
+    const waypoints: Waypoint[] = marks.map((turns) => at(turns));
 
     const entry = at(0);
     const exit = at(fraction);

@@ -7,6 +7,7 @@
 
 export * from "./geometry.js";
 export * from "./types.js";
+export * from "./shape.js";
 export * from "./blocks/index.js";
 export * from "./compose.js";
 export * from "./calls.js";

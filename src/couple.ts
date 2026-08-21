@@ -29,6 +29,7 @@
  */
 
 import { PLUS_Y, deg2rad, normaliseDeg, round, type Degrees } from "./geometry.js";
+import { COUPLE_WIDTH, DEFAULT_SHAPE, type FigureShape } from "./shape.js";
 import type { Pose } from "./types.js";
 
 /**
@@ -46,59 +47,25 @@ export function opposite(position: CouplePosition): CouplePosition {
 }
 
 /**
- * How far apart the two dancers of a couple stand, centre to centre.
+ * The measurements a couple is sized against.
  *
- * **A third of a facing pair's separation, because a couple is holding hands.** Ryan,
- * 2026-08-15: *"they should hold hands — we say touch hands — beau right palm up and
- * belle's left palm down … so the characters need to be a bit closer together when
- * partnered up."*
- *
- * It was `1` — the same as a facing pair — and that was wrong by more than "a bit".
- * Measured against townage's default cast at its derived frame scale of 2.60, a
- * unit-wide couple stands **2.60 world units** apart while their inside hands meet at
- * **0.82**: over three times too far, with the bodies not even close to touching at
- * 0.52. A third puts them within a hair of hand contact for that cast.
- *
- * 🔴 **The exact touching distance is a property of bodies, and this constant cannot
- * know them** — it depends on each dancer's shoulder offset, which runs 0.2 to 0.46
- * across the shipped cast. A consumer with real bodies should compute it and pass it to
- * {@link partnerUp}; a third is the engine's body-agnostic default and the ratio a
- * caller would recognise, not a fitted number.
- *
- * 🔴 **And on 2026-08-16 a consumer did, which is worth recording as the seam working
- * rather than as this constant being wrong.** townage measured its own cast and passes
- * **0.438** — a third put the couple 0.868 world units apart while one dancer's
- * shoulders alone are 0.920 across, so each inside shoulder sat *over* the joined hands
- * and both arms hung dead vertical. "Within a hair of hand contact", above, was true and
- * insufficient: hands can meet and still have nothing that reads as a handhold. Nothing
- * here changes — a third remains the right body-agnostic answer, and the fix belonged on
- * the side that owns shoulders.
+ * 🔴 **Moved to `shape.ts` and renamed `FigureShape`** (ADR-0020). It was `CoupleShape`
+ * here because the couple exchange was the only figure that read any of it; every call in
+ * the catalog reads it now, including the ones a facing pair dances, and a facing pair is
+ * not a couple. {@link COUPLE_WIDTH} went with it — a handhold span is a body measurement,
+ * which is what that module is.
  */
-export const COUPLE_WIDTH = 1 / 3;
 
 /**
- * The measurements a call's chains are sized against — everything about a couple that has a
- * length, and nothing about who or where they are.
+ * A couple: who stands where, which way the pair of them face, and how big they are.
  *
- * Split out from {@link Couple} because it is what `CallDef.chainsAt` needs and all a chain can
- * legitimately depend on. A chain that could see `center` or `facing` would be a chain that
- * could bake the floor into the figure.
+ * **A couple is a {@link FigureShape} plus a place to stand.** The four length fields come
+ * from there, and the split is load-bearing rather than tidy: the shape is everything a
+ * chain may read, and `center`/`facing` are exactly what it may not. A `Couple` is handed
+ * straight to `chainsAt`, which declares the narrower type and therefore cannot reach the
+ * floor even though the object it is given knows where the floor is.
  */
-export interface CoupleShape {
-  readonly width: number;
-  readonly clearance: number;
-  readonly archClearance: number;
-}
-
-/** The body-agnostic defaults: a third of a unit apart, passing at the arc's own radius. */
-export const DEFAULT_COUPLE_SHAPE: CoupleShape = {
-  width: COUPLE_WIDTH,
-  clearance: COUPLE_WIDTH / 2,
-  archClearance: COUPLE_WIDTH / 2,
-};
-
-/** A couple: who stands where, and which way the pair of them face. */
-export interface Couple {
+export interface Couple extends FigureShape {
   /** Centre-to-centre distance between the two dancers. */
   readonly width: number;
   /**
@@ -133,6 +100,21 @@ export interface Couple {
    * behaviour they had before this existed.
    */
   readonly archClearance: number;
+  /**
+   * How far from a joined forearm the couple's dancers stand — the **arm** measurement, and
+   * the fourth and last body-derived number a couple carries (ADR-0020).
+   *
+   * A couple has arms as surely as a facing pair does, and the calls that grip them are on the
+   * way: Star Thru's arch, an Allemande from a couple, the whole Trade family beyond this one.
+   * Carried here so a couple is a complete {@link FigureShape} and any call in the catalog can
+   * be sized to it, rather than the couple calls being sized and the rest falling back to the
+   * body-agnostic default halfway through a sequence — which is exactly the bug ADR-0019 fixed
+   * one field over.
+   *
+   * Defaults to `arm-turn`'s own `ORBIT_RADIUS`, so a consumer who has not measured arms gets
+   * the behaviour they had before this existed.
+   */
+  readonly gripRadius: number;
   /** Midpoint between the two dancers. */
   readonly center: { readonly x: number; readonly y: number };
   /** The direction both dancers face. */
@@ -165,23 +147,62 @@ export function belleDirection(facing: Degrees): { x: number; y: number } {
  *
  * `center` and `facing` describe the couple as a unit, so a caller who knows where a
  * couple should stand does not have to work out two poses to say so.
+ *
+ * ## The measurements, two ways
+ *
+ * `shape` takes either a **width** — the original signature, and what every existing caller
+ * passes — or a **{@link FigureShape} with any subset of its fields**, which is the readable
+ * form once there are four of them. Passing an object *and* the trailing positionals throws
+ * rather than picking a winner: a caller who does both has two different intentions and the
+ * engine should not guess which one survived.
+ *
+ * Anything unmeasured falls back the way it always has: clearance to the couple's own radius,
+ * the arch clearance to the clearance, and the grip radius to `arm-turn`'s (ADR-0020).
  */
 export function partnerUp(
   beau: string,
   belle: string,
   center: { x: number; y: number } = { x: 0, y: 0 },
   facing: Degrees = PLUS_Y,
-  width: number = COUPLE_WIDTH,
-  clearance: number = width / 2,
-  archClearance: number = clearance,
+  shape: number | Partial<FigureShape> = COUPLE_WIDTH,
+  clearance?: number,
+  archClearance?: number,
+  gripRadius?: number,
 ): Couple {
-  if (width <= 0) throw new Error("partnerUp: width must be positive");
-  if (clearance <= 0) throw new Error("partnerUp: clearance must be positive");
-  if (archClearance <= 0) throw new Error("partnerUp: archClearance must be positive");
+  if (typeof shape !== "number") {
+    if (clearance !== undefined || archClearance !== undefined || gripRadius !== undefined) {
+      throw new Error(
+        "partnerUp: pass the measurements in the shape object or positionally, not both",
+      );
+    }
+  }
+  // One normalised bag either way, so the fallbacks below are written once. They chain:
+  // an unmeasured arch clearance is the hands-free one, which is itself the couple's own
+  // radius when nobody measured that either (ADR-0016, ADR-0018).
+  const given: Partial<FigureShape> =
+    typeof shape === "number"
+      ? {
+          width: shape,
+          ...(clearance === undefined ? {} : { clearance }),
+          ...(archClearance === undefined ? {} : { archClearance }),
+          ...(gripRadius === undefined ? {} : { gripRadius }),
+        }
+      : shape;
+  const width = given.width ?? COUPLE_WIDTH;
+  const measured: FigureShape = {
+    width,
+    clearance: given.clearance ?? width / 2,
+    archClearance: given.archClearance ?? given.clearance ?? width / 2,
+    gripRadius: given.gripRadius ?? DEFAULT_SHAPE.gripRadius,
+  };
+  for (const [key, value] of Object.entries(measured)) {
+    if (!(value > 0)) throw new Error(`partnerUp: ${key} must be positive`);
+  }
   return {
-    width: round(width),
-    clearance: round(clearance),
-    archClearance: round(archClearance),
+    width: round(measured.width),
+    clearance: round(measured.clearance),
+    archClearance: round(measured.archClearance),
+    gripRadius: round(measured.gripRadius),
     center: { x: round(center.x), y: round(center.y) },
     facing: round(normaliseDeg(facing)),
     beau,

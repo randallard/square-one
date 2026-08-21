@@ -98,3 +98,6 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0017](0017-a-california-twirl-is-a-partner-trade-holding-on.md) | A California Twirl is a Partner Trade danced holding on | Accepted |
 | [0018](0018-the-arch-needs-a-hands-room-between-two-heads.md) | An arch needs a hand's room between two heads, so a couple carries a second clearance | Accepted |
 | [0019](0019-a-couples-clearances-are-carried-across-a-call-boundary.md) | A couple's clearances are carried across a call boundary, not measured | Accepted |
+| [0020](0020-every-call-is-sized-to-the-bodies-that-dance-it.md) | Every call is sized to the bodies that dance it | Accepted |
+| [0021](0021-a-body-widens-a-figure-and-never-narrows-it.md) | A body measurement widens a figure and never narrows it | Accepted |
+| [0022](0022-the-waypoints-are-the-path-so-the-arc-is-sampled-to-be-one.md) | The waypoints are the path, so an arc is sampled fine enough to be one | Accepted |

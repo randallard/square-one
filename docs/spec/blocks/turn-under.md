@@ -29,6 +29,7 @@ deletion, on the same terms `orbit`'s `lane` has carried since ADR-0014.
 | `fraction` | quarter multiples | How far the pair rotates together. A California Twirl is `0.5` |
 | `radius` | positive | Distance from the joined hands |
 | `spin` | whole turns, default `0` | This dancer's own extra rotation. `0` makes the arch, `1` goes under it |
+| `grip` | `arch` / `forearm`, default `arch` | The **handhold**, and therefore how a consumer draws it. 🔴 It emitted `forearm` with no way to say otherwise until 2026-08-21 — a grip at elbow height, on a figure whose own first line is *"one passing beneath the other's raised arch"*. The value predates `arch` existing at all ([ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md) added it to `GripStyle`) and nothing caught it, because this block still has no consumer. A parameter rather than a fixed `arch` because Box the Gnat joins right hands palm to palm (ADR-0020) |
 | `hand` | `right` / `left` | The joined hand, for the F2 grip channel |
 
 ## Frame, and why it is not `orbit`'s

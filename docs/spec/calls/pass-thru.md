@@ -48,6 +48,17 @@ coefficients — under call pressure the S flattens into exactly the rounded cor
 real dancers dance). Mirror (left-shoulder) variant is the transform of the same
 chain. No fractionalization (CALLERLAB lists no parts).
 
+## Sized to the pair (ADR-0020)
+
+`passThru.chainAt(shape)` puts `shape.clearance` into the block's `clearance`, and the two
+dancers split it — each steps half into their own lane, so they pass exactly that far apart. The
+`centered` exit still lands on the counterpart's former spot however wide the S bulges: the lane
+is an accommodation **inside** the figure, not a change to where it ends.
+
+This is the shallowest use of a clearance in the catalog and the one most likely to be seen —
+two dancers walking straight past each other is where a square is closest to a collision. Below
+`PASS_CLEARANCE` (0.30) it is ignored (ADR-0021).
+
 ## Choreography paths
 
 The composition *is* the path — see the `centered` fragment table in

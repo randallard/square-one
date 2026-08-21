@@ -20,6 +20,31 @@ export interface ArmTurnParams {
    *  over — Allemande Left). `hold`: keep the grip at orbit radius for composite
    *  calls that chain turns. */
   readonly exit: "step-out" | "hold";
+  /**
+   * How far from the shared pivot the joined forearms hold this dancer — **an arm
+   * measurement**, and the catalog's only one (ADR-0020).
+   *
+   * Two dancers gripping each other's forearms stand where their arms put them: long arms
+   * hold you further off the pivot and the turn they walk is a wider circle for it. Omitted
+   * is {@link ORBIT_RADIUS}, the body-agnostic answer this block has always used.
+   *
+   * 🔴 **Not floored the way a clearance is** — ADR-0021's exception. Room to pass is
+   * something a figure must *find*, so a small request changes nothing; a grip radius is a
+   * *placement*, and short arms genuinely dance a tighter turn than long ones. A consumer
+   * that measures this and gets a small number meant it.
+   */
+  readonly gripRadius?: number;
+  /**
+   * How far out the dancer stands **before** stepping in to grip — a fact about the
+   * formation rather than about the body, and here so that a figure entered from somewhere
+   * other than the standard pair frame can say so.
+   *
+   * Omitted is {@link ENTRY_RADIUS}, the pair frame's own half-unit. Raised to the grip
+   * radius when it is below it: a dancer cannot step *in* to a grip that is further out
+   * than they are standing, and a pair whose arms reach past their standing spots simply
+   * take the grip where they are.
+   */
+  readonly standoff?: number;
 }
 
 /** Where the dancer stands before stepping in — one half-unit out, per the shared
@@ -29,6 +54,17 @@ export const ENTRY_RADIUS = 0.5;
 export const ORBIT_RADIUS = 0.3;
 /** `step-out` leaves them just outside the orbit, facing their departure. */
 export const STEP_OUT_RADIUS = 0.42;
+
+/**
+ * Where `step-out` leaves the dancer, as a fraction of the way from the grip back out to
+ * the standoff.
+ *
+ * `0.42` between `0.3` and `0.5` is three fifths of the way out, and stating it as the
+ * fraction is what lets a pair with longer arms step out proportionally rather than to a
+ * fixed radius that might be *inside* their own grip. At the default radii it reproduces
+ * {@link STEP_OUT_RADIUS} exactly, which is what the spec fixtures check.
+ */
+export const STEP_OUT_FRACTION = (STEP_OUT_RADIUS - ORBIT_RADIUS) / (ENTRY_RADIUS - ORBIT_RADIUS);
 
 /** A full turn is 8 beats; the chart's fraction rows are linear in that. */
 export const BEATS_PER_TURN = 8;
@@ -46,6 +82,13 @@ export const armTurn = {
   generate(params: ArmTurnParams): Motion {
     const { hand, fraction, exit } = params;
     if (fraction <= 0) throw new Error("arm-turn: fraction must be positive");
+    const gripRadius = params.gripRadius ?? ORBIT_RADIUS;
+    if (gripRadius <= 0) throw new Error("arm-turn: gripRadius must be positive");
+    // A dancer standing inside their own grip has nothing to step in from, so the standoff
+    // is the grip in that case rather than an error: arms that long take the hold where the
+    // pair are already standing.
+    const standoff = Math.max(params.standoff ?? ENTRY_RADIUS, gripRadius);
+    const stepOutRadius = gripRadius + STEP_OUT_FRACTION * (standoff - gripRadius);
 
     const dir = hand === "left" ? 1 : -1; // left = CCW = positive
     const beats = fraction * BEATS_PER_TURN;
@@ -61,18 +104,18 @@ export const armTurn = {
 
     const waypoints: Waypoint[] = [
       // Entry travel: standing off, facing the counterpart head-on.
-      { beat: 0, x: 0, y: round(-ENTRY_RADIUS), facing: PLUS_Y },
+      { beat: 0, x: 0, y: round(-standoff), facing: PLUS_Y },
       // Step in; forearms join. Facing settles from head-on into the tangent — a
       // 90° turn-in that belongs to the approach, which the timing chart counts
       // outside the block ("from point of contact"). Rotation proper starts here.
-      { beat: CONTACT_BEAT, x: 0, y: round(-ORBIT_RADIUS), facing: round(normaliseDeg(facingAt(0))) },
+      { beat: CONTACT_BEAT, x: 0, y: round(-gripRadius), facing: round(normaliseDeg(facingAt(0))) },
     ];
 
     // A mark every quarter turn, then the final one. The last quarter is
     // compressed when it would overrun the block: the departure step is blended
     // into the closing beat rather than added to it.
     for (let turns = 0.25; turns < fraction - 1e-9; turns += 0.25) {
-      const p = polar(ORBIT_RADIUS, angleAt(turns));
+      const p = polar(gripRadius, angleAt(turns));
       waypoints.push({
         beat: CONTACT_BEAT + turns * BEATS_PER_TURN,
         x: round(p.x),
@@ -81,7 +124,7 @@ export const armTurn = {
       });
     }
 
-    const endRadius = exit === "step-out" ? STEP_OUT_RADIUS : ORBIT_RADIUS;
+    const endRadius = exit === "step-out" ? stepOutRadius : gripRadius;
     const end = polar(endRadius, angleAt(fraction));
     const endFacing = round(normaliseDeg(facingAt(fraction)));
     waypoints.push({ beat: beats, x: round(end.x), y: round(end.y), facing: endFacing });
@@ -101,7 +144,7 @@ export const armTurn = {
         },
       ],
       // Grip-centred frame: the pivot is the origin and the dancer stands off it.
-      entry: { position: { x: 0, y: round(-ENTRY_RADIUS) }, facing: PLUS_Y },
+      entry: { position: { x: 0, y: round(-standoff) }, facing: PLUS_Y },
       exit: { position: { x: round(end.x), y: round(end.y) }, facing: endFacing },
       momentum: {
         rotation,

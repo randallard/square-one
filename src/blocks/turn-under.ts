@@ -28,7 +28,7 @@
  */
 
 import { PLUS_Y, normaliseDeg, polar, round, turnOf } from "../geometry.js";
-import type { GripSpan, Motion, Waypoint } from "../types.js";
+import type { GripSpan, GripStyle, Motion, Waypoint } from "../types.js";
 
 export interface TurnUnderParams {
   /** Which side of the dancer the joined hands are on. */
@@ -49,6 +49,19 @@ export interface TurnUnderParams {
   readonly spin?: number;
   /** The joined hand, for the F2 grip channel. */
   readonly hand: "right" | "left";
+  /**
+   * How that hand is held — the **handhold**, and therefore how a consumer draws it.
+   *
+   * 🔴 **Defaults to `arch`, and used to emit `forearm` with no way to say otherwise.**
+   * This block's own first line is *"two dancers with joined hands rotate about them, one
+   * passing beneath the other's raised arch"* — palms joined and raised clear of the head
+   * is the only hold a dancer can walk under, and a forearm grip is at elbow height. The
+   * value was written before `arch` existed (ADR-0017 added it to {@link GripStyle}) and
+   * nothing caught it, because this block has never had a consumer. A parameter rather
+   * than a fixed `arch` because the Box the Gnat family joins right hands palm to palm
+   * and the arch family will not be the only one here (ADR-0020).
+   */
+  readonly grip?: GripStyle;
 }
 
 /** A full shared rotation takes 8 beats, as `orbit` and `arm-turn` do. */
@@ -63,7 +76,7 @@ export const turnUnder = {
   beats: (params: TurnUnderParams): number => params.fraction * BEATS_PER_TURN,
 
   generate(params: TurnUnderParams): Motion {
-    const { pivot, turn, fraction, radius, hand } = params;
+    const { pivot, turn, fraction, radius, hand, grip = "arch" } = params;
     const spin = params.spin ?? 0;
     if (fraction <= 0) throw new Error("turn-under: fraction must be positive");
     if (radius <= 0) throw new Error("turn-under: radius must be positive");
@@ -100,7 +113,7 @@ export const turnUnder = {
     const entry = at(0);
     const exit = at(1);
 
-    const grips: readonly GripSpan[] = [{ hand, grip: "forearm", from: 0, to: round(beats) }];
+    const grips: readonly GripSpan[] = [{ hand, grip, from: 0, to: round(beats) }];
 
     return {
       beats: round(beats),

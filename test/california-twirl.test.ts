@@ -5,7 +5,8 @@ import {
   californiaTwirl,
   partnerTrade,
 } from "../src/calls.js";
-import { COUPLE_WIDTH, insideHands, partnerUp } from "../src/couple.js";
+import { insideHands, partnerUp } from "../src/couple.js";
+import { COUPLE_WIDTH } from "../src/shape.js";
 import { danceCoupleSequence, isCoupleZero, resolveHome } from "../src/sequence.js";
 import { MINUS_Y, PLUS_Y } from "../src/geometry.js";
 

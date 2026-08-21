@@ -12,14 +12,14 @@
  */
 
 import type { CatalogCall, Hold } from "./blocks/index.js";
+import { ORBIT_RADIUS, PASS_CLEARANCE, SLIDE_DISTANCE } from "./blocks/index.js";
+import { positionOf, type Couple, type CouplePosition } from "./couple.js";
 import {
   COUPLE_WIDTH,
-  DEFAULT_COUPLE_SHAPE,
-  positionOf,
-  type Couple,
-  type CoupleShape,
-  type CouplePosition,
-} from "./couple.js";
+  DEFAULT_PAIR_SHAPE,
+  DEFAULT_SHAPE,
+  type FigureShape,
+} from "./shape.js";
 import { compose, ORIGIN } from "./compose.js";
 import { PLUS_Y, normaliseDeg, round, type Degrees } from "./geometry.js";
 import type { Motion, Pose } from "./types.js";
@@ -68,8 +68,24 @@ export interface CallDef {
    * far. Absent means the chain is the same at any width, and `chains`/`chain` stand.
    */
   readonly chainsAt?: (
-    couple: CoupleShape,
+    couple: FigureShape,
   ) => Readonly<Record<CouplePosition, readonly CatalogCall[]>>;
+  /**
+   * The chain for dancers of a given shape, when both sides walk the same one — the
+   * position-independent counterpart of {@link chainsAt} (ADR-0020).
+   *
+   * Present on every call whose geometry depends on a body, which since ADR-0020 is every
+   * call in the catalog: a Dosado's lane and a Pass Thru's lane are the room two people
+   * need to pass, and an Allemande Left's circle is the radius two joined forearms hold
+   * them at. Absent would mean a figure no body can change, and there are none left.
+   *
+   * 🔴 **A call has this or {@link chainsAt}, never both.** They answer the same question
+   * at different granularities, and a call that offered both would be a call whose two
+   * answers could disagree. `applyCallToCouple` reads `chainsAt` first and falls back to
+   * this one applied to both sides, which is what lets a *couple* dance a Pass Thru sized
+   * to their own bodies rather than to the body-agnostic default.
+   */
+  readonly chainAt?: (shape: FigureShape) => readonly CatalogCall[];
 }
 
 /**
@@ -108,7 +124,7 @@ export const TRADE_PASS_SEPARATION = COUPLE_WIDTH / 2;
  * *only* thing (ADR-0017): the arc is the same arc, walked with the inside hands joined and
  * raised into an arch.
  */
-function beauHalf(couple: CoupleShape, hold?: Hold): readonly CatalogCall[] {
+function beauHalf(couple: FigureShape, hold?: Hold): readonly CatalogCall[] {
   const radius = couple.width / 2;
   // Which clearance the figure has to make is decided by **what is passing**: two bodies, or
   // two bodies with a joined hand up between their heads (ADR-0018). The `hold` already says
@@ -144,6 +160,14 @@ function beauHalf(couple: CoupleShape, hold?: Hold): readonly CatalogCall[] {
  * whole call is at least `wanted`. Bisection, because the separation is monotonic in the bow —
  * the belle never leaves the disc the beau walks around, so pushing his arc outward moves him
  * further from her at every instant — and monotonic is all bisection needs.
+ *
+ * 🔴 **This measures the arc, and it is `orbit`'s job to emit a path that is one**
+ * (ADR-0022). `sampleMotion` walks straight lines between waypoints, so what the dancers
+ * actually follow is a polyline — and at the 45° spacing `orbit` used until 2026-08-21 the
+ * chords sagged `r(1 − cos 22.5°)` inside the curve, about 7.6% of the radius. On townage's
+ * cast a Trade solved to exactly the 0.710 its heads want **delivered 0.670**. The fix is the
+ * sampling, not this function: compensating here would bow the beau wider to hide a chord, and
+ * would have put a bow on the body-agnostic couple, who need none.
  *
  * Zero when the figure already has the room, which is every body-agnostic couple: the arc's own
  * radius is the default clearance, so nothing here fires until a consumer with bodies says
@@ -217,7 +241,7 @@ const BISECTION_STEPS = 40;
  * `hold` is again the whole difference between the two calls. Held, the step across *is*
  * the duck under the arch: she walks the diameter, and her own joined hand is over it.
  */
-function belleHalf(couple: CoupleShape, hold?: Hold): readonly CatalogCall[] {
+function belleHalf(couple: FigureShape, hold?: Hold): readonly CatalogCall[] {
   return [
     {
       block: "step-pivot",
@@ -243,7 +267,7 @@ function belleHalf(couple: CoupleShape, hold?: Hold): readonly CatalogCall[] {
  */
 const EXCHANGE_CHAINS_AT = (
   hold?: { readonly beau: Hold; readonly belle: Hold },
-) => (couple: CoupleShape): Readonly<Record<CouplePosition, readonly CatalogCall[]>> => ({
+) => (couple: FigureShape): Readonly<Record<CouplePosition, readonly CatalogCall[]>> => ({
   beau: beauHalf(couple, hold?.beau),
   belle: belleHalf(couple, hold?.belle),
 });
@@ -271,8 +295,8 @@ export const partnerTrade: CallDef = {
   // chart measures from. It was 6 while the lane cost a beat at each end (ADR-0013).
   chartBeats: 4,
   positionDependent: true,
-  chain: TRADE_CHAINS_AT(DEFAULT_COUPLE_SHAPE).beau,
-  chains: TRADE_CHAINS_AT(DEFAULT_COUPLE_SHAPE),
+  chain: TRADE_CHAINS_AT(DEFAULT_SHAPE).beau,
+  chains: TRADE_CHAINS_AT(DEFAULT_SHAPE),
   chainsAt: TRADE_CHAINS_AT,
 };
 
@@ -281,35 +305,140 @@ export const PAIR_A: Pose = { position: { x: 0, y: -0.5 }, facing: PLUS_Y };
 /** Dancer B is always A rotated 180° about the pair centre. */
 export const PAIR_B: Pose = { position: { x: 0, y: 0.5 }, facing: PLUS_Y + 180 };
 
+/**
+ * A body measurement, included in a chain only when it asks for more than the figure gives.
+ *
+ * The chains are the **serialisable** form of a call — what the custom-move workshop shows,
+ * what a shared move travels as, and what the spec fixtures are written against — so the
+ * body-agnostic instantiation has to come out byte-for-byte as the hand-written chain it
+ * replaced. Emitting `clearance: 0.3` where the block's own default is 0.3 would be a
+ * different document saying the same thing, and every fixture would have to learn the
+ * difference.
+ *
+ * The idiom is `beauHalf`'s, generalised: it has spread its lane in only when the bow is
+ * non-zero since ADR-0016.
+ */
+function sized<K extends string>(
+  key: K,
+  figure: number,
+  wanted: number,
+): Partial<Record<K, number>> {
+  return wanted > figure ? ({ [key]: wanted } as Record<K, number>) : {};
+}
+
+/**
+ * Dosado, sized to the pair dancing it — **out along your own lane, across, and back along
+ * the other**, with the lane as wide as the two bodies need (ADR-0020).
+ *
+ * The clearance reaches all three blocks and it is the same number in each: both passes split
+ * it into two lanes, half a lane each, and the crossing `slide` is a full lane change — which
+ * is that whole clearance. A pair who need more room to pass get a wider Dosado, not a slower one —
+ * the chart's 6 beats are untouched and the stride lengthens inside them.
+ *
+ * 🔴 **Before this, the only way to give real bodies room here was to make the floor bigger.**
+ * townage derives its entire frame scale from `2 × ENGINE_LANE_OFFSET` — the engine's fixed
+ * 0.3 — so one wide pair pushed the whole square apart, and its own doc calls that *"whole-square
+ * breathing done coarsely … the neediest pair sets the spacing for everyone, even in moves that
+ * don't involve them."* The figure can now hold the accommodation instead of the floor.
+ */
+const DOSADO_CHAIN_AT = (shape: FigureShape): readonly CatalogCall[] => [
+  {
+    block: "pass",
+    params: {
+      direction: "forward",
+      shoulder: "right",
+      exit: "lane",
+      ...sized("clearance", PASS_CLEARANCE, shape.clearance),
+    },
+  },
+  {
+    block: "slide",
+    params: { side: "right", ...sized("distance", SLIDE_DISTANCE, shape.clearance) },
+  },
+  // The return mirrors the outbound from the other lane: back straight, then
+  // blend diagonally onto home — CALLERLAB's "slide slightly to the left to
+  // return", walked as part of the "smooth circular path" (render feedback
+  // 2026-07-26; a straight retreat with a sidestep correction read wrong).
+  {
+    block: "pass",
+    params: {
+      direction: "backward",
+      shoulder: "left",
+      exit: "close",
+      ...sized("clearance", PASS_CLEARANCE, shape.clearance),
+    },
+  },
+];
+
 export const dosado: CallDef = {
   name: "Dosado",
   chartBeats: 6,
   positionDependent: false,
-  chain: [
-    { block: "pass", params: { direction: "forward", shoulder: "right", exit: "lane" } },
-    { block: "slide", params: { side: "right" } },
-    // The return mirrors the outbound from the other lane: back straight, then
-    // blend diagonally onto home — CALLERLAB's "slide slightly to the left to
-    // return", walked as part of the "smooth circular path" (render feedback
-    // 2026-07-26; a straight retreat with a sidestep correction read wrong).
-    { block: "pass", params: { direction: "backward", shoulder: "left", exit: "close" } },
-  ],
+  chain: DOSADO_CHAIN_AT(DEFAULT_PAIR_SHAPE),
+  chainAt: DOSADO_CHAIN_AT,
 };
+
+/**
+ * Pass Thru, sized to the pair dancing it — the same lane a Dosado's outbound uses, traced
+ * as an S back onto the centre line so the dancer finishes on the counterpart's spot.
+ *
+ * The shallowest use of a clearance in the catalog and the one most likely to be seen: two
+ * dancers walking straight past each other is where a square is closest to a collision, and
+ * townage's own frame comment says as much — *"real dancers brush shoulders on a Pass Thru,
+ * so tight is right."* Tight is right; through is not.
+ */
+const PASS_THRU_CHAIN_AT = (shape: FigureShape): readonly CatalogCall[] => [
+  {
+    block: "pass",
+    params: {
+      direction: "forward",
+      shoulder: "right",
+      exit: "centered",
+      ...sized("clearance", PASS_CLEARANCE, shape.clearance),
+    },
+  },
+];
 
 export const passThru: CallDef = {
   name: "Pass Thru",
   chartBeats: 2,
   positionDependent: false,
-  chain: [
-    { block: "pass", params: { direction: "forward", shoulder: "right", exit: "centered" } },
-  ],
+  chain: PASS_THRU_CHAIN_AT(DEFAULT_PAIR_SHAPE),
+  chainAt: PASS_THRU_CHAIN_AT,
 };
+
+/**
+ * Allemande Left, sized to the **arms** turning it — the catalog's one figure whose body
+ * measurement is not a clearance (ADR-0020).
+ *
+ * Nobody passes anybody in an arm turn: the two dancers grip and walk a circle, and what
+ * decides its radius is how far a joined forearm holds them off the shared pivot. Long arms
+ * dance a wide Allemande and short arms a tight one, and unlike a clearance this one is not
+ * floored — it is where two people's arms actually put them rather than room a figure has to
+ * find, so a small measurement is meant.
+ *
+ * The **standoff** — where they stand before stepping in — is deliberately not passed. That
+ * is the pair frame's own half-unit, a fact about the floor rather than about anybody's arms,
+ * and `shape.width` is a couple's handhold span which a facing pair does not have.
+ */
+const ALLEMANDE_CHAIN_AT = (shape: FigureShape): readonly CatalogCall[] => [
+  {
+    block: "arm-turn",
+    params: {
+      hand: "left",
+      fraction: 1,
+      exit: "step-out",
+      ...(shape.gripRadius === ORBIT_RADIUS ? {} : { gripRadius: shape.gripRadius }),
+    },
+  },
+];
 
 export const allemandeLeft: CallDef = {
   name: "Allemande Left",
   chartBeats: 8,
   positionDependent: false,
-  chain: [{ block: "arm-turn", params: { hand: "left", fraction: 1, exit: "step-out" } }],
+  chain: ALLEMANDE_CHAIN_AT(DEFAULT_PAIR_SHAPE),
+  chainAt: ALLEMANDE_CHAIN_AT,
 };
 
 /**
@@ -337,8 +466,8 @@ export const californiaTwirl: CallDef = {
   name: "California Twirl",
   chartBeats: 4,
   positionDependent: true,
-  chain: TWIRL_CHAINS_AT(DEFAULT_COUPLE_SHAPE).beau,
-  chains: TWIRL_CHAINS_AT(DEFAULT_COUPLE_SHAPE),
+  chain: TWIRL_CHAINS_AT(DEFAULT_SHAPE).beau,
+  chains: TWIRL_CHAINS_AT(DEFAULT_SHAPE),
   chainsAt: TWIRL_CHAINS_AT,
 };
 
@@ -352,9 +481,43 @@ export const CALLS = {
 
 export type CallName = keyof typeof CALLS;
 
-/** Apply a call in the block-local frame (dancer enters at the origin facing `+y`). */
-export function applyCall(name: CallName, start: Pose = ORIGIN): Motion {
-  return compose(CALLS[name].chain, start);
+/**
+ * Every call the catalog knows, as a list.
+ *
+ * Here rather than spelled `Object.keys(CALLS)` at each use because the properties that
+ * hold **over the whole catalog** are the ones worth asserting — "every call is sized to
+ * the bodies dancing it" (ADR-0020) is a claim about the set, and a claim about a set has
+ * to be able to name it. A call added without the property fails the assertion, which is
+ * the difference between a rule and a habit.
+ */
+export const ALL_CALL_NAMES = Object.keys(CALLS) as readonly CallName[];
+
+/**
+ * The chain a call is danced with at a given shape — the one place the fallback order is
+ * written down (ADR-0020).
+ *
+ * `chainAt` first, because a shape-aware call knows how to size itself; `chain` after,
+ * because a call that is not shape-aware is the same figure at every size and its static
+ * chain is the whole truth. Both are correct answers, and which one applies is a property
+ * of the call rather than of the caller.
+ */
+export function chainFor(def: CallDef, shape: FigureShape): readonly CatalogCall[] {
+  return def.chainAt?.(shape) ?? def.chain;
+}
+
+/**
+ * Apply a call in the block-local frame (dancer enters at the origin facing `+y`).
+ *
+ * `shape` is the bodies dancing it, defaulting to the facing pair's body-agnostic one —
+ * so an existing caller gets exactly the motion they got before shapes existed, and a
+ * caller with real dancers gets the figure sized to them (ADR-0020).
+ */
+export function applyCall(
+  name: CallName,
+  start: Pose = ORIGIN,
+  shape: FigureShape = DEFAULT_PAIR_SHAPE,
+): Motion {
+  return compose(chainFor(CALLS[name], shape), start);
 }
 
 /** Rotate a pose 180° about the pair centre — how dancer B is derived from A. */
@@ -371,8 +534,11 @@ export function counterpart(pose: Pose): Pose {
  * B's motion is A's rotated 180°, which is the pair symmetry the specs rely on —
  * so it is derived here rather than generated twice.
  */
-export function applyCallToPair(name: CallName): { a: Motion; b: Motion } {
-  const a = compose(CALLS[name].chain, PAIR_A);
+export function applyCallToPair(
+  name: CallName,
+  shape: FigureShape = DEFAULT_PAIR_SHAPE,
+): { a: Motion; b: Motion } {
+  const a = compose(chainFor(CALLS[name], shape), PAIR_A);
   const b: Motion = {
     ...a,
     waypoints: a.waypoints.map((w) => ({
@@ -415,9 +581,14 @@ export function applyCallToCouple(
   // Sized to **this** couple, not to `COUPLE_WIDTH` (ADR-0015). The static `chains` are the
   // default-width instantiation and are what the workshop and the spec fixtures read; what
   // gets danced is the figure at the width the pair are actually standing at.
+  //
+  // A couple is a `FigureShape`, so a **position-independent** call sizes itself here too:
+  // a couple dancing a Pass Thru passes at their own clearance rather than at the
+  // body-agnostic lane, which is ADR-0020's half of the seam ADR-0015 opened. `chainsAt`
+  // wins where a call has one, because only it can say what the two sides do differently.
   const chains = def.chainsAt?.(couple) ?? def.chains;
   for (const position of ["beau", "belle"] as const) {
-    const chain = chains?.[position] ?? def.chain;
+    const chain = chains?.[position] ?? chainFor(def, couple);
     const key = position === "beau" ? couple.beau : couple.belle;
     out[key] = compose(chain, positionOf(couple, position));
   }

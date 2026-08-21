@@ -79,6 +79,14 @@ the call for no reason the sources describe.
 the claim ADR-0017 rests on: a California Twirl's belle walks a Partner Trade's step. So there is
 no worked example with a hold in it — the tables below **are** the held step's tables.
 
+## The marks match `orbit`'s, at 7.5°
+
+This dancer's path needs no refining — `step-pivot` moves her linearly in the beat, so a chord
+between her marks *is* her path at any spacing. She is sampled at a forty-eighth of a turn anyway,
+to stay **beat-aligned with `orbit`** (ADR-0022): the instrument that asks how close a couple came
+pairs the two dancers **by beat**, so marks the two halves do not share are marks that measurement
+cannot see. Her facing is the part that gains resolution.
+
 ## Worked examples
 
 **The `Facing` column carries only cardinals.** The loader reads `+x`/`+y`/`−x`/`−y` and silently

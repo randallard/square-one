@@ -18,6 +18,8 @@ Two dancers join forearms and walk forward around their common pivot.
 | `hand` | `right` / `left` | Which forearms join. **Left = counterclockwise** pair rotation (the pivot is on your left as you walk forward); right = clockwise |
 | `fraction` | quarter multiples (½, ¾, 1, 1½ …) | How far around; sets beats and total facing rotation |
 | `exit` | `step-out` / `hold` | `step-out`: release and blend a departure step along the final facing into the last beat (the call is over — Allemande Left). `hold`: stay at orbit radius, grip kept (composite calls that chain turns, e.g. Do Paso — future) |
+| `gripRadius` | a distance, default `0.30` | How far from the shared pivot the joined forearms hold this dancer — **an arm measurement**, and the catalog's only one (ADR-0020). Long arms dance a wider Allemande. 🔴 Unlike a clearance it is **not** floored: a grip radius is where two people's arms actually put them, not room a figure has to find, so short arms genuinely dance a tighter turn (ADR-0021) |
+| `standoff` | a distance, default `0.50` | How far out the dancer stands **before** stepping in — the pair frame's own half unit, a fact about the floor rather than about anybody's arms. Raised to `gripRadius` when it is below it: a dancer cannot step *in* to a grip that is further out than they are standing, so a pair whose arms reach past their spots simply take the hold where they are |
 
 ## Entry contract
 
@@ -33,6 +35,14 @@ outside the block per the timing chart's convention.
 | ½ | 4 |
 | ¾ | 6 |
 | full | 8 |
+
+## The radii are defaults, not constants
+
+The fragment below is the **body-agnostic** instantiation: standoff `0.5`, grip `0.3`, step-out
+`0.42`. The step-out is the one worth stating as a ratio rather than a number — it is three fifths
+of the way from the grip back out to the standoff (`STEP_OUT_FRACTION`), which is what keeps it
+outside the grip for a pair whose arms are longer than `0.42`. Stated as a fixed radius, such a
+pair would finish an Allemande Left by stepping **in** (ADR-0020).
 
 ## Waypoint fragment (local pair frame: dancer at `(0, −0.5)` facing `+y`, grip at origin)
 

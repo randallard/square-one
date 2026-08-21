@@ -30,8 +30,9 @@
  */
 
 import { normaliseDeg, round, type Degrees } from "./geometry.js";
-import { CALLS, applyCallToCouple, applyCallToPair, type CallName } from "./calls.js";
+import { CALLS, applyCallToCouple, applyCallToPair, chainFor, type CallName } from "./calls.js";
 import { coupleSet, partnerUp, type Couple } from "./couple.js";
+import { DEFAULT_PAIR_SHAPE, type FigureShape } from "./shape.js";
 import { compose } from "./compose.js";
 import type { GripSpan, Motion, Pose, Waypoint } from "./types.js";
 
@@ -171,8 +172,11 @@ export function resolveHome(start: SetPose, end: SetPose): HomeResolution {
  * which `counterpart` cannot express. Composing each dancer independently here is
  * what leaves room for it; `applyCallToPair` is where the work will be.
  */
-export function danceSequence(calls: readonly CallName[]): Sequence {
-  const first = applyCallToPair("dosado");
+export function danceSequence(
+  calls: readonly CallName[],
+  shape: FigureShape = DEFAULT_PAIR_SHAPE,
+): Sequence {
+  const first = applyCallToPair("dosado", shape);
   const start: Record<string, Pose> = { a: first.a.entry, b: first.b.entry };
 
   const steps: SequenceStep[] = [];
@@ -180,7 +184,10 @@ export function danceSequence(calls: readonly CallName[]): Sequence {
   let beat = 0;
 
   for (const call of calls) {
-    const chain = CALLS[call].chain;
+    // The same shape for every call of the sequence, because it is the dancers' bodies and
+    // they do not change between calls — the rule ADR-0019 established for a couple's
+    // clearances, applied to the pair that has no `Couple` to carry them on.
+    const chain = chainFor(CALLS[call], shape);
     const motions: Record<string, Motion> = {};
     for (const key of PAIR_KEYS) {
       const from = at[key];
@@ -211,8 +218,11 @@ export function danceSequence(calls: readonly CallName[]): Sequence {
  * resolves it. `Dosado` is the starter set's geometric zero and this is the check
  * that says so out loud rather than in a comment.
  */
-export function isZero(calls: readonly CallName[]): HomeResolution {
-  const seq = danceSequence(calls);
+export function isZero(
+  calls: readonly CallName[],
+  shape: FigureShape = DEFAULT_PAIR_SHAPE,
+): HomeResolution {
+  const seq = danceSequence(calls, shape);
   return resolveHome(seq.start, seq.end);
 }
 
@@ -247,6 +257,10 @@ export function isZero(calls: readonly CallName[]): HomeResolution {
  * Clearance cannot be measured from two exit poses at all: it is a fact about the **bodies**,
  * not about the floor, and dancers do not get narrower between calls. So the number that
  * arrives is the number that leaves.
+ *
+ * 🔴 **The grip radius is carried for the same reason** (ADR-0020). It is an arm, and a call
+ * boundary does not lengthen one. Adding it here rather than after the next consumer found it
+ * missing is the whole lesson of ADR-0019, which is why it is in the same argument list.
  */
 export function reformCouple(couple: Couple, motions: Record<string, Motion>): Couple {
   const beau = motions[couple.beau]?.exit;
@@ -263,6 +277,7 @@ export function reformCouple(couple: Couple, motions: Record<string, Motion>): C
     ),
     couple.clearance,
     couple.archClearance,
+    couple.gripRadius,
   );
 }
 

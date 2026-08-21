@@ -10,6 +10,7 @@ steps; later: Dodge-family calls, adjustments).
 | Parameter | Values | Effect |
 |---|---|---|
 | `side` | `right` / `left` | Sidestep toward the dancer's own right or left |
+| `distance` | a distance, default `0.30` | How far to step — **a body measurement** (ADR-0020). A Dosado's slide is a full lane change, so it is exactly the room that Dosado's pass needed. Below `SLIDE_DISTANCE` (`2 × 0.15`) it is ignored (ADR-0021). See the note below: this is the third time this parameter has existed, and the first time it has had a floor |
 
 ## Entry contract
 
@@ -44,6 +45,25 @@ at the crossing moment — a timing/collision check, not a formation requirement
   half-lane slide therefore took the same beat as a full lane change and moved at
   a sixth the speed. **Design a distance parameter and its timing together, or
   not at all.**
+- 🔴 **And it is back, under the same name, on 2026-08-21 —
+  [ADR-0020](../../adr/0020-every-call-is-sized-to-the-bodies-that-dance-it.md).**
+  Written here rather than quietly, because a parameter removed twice and
+  restored a third time is exactly the kind of thing a spec should make somebody
+  argue for.
+
+  The standing instruction — *design the parameter and its timing together* — is
+  answered by a floor rather than by a timing change. `distance` cannot ask for
+  **less** than `SLIDE_DISTANCE`
+  ([ADR-0021](../../adr/0021-a-body-widens-a-figure-and-never-narrows-it.md)), so
+  the failure both previous versions had is unreachable: what killed them was a
+  *shorter* step charged a full beat, which is a crawl. A **longer** step in the
+  same beat is a longer stride, which is what a bigger dancer covering more
+  ground actually looks like, and it is the identical trade
+  [`step-pivot`](step-pivot.md) makes — a wider couple's belle covers more ground
+  in the same four beats and nobody calls that a defect.
+
+  The 1-beat `BEATS` is therefore still flat, still untouched, and now correct in
+  the only direction the parameter can move.
 - Facing constant — **momentum delta: rotation 0**; exit flow vector is lateral
   (which arms the F6 lateral-motion rule: the next block must not move this
   dancer against that lateral direction).
@@ -51,7 +71,8 @@ at the crossing moment — a timing/collision check, not a formation requirement
 
 ## Exit pose
 
-0.30 units to the named side, same depth, facing unchanged.
+`distance` units to the named side — `0.30` in the fragment above and in every fixture — same
+depth, facing unchanged.
 
 ## Flow notes
 

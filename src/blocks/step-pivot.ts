@@ -70,10 +70,21 @@ export interface StepPivotParams {
  *  `orbit` and `arm-turn` use, because the timing charts do not distinguish. */
 export const BEATS_PER_TURN = 8;
 
-/** How often a waypoint is emitted, in turns — every eighth of a circle, matching
- *  `orbit`, so a Trade's two sides are sampled at the same beats and can be compared
- *  waypoint for waypoint. */
-const SAMPLE_TURNS = 0.125;
+/**
+ * How often a waypoint is emitted, in turns — a forty-eighth, **matching `orbit`**, so a
+ * Trade's two sides are sampled at the same beats and can be compared waypoint for waypoint.
+ *
+ * 🔴 That matching is not cosmetic: the instrument that asks *how close did these two get?*
+ * pairs the dancers up **by beat**, so marks the two halves do not share are marks the
+ * measurement cannot see. When `orbit` went from 45° to 7.5° for the chord sag (ADR-0022),
+ * leaving this at 45° would have quietly cut that instrument back to five samples per call —
+ * a clearance check blind to five sixths of the figure.
+ *
+ * This dancer's own path needs no refining: `step-pivot` moves her linearly in the beat, so a
+ * chord between her marks *is* her path at any spacing. Her **facing** is the part that gains,
+ * and the beat alignment is the part that matters.
+ */
+const SAMPLE_TURNS = 1 / 48;
 
 export const stepPivot = {
   name: "step-pivot",
@@ -106,10 +117,11 @@ export const stepPivot = {
       };
     };
 
-    const waypoints: Waypoint[] = [at(0)];
-    for (let turns = SAMPLE_TURNS; turns < fraction - 1e-9; turns += SAMPLE_TURNS) {
-      waypoints.push(at(turns));
-    }
+    // `k / n` rather than an accumulated `+=`, for the reason `orbit` gives: the fixtures look
+    // their rows up by exact beat, and repeated addition of a forty-eighth does not land on one.
+    const n = Math.max(1, Math.round(fraction / SAMPLE_TURNS));
+    const waypoints: Waypoint[] = [];
+    for (let k = 0; k < n; k++) waypoints.push(at((k * fraction) / n));
     waypoints.push(at(fraction));
 
     const entry = at(0);

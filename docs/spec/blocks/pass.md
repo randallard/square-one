@@ -12,6 +12,14 @@ and every "pass right/left shoulders" action.
 | `direction` | `forward` / `backward` | Walk facing-forward, or back up |
 | `shoulder` | `right` / `left` | Which shoulders pass — sets the lane: right-shoulder pass shifts each dancer to their **own left** lane (and vice versa) |
 | `exit` | `lane` / `centered` / `close` | `lane` ends in the offset lane (a lateral block follows — Dosado's outbound); `centered` traces a shallow S back onto the center line, ending on the counterpart's former spot (the call is over — Pass Thru); `close` finishes a figure: travel the line, then blend diagonally one lane toward the brushing shoulder on the final beat (Dosado's return — the definition's "slide slightly" walked as part of the smooth path). `close` takes **3 beats**; the others 2. Per ADR-0006 these are *ideal* paths; simulated dancers cut corners exactly as much as their coefficients allow |
+| `clearance` | a distance, default `0.30` | How much room the two dancers need to pass — **a body measurement** (ADR-0020). They split it: each steps half of it into their own lane, so a clearance of `c` leaves them `c` apart at the pass. Below `PASS_CLEARANCE` (`2 × 0.15`, the gap the figure is drawn with) it is ignored — bodies widen a figure and never narrow it (ADR-0021). Costs no beats: the stride lengthens inside the chart's timing |
+
+## The lane is where a body arrives
+
+Every table below is the **body-agnostic** instantiation, at the `0.15` half-lane this block has
+always been drawn with. A pair who need more room get the same tables with every `x` scaled by
+`clearance / 0.30` — the shape is identical and the beats are unchanged, which is why no fixture
+here moved when the parameter arrived.
 
 ## Entry contract
 

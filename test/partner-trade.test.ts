@@ -4,7 +4,8 @@ import {
   applyCallToCouple,
   partnerTrade,
 } from "../src/calls.js";
-import { COUPLE_WIDTH, coupleSet, partnerUp, positionOf } from "../src/couple.js";
+import { coupleSet, partnerUp, positionOf } from "../src/couple.js";
+import { COUPLE_WIDTH } from "../src/shape.js";
 import { danceCoupleSequence, isCoupleZero, reformCouple, resolveHome } from "../src/sequence.js";
 import { MINUS_Y, PLUS_Y, deltaDeg } from "../src/geometry.js";
 import type { Waypoint } from "../src/types.js";

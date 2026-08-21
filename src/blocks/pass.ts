@@ -5,7 +5,7 @@
  * "pass right/left shoulders" action.
  */
 
-import { PLUS_Y, normaliseDeg, round } from "../geometry.js";
+import { PLUS_Y, atLeast, normaliseDeg, round } from "../geometry.js";
 import type { Motion } from "../types.js";
 
 export interface PassParams {
@@ -20,19 +20,54 @@ export interface PassParams {
    *  circular path rather than stepped as a correction). `close` takes 3 beats;
    *  the others 2. */
   readonly exit: "lane" | "centered" | "close";
+  /**
+   * How much room the two dancers need to pass each other — **a body measurement**,
+   * and the only one this block takes (ADR-0020).
+   *
+   * The two of them split it: each steps half of it into their own lane, so a
+   * `clearance` of `c` leaves them `c` apart at the pass. Omitted — the ordinary case,
+   * and every use before ADR-0020 — is {@link PASS_CLEARANCE}, the gap the figure is
+   * drawn with.
+   *
+   * 🔴 **A clearance smaller than the figure's own is ignored** (ADR-0021): two dancers who
+   * can pass in less room than a Dosado is drawn with still dance the Dosado. This only ever
+   * widens the lane.
+   *
+   * 🔴 **It costs no beats, and that is the same trade `step-pivot` makes.** A wider
+   * pass is a longer stride inside the chart's timing, not a slower one — the lane rides
+   * inside the walk exactly as ADR-0013's bow rides inside the arc. What ADR-0013 threw
+   * out was a *sidestep block* charged a flat beat for a sixth of a Dosado's distance,
+   * which is the opposite failure.
+   */
+  readonly clearance?: number;
 }
 
 /** Half the gap between the two lanes. A right-shoulder pass shifts each dancer
  *  into their own *left* lane, which is `-x` when facing `+y`. */
 export const LANE_OFFSET = 0.15;
 
+/**
+ * The room the figure itself gives two dancers to pass in: both lanes, so twice
+ * {@link LANE_OFFSET}.
+ *
+ * The floor under {@link PassParams.clearance} and the number a consumer's own
+ * measurement is compared against. townage has been deriving its whole frame scale from
+ * this constant since its ADR-0012 — `minScaleForGap` divides by `2 × ENGINE_LANE_OFFSET`
+ * — which is the same fact stated from the other side: with the lane fixed, the only way
+ * to give bodies room was to make the floor bigger. Passing a clearance is the way that
+ * does not move everybody else.
+ */
+export const PASS_CLEARANCE = 2 * LANE_OFFSET;
+
 export const pass = {
   name: "pass",
   beats: (params: PassParams): number => (params.exit === "close" ? 3 : 2),
 
   generate(params: PassParams): Motion {
-    // Right shoulders pass ⇒ each dancer shifts to their own left ⇒ -x.
-    const lane = (params.shoulder === "right" ? -1 : 1) * LANE_OFFSET;
+    // Right shoulders pass ⇒ each dancer shifts to their own left ⇒ -x. Half the
+    // clearance each, because both of them step: the pair end `clearance` apart.
+    const offset = atLeast(PASS_CLEARANCE, params.clearance) / 2;
+    const lane = (params.shoulder === "right" ? -1 : 1) * offset;
     // A backward lane pass holds its lane and travels dead straight. The veer
     // into the lane is not this block's job: per the entry contract the dancer
     // is *already* laterally clear of the counterpart (in Dosado, the slide put

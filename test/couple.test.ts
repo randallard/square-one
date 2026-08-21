@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   COUPLE_POSITIONS,
-  COUPLE_WIDTH,
   belleDirection,
   coupleSet,
   opposite,
@@ -11,6 +10,7 @@ import {
   positionOf,
 } from "../src/couple.js";
 import { MINUS_X, MINUS_Y, PLUS_X, PLUS_Y, normaliseDeg } from "../src/geometry.js";
+import { COUPLE_WIDTH } from "../src/shape.js";
 import { resolveHome } from "../src/sequence.js";
 
 describe("partnering up", () => {

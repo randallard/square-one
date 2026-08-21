@@ -76,3 +76,18 @@ export function round(n: number, dp = 6): number {
   // `+ 0` collapses `-0` to `0`; a mirrored zero should not read as negative.
   return Math.round(n * f) / f + 0;
 }
+
+/**
+ * The figure's own number, or the bodies', whichever is larger.
+ *
+ * The one-line form of **bodies widen a figure; they never narrow it** — ADR-0021, stated in
+ * full in `shape.ts` and followed by every block that takes a body measurement. Here rather
+ * than there because the blocks need it and `shape.ts` reads the blocks' own defaults, and a
+ * helper is not worth a cycle.
+ *
+ * `wanted` being `undefined` is a consumer who has not measured this yet — the ordinary
+ * case, and not an error: they get the figure as drawn.
+ */
+export function atLeast(figure: number, wanted: number | undefined): number {
+  return wanted === undefined || wanted <= figure ? figure : wanted;
+}
