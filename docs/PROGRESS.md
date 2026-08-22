@@ -4,8 +4,9 @@ _Last updated: 2026-08-21_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-08-21, third chunk) — a pass walked a flat 0.80 that nobody could derive.**
-**225 tests** (from 223), lint / typecheck / build clean. Ryan, watching the sized Dosado:
+**▶ RIGHT NOW (2026-08-21, third chunk) — a pass walked a flat 0.80 that nobody could derive.
+LANDED as `d584a74`.** **225 tests** (from 223), lint / typecheck / build clean. Narrative in
+[the nineteenth journal entry](journal/2026-08-21-a-pass-walks-just-far-enough-19.md). Ryan, watching the sized Dosado:
 *"dosado pass by too far though — should watch body / head size and pass by just enough to clear
 and slide to the right far enough to step back."*
 
