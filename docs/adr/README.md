@@ -102,3 +102,4 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0021](0021-a-body-widens-a-figure-and-never-narrows-it.md) | A body measurement widens a figure and never narrows it | Accepted |
 | [0022](0022-the-waypoints-are-the-path-so-the-arc-is-sampled-to-be-one.md) | The waypoints are the path, so an arc is sampled fine enough to be one | Accepted |
 | [0023](0023-a-pass-walks-just-far-enough-to-clear.md) | A pass walks just far enough to clear | Accepted |
+| [0024](0024-the-arch-is-a-hold-and-turn-under-is-deleted.md) | The arch is a hold, not a block — `turn-under` is deleted | Accepted |

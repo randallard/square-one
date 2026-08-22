@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { armTurn, orbit, pass, slide, stepPivot, turnUnder } from "../src/blocks/index.js";
+import { armTurn, orbit, pass, slide, stepPivot } from "../src/blocks/index.js";
 import { compose } from "../src/compose.js";
 import { CALLS, PAIR_A } from "../src/calls.js";
 import type { Motion } from "../src/types.js";
@@ -51,15 +51,6 @@ function invoke(v: SpecVector): Motion {
         distance: Number(b),
         turn: c as "right" | "left",
         fraction: Number(v.args[3] ?? 0.5),
-      });
-    case "turn-under":
-      return turnUnder.generate({
-        pivot: a as "right" | "left",
-        turn: b as "right" | "left",
-        fraction: Number(c),
-        radius: Number(v.args[3] ?? 0.5),
-        spin: Number(v.args[4] ?? 0),
-        hand: (v.args[5] ?? "right") as "right" | "left",
       });
     default:
       throw new Error(`${v.file}: unknown block \`${v.block}\` in the catalog`);

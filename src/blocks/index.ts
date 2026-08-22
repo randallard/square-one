@@ -7,9 +7,8 @@ import { orbit, type OrbitParams } from "./orbit.js";
 import { pass, type PassParams } from "./pass.js";
 import { slide, type SlideParams } from "./slide.js";
 import { stepPivot, type StepPivotParams } from "./step-pivot.js";
-import { turnUnder, type TurnUnderParams } from "./turn-under.js";
 
-export { armTurn, orbit, pass, slide, stepPivot, turnUnder };
+export { armTurn, orbit, pass, slide, stepPivot };
 
 /**
  * The body-agnostic constants a block is drawn with — **the floors a consumer's own
@@ -38,7 +37,6 @@ export type {
   PassParams,
   SlideParams,
   StepPivotParams,
-  TurnUnderParams,
 };
 export * from "./types.js";
 
@@ -50,8 +48,7 @@ export type CatalogCall =
   | { readonly block: "slide"; readonly params: SlideParams }
   | { readonly block: "arm-turn"; readonly params: ArmTurnParams }
   | { readonly block: "orbit"; readonly params: OrbitParams }
-  | { readonly block: "step-pivot"; readonly params: StepPivotParams }
-  | { readonly block: "turn-under"; readonly params: TurnUnderParams };
+  | { readonly block: "step-pivot"; readonly params: StepPivotParams };
 
 export const BLOCK_NAMES = [
   "pass",
@@ -59,7 +56,6 @@ export const BLOCK_NAMES = [
   "arm-turn",
   "orbit",
   "step-pivot",
-  "turn-under",
 ] as const;
 export type BlockName = (typeof BLOCK_NAMES)[number];
 
@@ -75,8 +71,6 @@ export function generateBlock(call: CatalogCall): Motion {
       return orbit.generate(call.params);
     case "step-pivot":
       return stepPivot.generate(call.params);
-    case "turn-under":
-      return turnUnder.generate(call.params);
   }
 }
 
@@ -92,7 +86,5 @@ export function blockBeats(call: CatalogCall): number {
       return orbit.beats(call.params);
     case "step-pivot":
       return stepPivot.beats(call.params);
-    case "turn-under":
-      return turnUnder.beats(call.params);
   }
 }

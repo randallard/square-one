@@ -38,7 +38,6 @@ import {
   generateBlock,
   pass,
   slide,
-  turnUnder,
 } from "../src/blocks/index.js";
 import { atLeast } from "../src/geometry.js";
 import { danceCoupleSequence, danceSequence, reformCouple } from "../src/sequence.js";
@@ -409,31 +408,6 @@ describe("the shape itself", () => {
 });
 
 describe("the handhold each figure names", () => {
-  it("🔴 draws `turn-under`'s hold as an arch, which is the only hold you can walk under", () => {
-    // The block's own first line is "two dancers with joined hands rotate about them, one
-    // passing beneath the other's raised arch", and it emitted `forearm` — a grip at elbow
-    // height. Written before `arch` existed (ADR-0017) and never caught, because this block
-    // has never had a consumer.
-    const arch = turnUnder.generate({
-      pivot: "right",
-      turn: "right",
-      fraction: 0.5,
-      radius: 0.5,
-      hand: "right",
-    });
-    expect(nth(arch.grips, 0).grip).toBe("arch");
-    const forearm = turnUnder.generate({
-      pivot: "right",
-      turn: "right",
-      fraction: 0.5,
-      radius: 0.5,
-      hand: "right",
-      grip: "forearm",
-    });
-    expect(nth(forearm.grips, 0).grip).toBe("forearm");
-    expect(forearm.waypoints).toEqual(arch.waypoints);
-  });
-
   it("🔴 leaves the hands-free calls saying so, at any shape", () => {
     // F2 asks whether the hand a following call needs is *available*, and an empty grip list
     // is a positive fact rather than an omission. Widening a lane must not invent a hold.

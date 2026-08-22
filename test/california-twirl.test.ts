@@ -33,7 +33,7 @@ describe("California Twirl", () => {
   it("🔴 turns the belle 180° CCW — not 540° CW", () => {
     // Ryan, 2026-08-18, watching it: *"the way it's running now the belle is doing 540
     // degree turn cw."* She was: the call was a rigid rotation of the pair about their
-    // joined hands, and `turn-under`'s `spin: 1` gave her a whole extra turn beneath a
+    // joined hands, and the deleted `turn-under` block's `spin: 1` gave her a whole turn beneath a
     // fixed arch on top of the pair's own −180°. ADR-0017 replaced the figure; she turns
     // once, to her left, like any belle exchanging places.
     //

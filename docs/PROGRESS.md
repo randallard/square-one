@@ -42,6 +42,40 @@ artifact (ADR-0009), and the figure has two questions in it that geometry should
    clearance is **vertical**, not lateral. The third is probably what a dancer would say, and it
    is the one the-lot cannot currently draw.
 
+### ⚠️ Owed — reconciled 2026-08-21
+
+🔴 **The three owed lists had drifted**, in this file and in the-lot's and the planning repo's:
+items finished during the day were still listed open, and one had been open since 08-18. Ryan
+asked for the short list and four of thirteen entries turned out to be already done. Reconciled
+here, and **the reconciliation is the point** — a stale backlog costs more than an empty one,
+because it is read as the current state and is not.
+
+**✅ Closed today.** Every render watch: `#dance=two-trades`, `#dance=two-twirls`, the elbow watch
+and where the join sits — all *"looks good"*. Also: the **v0.3.0 tag**; the-lot passing both the
+hands-free clearance and the grip radius; the co-development link (its ADR-0034); Allemande Left's
+accommodation watch; the Dosado's walk; and the **ADR-0014 journal entry**, owed since 08-18 and
+now [entry 20](journal/2026-08-21-the-belles-half-was-a-step-and-a-pivot-20.md).
+
+**🔴 Still open, in the order Ryan set:**
+
+1. ✅ **`turn-under` is deleted** —
+   [ADR-0024](adr/0024-the-arch-is-a-hold-and-turn-under-is-deleted.md). Its two dancers turn in
+   opposite directions in every arch call that exists, so no rigid rotation of the pair produces
+   any of them. **The catalog is five blocks and every one has a live consumer**, which was not
+   true this morning. 218 tests, from 225.
+2. **Retire the-lot's frame-scale hack.** `minScaleForGap` divides by a hand-copied
+   `ENGINE_LANE_OFFSET`, so one wide pair still grows the whole square in every call. Unblocked by
+   the tag now that pair calls hold their own accommodation. Wants a render watch.
+3. **To discuss:** the standing touch-hands handhold has no accommodation (the third hold, and its
+   hands meet *in front of* the pair rather than between them); `arm-turn` still samples every
+   quarter turn with the sag ADR-0022 removed from `orbit`; the-lot's hold `forward` is still
+   0.320 on the default cast, flagged 2026-08-17.
+4. **Star Thru**, on its two questions above — and on **two couples in `#dance`**, which is
+   planning ADR-0011's S2 and is the real prerequisite. `applyCallToPair` cannot express a
+   formation change, which ADR-0012 named as "the next thing" and still is.
+5. **A shape a call does not read is silently ignored** (ADR-0020). Standing caution rather than a
+   task: assert on the figure, not the argument.
+
 ---
 
 **▶ 2026-08-21, third chunk — a pass walked a flat 0.80 that nobody could derive.

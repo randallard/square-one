@@ -183,10 +183,13 @@ Three things were wrong with it and only one was the number Ryan read off the sc
    had just found in the Trade, wearing the opposite disguise: there, two dancers sharing a lane;
    here, two dancers who never approach because neither crosses the floor between them.
 
-The block it used, [`turn-under`](../blocks/turn-under.md), keeps its spec and its conformance
-vectors — it was built for **Star Thru** and **Box the Gnat** as much as for this call — but it
-now has **no consumer**, and ADR-0005's bet that the catalog makes later calls cheaper is open
-again rather than won on it.
+🔴 **The block it used, `turn-under`, is gone** (2026-08-21,
+[ADR-0024](../../adr/0024-the-arch-is-a-hold-and-turn-under-is-deleted.md)). It was built for
+**Star Thru** and **Box the Gnat** as much as for this call, and losing this consumer left it with
+none. Star Thru was then derived and does not want it either — its two dancers turn in **opposite**
+directions, which no rigid rotation of the pair can produce. Two calls predicted to need it,
+neither needing it: **the arch is a hold, not a block.** ADR-0005's bet is settled on this one and
+settled against.
 
 ## Choreography paths
 
