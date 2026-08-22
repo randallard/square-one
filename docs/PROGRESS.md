@@ -17,11 +17,12 @@ relinks the engine to the sibling checkout whenever one exists. **A fresh clone 
 pin and gets a package without `ShapeAt`.** The co-development link and the tag validation are the
 same mechanism, so the check is only as good as the last time somebody turned the convenience off.
 
-▶ **So the next concrete thing is a release: `0.4.0`.** `main` is eight commits past v0.3.0 and
-`package.json` still reads `0.3.0`. Two of the eight change the API — **`turn-under` is deleted**
+✅ **RELEASED AS `0.4.0`, and the-lot's pin moves with it.** Two of the nine commits since v0.3.0
+change the API — **`turn-under` is deleted**
 ([ADR-0024](adr/0024-the-arch-is-a-hold-and-turn-under-is-deleted.md), breaking) and **`ShapeAt` is
-added** (ADR-0025, additive) — so a minor bump, and the-lot's pin moves with it. **Ryan pushes the
-tags.**
+added** (ADR-0025, additive) — so a minor bump. 🔴 **The tag is local until it is pushed to
+`origin`**; until then a fresh clone or CI still resolves the old pin, and the `SQUARE_ONE_NO_LINK=1`
+check against the published tarball cannot run.
 
 ✅ **[ADR-0025](adr/0025-a-sequence-can-size-each-call-to-its-own-shape.md) — a sequence can size
 each call to its own shape**, landed `c0ee981` on 08-21. `danceCoupleSequence` takes an optional
