@@ -24,7 +24,7 @@ and slide to the right far enough to step back."*
     separation, because finishing on the counterpart's spot is what a Pass Thru *is*. Schedules
     are fractions of the travel now, so each exit's shape is stated once.
   - **Landed: 2.083 → 1.692 world walked, 1.562 → 0.781 past.** Still a zero to the last decimal,
-    still 6 beats.
+    still 6 beats. ✅ **Watched and accepted** — Ryan, `#dance=dosado`: *"dosado looks good."*
   - 🔴 **Spec fixtures moved for the first time in this repo.** `blocks/pass.md`'s `lane` and
     `close` tables and `calls/dosado.md`'s full-call table are rewritten — the docs are the
     fixtures (ADR-0009), so a figure that changes changes them. Old numbers kept with the
