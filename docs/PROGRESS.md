@@ -1,16 +1,86 @@
 # Progress & Status
 
-_Last updated: 2026-08-21_
+_Last updated: 2026-08-22_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-08-21) — ▶ STAR THRU IS DERIVED AND SPEC'D, AND IT IS WAITING ON TWO
+**▶ RIGHT NOW (2026-08-22) — ✅ THE TWO TWIRLS ARE WATCHED WITH BOTH ACCOMMODATIONS AND ACCEPTED.
+🔴 AND `main` HAS MOVED PAST THE TAG the-lot PINS.** Ryan: *"I watched two twirls and it looks good
+with both the resize and the break accommodations."* That was the last thing held for his eyes, in
+either repo. **Nothing on screen is waiting.** **221 tests**, lint / typecheck / build clean.
+
+🔴 **The engine the-lot runs on is not the engine it pins.** the-lot pins
+`github:randallard/square-one#v0.3.0` and imports **`ShapeAt`**, which
+[ADR-0025](adr/0025-a-sequence-can-size-each-call-to-its-own-shape.md) added **after** that tag —
+`git show v0.3.0:src/sequence.ts` has no mention of it. Its suite is green because its ADR-0034
+relinks the engine to the sibling checkout whenever one exists. **A fresh clone or CI resolves the
+pin and gets a package without `ShapeAt`.** The co-development link and the tag validation are the
+same mechanism, so the check is only as good as the last time somebody turned the convenience off.
+
+▶ **So the next concrete thing is a release: `0.4.0`.** `main` is eight commits past v0.3.0 and
+`package.json` still reads `0.3.0`. Two of the eight change the API — **`turn-under` is deleted**
+([ADR-0024](adr/0024-the-arch-is-a-hold-and-turn-under-is-deleted.md), breaking) and **`ShapeAt` is
+added** (ADR-0025, additive) — so a minor bump, and the-lot's pin moves with it. **Ryan pushes the
+tags.**
+
+✅ **[ADR-0025](adr/0025-a-sequence-can-size-each-call-to-its-own-shape.md) — a sequence can size
+each call to its own shape**, landed `c0ee981` on 08-21. `danceCoupleSequence` takes an optional
+`ShapeAt`: a per-step `Partial<FigureShape>` override.
+
+- 🔑 **The asymmetry at the boundary is the whole decision.** The couple that comes out of an
+  overridden call is reformed from the couple that went **in**, never from the overridden one, so
+  an accommodation cannot outlive the execution it was drawn for. Letting it flow through would be
+  [ADR-0019](adr/0019-a-couples-clearances-are-carried-across-a-call-boundary.md)'s bug one field
+  over: that rule carries **measurements of dancers**, and an override is a fact about one
+  *performance*.
+- 🔴 **Two executions of one call can differ now**, deliberately, and every test that assumed
+  otherwise was right until that commit. `isCoupleZero` still holds — an override changes the
+  figure between the ends, not the ends — asserted rather than assumed.
+- **What it bought did not survive the day, and the mechanism is untouched by that.** townage's
+  reshaped Twirl went 0.951 → **0.685** of the couple's width, then back to **0.897** when its
+  ADR-0038 found the *arm* in the gap that a break's low join had been paying for by accident. The
+  figure follows the draw either way; what shrank is how much of the difference the beau's **bow**
+  carries.
+- ✅ **[Journal entry 21](journal/2026-08-22-a-shape-that-belongs-to-one-performance-21.md)** —
+  written 08-22, a day after the ADR. It was not on any owed list, which is worse than being on one.
+
+### ⚠️ Owed — reconciled 2026-08-22
+
+🔴 **The 08-21 reconciliation had drifted again by the end of the same evening.** The list below was
+written at 18:24 and three more chunks landed after it, each stopping at the ADR. Items 1 and 2 of
+the previous list were finished **by the chunk that wrote them down as open**. Reconciling a list is
+not the fix; a chunk ending at the ADR is the cause.
+
+**✅ Closed since.** ✅ **The two Twirls, watched with both accommodations and accepted** — the last
+held item in either repo. ✅ **`turn-under` deleted** (ADR-0024) — the catalog is five blocks and
+every one has a live consumer. ✅ **the-lot's frame-scale hack retired** (its ADR-0035) — a wide pair
+widens the call they are in rather than everybody's; the engine's body measurements finally bind.
+✅ **`ShapeAt`** (ADR-0025) and ✅ **journal entry 21**.
+
+**🔴 Still open, in the order Ryan set:**
+
+1. **Release `0.4.0` and bump the-lot's pin** — see above. The only item with a broken thing behind
+   it rather than a question.
+2. **To discuss:** the standing touch-hands handhold has no accommodation (the third hold, and its
+   hands meet *in front of* the pair rather than between them); `arm-turn` still samples every
+   quarter turn with the sag ADR-0022 removed from `orbit`; the-lot's hold `forward` is still 0.320
+   on the default cast, flagged 2026-08-17.
+3. **Should the bow carry more of the difference between the two accommodations?** New, and Ryan's
+   to judge — the-lot's ADR-0038 left the two Twirls at 0.897 against 0.952, where the draw is
+   plainly visible in the reshaping torsos and barely visible in the beau's bow.
+4. **Star Thru**, on its two questions below — and on **two couples in `#dance`**, which is planning
+   ADR-0011's S2 and is the real prerequisite. `applyCallToPair` cannot express a formation change,
+   which ADR-0012 named as "the next thing" and still is. the-lot's ADR-0037 lands in the same
+   place: a call that legitimately changes the formation is a formation change and not an
+   accommodation.
+5. **A shape a call does not read is silently ignored** (ADR-0020). Standing caution rather than a
+   task: assert on the figure, not the argument.
+
+---
+
+**▶ 2026-08-21 — ▶ STAR THRU IS DERIVED AND SPEC'D, AND IT IS WAITING ON TWO
 ANSWERS.** `docs/spec/calls/star-thru.md`, draft for review. **No code** — this is the talk-first
 artifact (ADR-0009), and the figure has two questions in it that geometry should not guess at.
-
-- ✅ **The Dosado is watched and accepted** (*"dosado looks good"*), so **every pair call is now
-  watched at its body-derived size**. The couple calls' bow — `#dance=two-twirls` — is the one
-  render watch still open, unchanged since 08-19.
 
 - 🔑 **The derivation.** In the pair frame, the man's right and the lady's left are on the *same*
   side only for one assignment of the two dancers, and that fixes everything else: both finish
@@ -18,10 +88,8 @@ artifact (ADR-0009), and the figure has two questions in it that geometry should
   straight along their own facing while pivoting a quarter — one left, one right. A `step-pivot`
   each, mirrored, with a forward component the block does not have yet.
 
-- 🔴 **It settles `turn-under`, and the answer is delete it.** ADR-0005 built that block as the
-  arch family's shared machinery; ADR-0017 took its first consumer away when a California Twirl
-  turned out to be a Trade *holding on*. Star Thru's two dancers turn in **opposite directions**,
-  so no rigid rotation of the pair — which is what `turn-under` models — can produce this figure.
+- ✅ **It settled `turn-under`, and the answer was delete it** — done, ADR-0024. Star Thru's two
+  dancers turn in **opposite directions**, so no rigid rotation of the pair can produce this figure.
   **Two calls predicted to need it, neither needing it: the arch is a hold, not a block.**
 
 - 🔴 **And it breaks an assumption the clearance machinery rests on.** The two dancers are level
@@ -41,42 +109,6 @@ artifact (ADR-0009), and the figure has two questions in it that geometry should
    **no bow at all** — they pass on opposite sides of the join because one is *under* it, and the
    clearance is **vertical**, not lateral. The third is probably what a dancer would say, and it
    is the one the-lot cannot currently draw.
-
-### ⚠️ Owed — reconciled 2026-08-21
-
-🔴 **The three owed lists had drifted**, in this file and in the-lot's and the planning repo's:
-items finished during the day were still listed open, and one had been open since 08-18. Ryan
-asked for the short list and four of thirteen entries turned out to be already done. Reconciled
-here, and **the reconciliation is the point** — a stale backlog costs more than an empty one,
-because it is read as the current state and is not.
-
-**✅ Closed today.** ✅ **Every figure is watched and accepted at the-lot's single frame scale**
-(its ADR-0035, ADR-0036) — *"that all looks good."* Nothing on screen is waiting. Every render
-watch: `#dance=two-trades`, `#dance=two-twirls`, the elbow watch
-and where the join sits — all *"looks good"*. Also: the **v0.3.0 tag**; the-lot passing both the
-hands-free clearance and the grip radius; the co-development link (its ADR-0034); Allemande Left's
-accommodation watch; the Dosado's walk; and the **ADR-0014 journal entry**, owed since 08-18 and
-now [entry 20](journal/2026-08-21-the-belles-half-was-a-step-and-a-pivot-20.md).
-
-**🔴 Still open, in the order Ryan set:**
-
-1. ✅ **`turn-under` is deleted** —
-   [ADR-0024](adr/0024-the-arch-is-a-hold-and-turn-under-is-deleted.md). Its two dancers turn in
-   opposite directions in every arch call that exists, so no rigid rotation of the pair produces
-   any of them. **The catalog is five blocks and every one has a live consumer**, which was not
-   true this morning. 218 tests, from 225.
-2. **Retire the-lot's frame-scale hack.** `minScaleForGap` divides by a hand-copied
-   `ENGINE_LANE_OFFSET`, so one wide pair still grows the whole square in every call. Unblocked by
-   the tag now that pair calls hold their own accommodation. Wants a render watch.
-3. **To discuss:** the standing touch-hands handhold has no accommodation (the third hold, and its
-   hands meet *in front of* the pair rather than between them); `arm-turn` still samples every
-   quarter turn with the sag ADR-0022 removed from `orbit`; the-lot's hold `forward` is still
-   0.320 on the default cast, flagged 2026-08-17.
-4. **Star Thru**, on its two questions above — and on **two couples in `#dance`**, which is
-   planning ADR-0011's S2 and is the real prerequisite. `applyCallToPair` cannot express a
-   formation change, which ADR-0012 named as "the next thing" and still is.
-5. **A shape a call does not read is silently ignored** (ADR-0020). Standing caution rather than a
-   task: assert on the figure, not the argument.
 
 ---
 
