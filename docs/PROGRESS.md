@@ -50,7 +50,9 @@ asked for the short list and four of thirteen entries turned out to be already d
 here, and **the reconciliation is the point** — a stale backlog costs more than an empty one,
 because it is read as the current state and is not.
 
-**✅ Closed today.** Every render watch: `#dance=two-trades`, `#dance=two-twirls`, the elbow watch
+**✅ Closed today.** ✅ **Every figure is watched and accepted at the-lot's single frame scale**
+(its ADR-0035, ADR-0036) — *"that all looks good."* Nothing on screen is waiting. Every render
+watch: `#dance=two-trades`, `#dance=two-twirls`, the elbow watch
 and where the join sits — all *"looks good"*. Also: the **v0.3.0 tag**; the-lot passing both the
 hands-free clearance and the grip radius; the co-development link (its ADR-0034); Allemande Left's
 accommodation watch; the Dosado's walk; and the **ADR-0014 journal entry**, owed since 08-18 and
