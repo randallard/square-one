@@ -101,3 +101,4 @@ Copy [`TEMPLATE.md`](TEMPLATE.md).
 | [0020](0020-every-call-is-sized-to-the-bodies-that-dance-it.md) | Every call is sized to the bodies that dance it | Accepted |
 | [0021](0021-a-body-widens-a-figure-and-never-narrows-it.md) | A body measurement widens a figure and never narrows it | Accepted |
 | [0022](0022-the-waypoints-are-the-path-so-the-arc-is-sampled-to-be-one.md) | The waypoints are the path, so an arc is sampled fine enough to be one | Accepted |
+| [0023](0023-a-pass-walks-just-far-enough-to-clear.md) | A pass walks just far enough to clear | Accepted |

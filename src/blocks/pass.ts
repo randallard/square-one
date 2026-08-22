@@ -59,6 +59,39 @@ export const LANE_OFFSET = 0.15;
  */
 export const PASS_CLEARANCE = 2 * LANE_OFFSET;
 
+/**
+ * How far apart the two dancers of a facing pair stand — the pair frame's own unit.
+ *
+ * A fact about the **floor**, not about anybody's body: two dancers are a unit apart because
+ * that is the frame the specs are written in, and a consumer varies it by scaling the floor
+ * (ADR-0020 declined to make it a `FigureShape` field for exactly that reason, and still
+ * does). It is named here because {@link PassParams.exit} needs to know where "past each
+ * other" *is*, and a magic `1` inside the travel arithmetic would be the least findable
+ * constant in the catalog.
+ */
+export const PAIR_SEPARATION = 1;
+
+/**
+ * How far a dancer walks, for each exit — **"just enough to clear", not a fixed distance**
+ * (ADR-0023).
+ *
+ * - `centered` crosses the whole separation: a Pass Thru finishes on the counterpart's spot,
+ *   which is what the call *is*. Untouched by bodies.
+ * - `lane` and `close` walk until the two of them are **`clearance` past each other**, which
+ *   is `(separation + clearance) / 2` each. That is the moment a Dosado is back to back and
+ *   the lateral step can happen: during the slide the two dancers swap lanes and cross each
+ *   other's `x`, so the only thing holding them apart is exactly this gap.
+ *
+ * 🔴 **It was a flat `0.8`, and that walked them more than twice as far past each other as
+ * their bodies needed.** Measured on townage's cast: back to back at beat 2 of a Dosado, the
+ * pair were **1.562 world units** past each other against the 0.710 it takes to clear. Ryan,
+ * watching it: *"dosado pass by too far though — should watch body / head size and pass by
+ * just enough to clear and slide to the right far enough to step back."*
+ */
+function travelFor(exit: PassParams["exit"], separation: number, clearance: number): number {
+  return exit === "centered" ? separation : (separation + clearance) / 2;
+}
+
 export const pass = {
   name: "pass",
   beats: (params: PassParams): number => (params.exit === "close" ? 3 : 2),
@@ -81,6 +114,11 @@ export const pass = {
     const forward = params.direction === "forward";
     const dir = forward ? 1 : -1;
 
+    // How far this dancer walks. The waypoint schedules below are written as **fractions** of
+    // it rather than as distances, so the shape of each exit is stated once and sizing it is
+    // one multiplication (ADR-0023).
+    const travel = travelFor(params.exit, PAIR_SEPARATION, offset * 2);
+
     let rows: readonly (readonly [number, number, number])[];
     if (params.exit === "close") {
       // The figure-ending pass. Dosado's dance action is "walking a smooth
@@ -93,16 +131,20 @@ export const pass = {
       // beats for the same 0.4.
       const drift = -lane; // one lane toward the brushing shoulder = toward home
       rows = forward
-        ? [[0, 0, 0], [1, lane, 0.4], [2, lane, 0.6], [3, lane, 0.8]]
-        : [[0, 0, 0], [1, 0, -0.2], [2, 0, -0.4], [3, drift, -0.8]];
+        ? [[0, 0, 0], [1, lane, 0.5 * travel], [2, lane, 0.75 * travel], [3, lane, travel]]
+        : [
+            [0, 0, 0],
+            [1, 0, -0.25 * travel],
+            [2, 0, -0.5 * travel],
+            [3, drift, -travel],
+          ];
     } else {
       // The lateral schedule. `centered` traces a symmetric S, so it reads the
       // same in either direction.
       const xs: readonly [number, number, number] =
         params.exit === "lane" ? (forward ? [0, lane, lane] : [0, 0, 0]) : [0, lane, 0];
 
-      const ys: readonly [number, number, number] =
-        params.exit === "lane" ? [0, dir * 0.4, dir * 0.8] : [0, dir * 0.5, dir * 1.0];
+      const ys: readonly [number, number, number] = [0, dir * 0.5 * travel, dir * travel];
 
       rows = [
         [0, xs[0], ys[0]],

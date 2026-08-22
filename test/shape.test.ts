@@ -189,6 +189,33 @@ describe("the pair calls pass at the room the bodies need", () => {
     );
   });
 
+  it("🔴 walks a Dosado exactly `clearance` past the counterpart, and no further", () => {
+    // ADR-0023, and the property Ryan's *"dosado pass by too far"* names. During the `slide`
+    // the two dancers **swap lanes** — each crosses the other's `x` — so nothing lateral is
+    // holding them apart and the only gap is the one they walked out. It has to be the
+    // clearance; more is an overshoot.
+    //
+    // 🔴 It was a flat 0.80 walk, which put townage's cast **1.562 world units** past each
+    // other against the 0.710 their bodies take to clear.
+    for (const shape of [DEFAULT_PAIR_SHAPE, wide]) {
+      const { a, b } = applyCallToPair("dosado", shape);
+      // Beat 2 is back to back: the end of the outbound pass, before the sidestep.
+      const at = (m: typeof a): number =>
+        m.waypoints.find((w) => Math.abs(w.beat - 2) < 1e-9)?.y ?? NaN;
+      expect(at(a) - at(b), String(shape.clearance)).toBeCloseTo(shape.clearance, 6);
+    }
+  });
+
+  it("🔴 leaves a Pass Thru crossing the whole separation, because that is the call", () => {
+    // The exit that is *not* sized to bodies. A Pass Thru finishes on the counterpart's former
+    // spot — that is what the call is — so its walk is the separation whatever anybody's body
+    // does. Only the lane it walks in is a body measurement.
+    for (const shape of [DEFAULT_PAIR_SHAPE, wide]) {
+      const { a } = applyCallToPair("pass-thru", shape);
+      expect(a.exit.position.y, String(shape.clearance)).toBeCloseTo(0.5, 6);
+    }
+  });
+
   it("🔴 charges no beats for it — the stride lengthens, the call does not slow down", () => {
     // ADR-0013's lesson, kept: what it threw out was a sidestep block charged a flat beat
     // for a sixth of a Dosado's distance. A *wider* step in the same beat is a longer

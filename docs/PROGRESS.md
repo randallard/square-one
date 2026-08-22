@@ -4,7 +4,38 @@ _Last updated: 2026-08-21_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-08-21, second chunk) — the bow was solved against a curve nobody walks.
+**▶ RIGHT NOW (2026-08-21, third chunk) — a pass walked a flat 0.80 that nobody could derive.**
+**225 tests** (from 223), lint / typecheck / build clean. Ryan, watching the sized Dosado:
+*"dosado pass by too far though — should watch body / head size and pass by just enough to clear
+and slide to the right far enough to step back."*
+
+- ✅ **[ADR-0023](adr/0023-a-pass-walks-just-far-enough-to-clear.md) — a pass walks just far
+  enough to clear.**
+  - 🔑 **ADR-0020 fitted the lane and left the walk.** It reasoned correctly that a facing pair's
+    *separation* is a frame fact and not a body one — and the `lane`/`close` exits were walking a
+    flat **0.80** with no derivation anywhere. Measured on townage's cast at the back-to-back
+    beat: the pair were **1.562 world units** past each other against the **0.710** their heads
+    and torsos take to clear.
+  - 🔑 **The right distance is forced by the beat that follows.** During the `slide` the two
+    dancers **swap lanes** — each crosses the other's `x` — so nothing lateral holds them apart
+    and the whole gap is the one they walked out. It must be the clearance, and need be no more.
+  - `lane` / `close` walk `(separation + clearance) / 2`; `centered` still crosses the whole
+    separation, because finishing on the counterpart's spot is what a Pass Thru *is*. Schedules
+    are fractions of the travel now, so each exit's shape is stated once.
+  - **Landed: 2.083 → 1.692 world walked, 1.562 → 0.781 past.** Still a zero to the last decimal,
+    still 6 beats.
+  - 🔴 **Spec fixtures moved for the first time in this repo.** `blocks/pass.md`'s `lane` and
+    `close` tables and `calls/dosado.md`'s full-call table are rewritten — the docs are the
+    fixtures (ADR-0009), so a figure that changes changes them. Old numbers kept with the
+    measurement that retired them.
+  - 🔴 **Second decision in two days to find a constant nobody could derive** — ADR-0022 found the
+    arc's 45° sampling, this found the 0.80 walk. Both plausible, both invisible because the
+    things around them were fitted to them. **A number in this catalog should say where it comes
+    from, or be a parameter.**
+
+---
+
+**▶ 2026-08-21, second chunk — the bow was solved against a curve nobody walks.
 LANDED as `8d436cd` and released as **v0.3.0**, still awaiting Ryan's verify in the scene.** **223 tests** (from 220), lint / typecheck / build clean;
 the-lot 627 (from 626), lint 0 errors, build clean. Ryan, watching the generalisation: *"I looked
 at `#dance=two-trades` and it's still too tight — if we're generalizing correctly it should be

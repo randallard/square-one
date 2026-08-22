@@ -120,11 +120,11 @@ describe("call composition matches the chart", () => {
   it("Dosado's documented full-call table is the chain's embedding", () => {
     const documented = [
       { beat: 0, x: 0.0, y: -0.5 },
-      { beat: 1, x: -0.15, y: -0.1 },
-      { beat: 2, x: -0.15, y: 0.3 },
-      { beat: 3, x: 0.15, y: 0.3 },
-      { beat: 4, x: 0.15, y: 0.1 },
-      { beat: 5, x: 0.15, y: -0.1 },
+      { beat: 1, x: -0.15, y: -0.175 },
+      { beat: 2, x: -0.15, y: 0.15 },
+      { beat: 3, x: 0.15, y: 0.15 },
+      { beat: 4, x: 0.15, y: -0.0125 },
+      { beat: 5, x: 0.15, y: -0.175 },
       { beat: 6, x: 0.0, y: -0.5 },
     ];
     const motion = compose(CALLS.dosado.chain, PAIR_A);

@@ -82,9 +82,15 @@ need to pass — and it lands in two places that are the same number twice:
 
 | # | Block | What the clearance does |
 |---|---|---|
-| 1 | `pass(forward, right, lane)` | splits into two lanes, half each, so they pass `clearance` apart |
+| 1 | `pass(forward, right, lane)` | splits into two lanes, half each — *and walks until they are `clearance` past each other* (ADR-0023) |
 | 2 | `slide(right)` | a **full** lane change, which is that whole clearance |
-| 3 | `pass(backward, left, close)` | the same lane, returned along |
+| 3 | `pass(backward, left, close)` | the same lane and the same walk, returned along |
+
+🔑 **Why the walk has to stop there and need go no further.** During the `slide` the two dancers
+**swap lanes** — each crosses the other's `x` — so nothing lateral is holding them apart and the
+only gap is the one they walked out. It must be the clearance, and more is a Dosado that
+overshoots. Ryan: *"pass by just enough to clear and slide to the right far enough to step
+back."*
 
 Below `PASS_CLEARANCE` (0.30) nothing changes — bodies widen a figure and never narrow it
 (ADR-0021), so the tables below stand for every pair who can already pass in the room this is
@@ -105,12 +111,18 @@ Dancer A, facing `+y` at every waypoint (facing column omitted — constant):
 | Beat | x | y | Doing |
 |---|---|---|---|
 | 0 | 0.00 | −0.50 | start |
-| 1 | −0.15 | −0.10 | forward, veering into the left lane |
-| 2 | −0.15 | +0.30 | right shoulders pass |
-| 3 | +0.15 | +0.30 | sidestep right, crossing behind B |
-| 4 | +0.15 | +0.10 | backing straight down the return lane (backing is half walking pace) |
-| 5 | +0.15 | −0.10 | left shoulders pass |
+| 1 | −0.15 | −0.175 | forward, veering into the left lane |
+| 2 | −0.15 | +0.15 | right shoulders pass — **exactly `clearance` past B**, back to back |
+| 3 | +0.15 | +0.15 | sidestep right, crossing behind B |
+| 4 | +0.15 | −0.0125 | backing straight down the return lane (backing is half walking pace) |
+| 5 | +0.15 | −0.175 | left shoulders pass |
 | 6 | 0.00 | −0.50 | closing diagonal onto home — the beat-0→1 veer, mirrored |
+
+🔴 **Beats 1–5 moved on 2026-08-21 (ADR-0023).** The pass used to walk a flat 0.80 and put the
+pair **1.562 world units** past each other at beat 2, against the 0.710 their bodies take to
+clear — Ryan, watching it: *"dosado pass by too far."* The walk is `(separation + clearance) / 2`
+now, so beat 2 is where they are exactly `clearance` apart and no further. The call is still a
+zero to the last decimal.
 
 Hands: none throughout (arms in natural dance position; skirt work is styling
 only — CALLERLAB notes crossed arms are *not* recommended styling today).
