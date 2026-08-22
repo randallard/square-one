@@ -4,7 +4,47 @@ _Last updated: 2026-08-21_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-08-21, third chunk) — a pass walked a flat 0.80 that nobody could derive.
+**▶ RIGHT NOW (2026-08-21) — ▶ STAR THRU IS DERIVED AND SPEC'D, AND IT IS WAITING ON TWO
+ANSWERS.** `docs/spec/calls/star-thru.md`, draft for review. **No code** — this is the talk-first
+artifact (ADR-0009), and the figure has two questions in it that geometry should not guess at.
+
+- ✅ **The Dosado is watched and accepted** (*"dosado looks good"*), so **every pair call is now
+  watched at its body-derived size**. The couple calls' bow — `#dance=two-twirls` — is the one
+  render watch still open, unchanged since 08-19.
+
+- 🔑 **The derivation.** In the pair frame, the man's right and the lady's left are on the *same*
+  side only for one assignment of the two dancers, and that fixes everything else: both finish
+  facing 180°, they **swap sides**, and each walks `(separation + width) / 2` = **0.6667**
+  straight along their own facing while pivoting a quarter — one left, one right. A `step-pivot`
+  each, mirrored, with a forward component the block does not have yet.
+
+- 🔴 **It settles `turn-under`, and the answer is delete it.** ADR-0005 built that block as the
+  arch family's shared machinery; ADR-0017 took its first consumer away when a California Twirl
+  turned out to be a Trade *holding on*. Star Thru's two dancers turn in **opposite directions**,
+  so no rigid rotation of the pair — which is what `turn-under` models — can produce this figure.
+  **Two calls predicted to need it, neither needing it: the arch is a hold, not a block.**
+
+- 🔴 **And it breaks an assumption the clearance machinery rests on.** The two dancers are level
+  at **t = 0.75**, not halfway — they walk toward each other and finish a couple-width apart, so
+  the crossing is three quarters through. Every lane in this catalog is `sin²`, peaking at the
+  middle, because for a Trade the pass *is* the middle. Delivering a clearance at 0.75 through
+  that profile costs **twice** the bow, spent in the wrong place.
+
+### ⚠️ The two questions for Ryan, before any geometry
+
+1. **Where does the joined hand sit?** The derivation puts it at the pair's midpoint, so the
+   couple finishes centred where the pair was. The physical answer may be that it sits off to the
+   named-hand side and the couple ends **displaced** toward it — a real Star Thru's "you end up
+   over there". This changes where every subsequent call happens.
+2. **What carries the lateral clearance at the crossing?** A `sin²` bow sized to deliver at 0.75
+   (simple, wasteful); a profile that peaks *at* the crossing (right-looking, new shape); or
+   **no bow at all** — they pass on opposite sides of the join because one is *under* it, and the
+   clearance is **vertical**, not lateral. The third is probably what a dancer would say, and it
+   is the one the-lot cannot currently draw.
+
+---
+
+**▶ 2026-08-21, third chunk — a pass walked a flat 0.80 that nobody could derive.
 LANDED as `d584a74`.** **225 tests** (from 223), lint / typecheck / build clean. Narrative in
 [the nineteenth journal entry](journal/2026-08-21-a-pass-walks-just-far-enough-19.md). Ryan, watching the sized Dosado:
 *"dosado pass by too far though — should watch body / head size and pass by just enough to clear
