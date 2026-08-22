@@ -11,7 +11,12 @@ import { describe, expect, it } from "vitest";
 import { TRADE_PASS_SEPARATION, applyCallToCouple, californiaTwirl } from "../src/calls.js";
 import { partnerUp } from "../src/couple.js";
 import { COUPLE_WIDTH } from "../src/shape.js";
-import { danceCoupleSequence, isCoupleZero, reformCouple } from "../src/sequence.js";
+import {
+  danceCoupleSequence,
+  isCoupleZero,
+  reformCouple,
+  resolveHome,
+} from "../src/sequence.js";
 import { sampleMotion } from "../src/stepper.js";
 import type { Motion, Waypoint } from "../src/types.js";
 
@@ -292,5 +297,51 @@ describe("the chart is unmoved by any of it", () => {
     const m = applyCallToCouple("california-twirl", couple);
     expect(m["beau"]?.beats).toBe(californiaTwirl.chartBeats);
     expect(m["belle"]?.beats).toBe(californiaTwirl.chartBeats);
+  });
+});
+
+describe("a sequence can size each call to what that call drew (ADR-0025)", () => {
+  const HEADS = (0.71 / 1.14) * W;
+  const ARCH = (1.084 / 1.14) * W;
+
+  it("🔴 gives two executions of one call two different figures", () => {
+    // The property the whole override exists for. townage draws an accommodation per execution —
+    // the pair reshape, or they reach and let go — and the two want **different room**. Before
+    // this the engine could only be told one number for a whole sequence, so the figure was
+    // sized to the worse of the two and the beau bowed for a break he had not drawn.
+    const couple = partnerUp("beau", "belle", { x: 0, y: 0 }, 90, W, HEADS, ARCH);
+    const seq = danceCoupleSequence(["california-twirl", "california-twirl"], couple, (i) =>
+      i === 0 ? { archClearance: HEADS } : undefined,
+    );
+    const bow = (step: number): number =>
+      Math.max(
+        ...(seq.steps[step]?.motions["beau"]?.waypoints ?? []).map((w) => Math.hypot(w.x, w.y)),
+      );
+    expect(bow(0)).toBeLessThan(bow(1));
+  });
+
+  it("🔴 does not let the override outlive the call it was for", () => {
+    // An accommodation is a fact about **one execution**. If it leaked into the couple that comes
+    // out, a pair who reshaped once would dance every later call as if they had — which is the
+    // shape of the bug ADR-0019 fixed for clearance, one field over again.
+    const couple = partnerUp("beau", "belle", { x: 0, y: 0 }, 90, W, HEADS, ARCH);
+    const plain = danceCoupleSequence(["california-twirl", "california-twirl"], couple);
+    const overridden = danceCoupleSequence(
+      ["california-twirl", "california-twirl"],
+      couple,
+      (i) => (i === 0 ? { archClearance: HEADS } : undefined),
+    );
+    const second = (seq: typeof plain): readonly Waypoint[] =>
+      seq.steps[1]?.motions["beau"]?.waypoints ?? [];
+    expect(second(overridden)).toEqual(second(plain));
+  });
+
+  it("🔴 still comes home, whatever each call was sized to", () => {
+    const couple = partnerUp("beau", "belle", { x: 0, y: 0 }, 90, W, HEADS, ARCH);
+    const seq = danceCoupleSequence(["california-twirl", "california-twirl"], couple, (i) =>
+      i === 0 ? { archClearance: HEADS } : undefined,
+    );
+    const home = resolveHome(seq.start, seq.end);
+    expect(home.home, `off by ${String(home.worstDistance)}`).toBe(true);
   });
 });

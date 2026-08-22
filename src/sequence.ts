@@ -289,22 +289,55 @@ export function reformCouple(couple: Couple, motions: Record<string, Motion>): C
  * `partner-trade, partner-trade` and `california-twirl, california-twirl` — are one call
  * to `isCoupleZero` away from being checked instead of asserted.
  */
-export function danceCoupleSequence(calls: readonly CallName[], couple: Couple): Sequence {
+export function danceCoupleSequence(
+  calls: readonly CallName[],
+  couple: Couple,
+  shapeAt?: ShapeAt,
+): Sequence {
   const start = coupleSet(couple);
   const steps: SequenceStep[] = [];
   let at = couple;
   let beat = 0;
 
-  for (const call of calls) {
-    const motions = applyCallToCouple(call, at);
+  for (const [index, call] of calls.entries()) {
+    const override = shapeAt?.(index, call);
+    const sized =
+      override === undefined
+        ? at
+        : partnerUp(at.beau, at.belle, at.center, at.facing, { ...at, ...override });
+    const motions = applyCallToCouple(call, sized);
     const beats = Math.max(0, ...Object.values(motions).map((m) => m.beats));
     steps.push({ call, startBeat: round(beat), beats: round(beats), motions });
     beat += beats;
+    // 🔴 Reformed from **`at`**, not from `sized`: an override is what this one call is danced at,
+    // and letting it leak into the couple that leaves would make a per-call accommodation
+    // permanent. Width is still measured from the exits, so a call that genuinely moved the pair
+    // still says so (ADR-0015, ADR-0019).
     at = reformCouple(at, motions);
   }
 
   return { calls, steps, beats: round(beat), start, end: coupleSet(at) };
 }
+
+/**
+ * A shape override for one call of a sequence — **the same two dancers, danced differently this
+ * time** (ADR-0025).
+ *
+ * Returns whatever should replace the couple's own measurements for step `index`, or `undefined`
+ * to dance it at the couple's own. The override applies to **that call only**: the couple that
+ * comes out is reformed from the couple that went in, so an accommodation cannot become permanent.
+ *
+ * 🔴 **It exists because an accommodation is drawn per execution and the figure has to match the
+ * draw.** townage's arch is danced two ways — the pair reshape, or they reach and let go — and
+ * those two need *different room*: on its default cast the reshape wants 0.193 of the couple's
+ * width and the break wants 0.951, five times more. Sizing every arch to the worse of the two
+ * (its ADR-0030) meant the beau bowed for a break he had not drawn, on every Twirl he danced.
+ * A consumer that draws per call needs to size per call.
+ */
+export type ShapeAt = (
+  index: number,
+  call: CallName,
+) => Partial<FigureShape> | undefined;
 
 /** Does this sequence bring the couple back to where it started? */
 export function isCoupleZero(calls: readonly CallName[], couple: Couple): HomeResolution {
