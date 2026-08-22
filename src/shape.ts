@@ -118,6 +118,19 @@ export interface FigureShape {
    * Measured in townage on the shipped cast: bodies want 0.520, heads want 0.710, and heads
    * with a hand between them want **1.084** — against a couple who stand 1.140 apart. An
    * arch very nearly forbids the pair to approach each other at all (ADR-0018).
+   *
+   * 🔴 **A value at or above {@link width} cannot be delivered, and asking for one is not an
+   * error — it is silently answered with the widest bow the figure has.** The two dancers are
+   * exactly a width apart at both ends of the call whatever the bow does in between, so the
+   * minimum separation only ever *approaches* the width; `laneForClearance` caps the bow there
+   * rather than orbiting forever. The result is a figure that looks like it works, danced by a
+   * sprinting beau.
+   *
+   * **So a consumer should check `archClearance < width` and decide what to do about it**, in
+   * the same spirit as ADR-0020's note that a shape a call does not read is silently ignored.
+   * townage found this the hard way twice on 2026-08-21: once by multiplying this number by a
+   * margin it did not need, and once — still open — on a mismatched pair whose arch wants 1.62
+   * of their handholding width and has been capped in silence since the field existed.
    */
   readonly archClearance: number;
   /**
