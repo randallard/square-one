@@ -34,6 +34,7 @@ import { CALLS, applyCallToCouple, applyCallToPair, chainFor, type CallName } fr
 import { coupleSet, partnerUp, type Couple } from "./couple.js";
 import { DEFAULT_PAIR_SHAPE, type FigureShape } from "./shape.js";
 import { compose } from "./compose.js";
+import { HOLD_RELEASE_BEATS } from "./blocks/types.js";
 import type { GripSpan, Motion, Pose, Waypoint } from "./types.js";
 
 /**
@@ -345,6 +346,68 @@ export function isCoupleZero(calls: readonly CallName[], couple: Couple): HomeRe
   return resolveHome(seq.start, seq.end);
 }
 
+/** Beats within which two spans are treated as meeting. Spans are `round`ed to 1e-6, and
+ *  call *n*'s end is call *n+1*'s start exactly, so this only absorbs that rounding. */
+const TOUCHING = 1e-6;
+
+/**
+ * The grip channel of a whole **dance**: adjacent holds joined, and the last one let go of
+ * before the music stops.
+ *
+ * 🔑 **This is the distinction a block cannot make, and it is the whole reason the release
+ * moved up here** (ADR-0026). Ryan, 2026-09-12: *"sometimes the move ends and partners wait
+ * for the next call … but hands don't always go down in the middle of a sequence, so we need
+ * a way to distinguish between the sequence ending and dancers waiting, or the sequence
+ * continuing and the hands position blending into the next move rather than going to the
+ * waiting position."* Two things follow, and they are the two halves of this function.
+ *
+ * **Continuing — the spans merge.** Two California Twirls in a row are one unbroken arch,
+ * because that is what a couple dancing two of them does: they do not lower their hands at
+ * the join and raise them again. A block that trimmed its own span produced exactly that
+ * dip, which is the bug this replaced. Merging is only ever done for the *same hand in the
+ * same grip*: a boundary where the style changes is a real change of hold and keeps its edge,
+ * and so does a boundary where the next call wants the hand free — there the span simply
+ * ends, and blending out of it into whatever comes next is the consumer's business, not a
+ * thing the engine has to describe.
+ *
+ * **Ending — the last span lets go early.** A span still live at the final beat is trimmed by
+ * {@link HOLD_RELEASE_BEATS}, so the closing half beat is the hands coming down and the dance
+ * ends with the dancers *waiting*, hands settled, rather than frozen mid-hold.
+ *
+ * 🔴 **What the waiting position *is* stays the consumer's, and it is not always hands down.**
+ * Ryan, same note: *"sometimes they'll end in a wave and the hands will be up, but sometimes
+ * they'll end in a line and the hands will be down."* Which of those a set has landed in is
+ * **formation recognition — S2's job**, and this module is S1 (see its header, and
+ * `reformCouple`'s note). So this says *when* the hold is given up and never *what* replaces
+ * it. For the one formation S1 has, a couple, the answer is the ordinary handhold, which is
+ * deliberately not a `GripStyle` at all — a consumer that knows where two bodies are can see
+ * it. **When waves and lines arrive, the consumer asks the formation, not this function.**
+ *
+ * The trim never takes more than half a span, so a span cannot be inverted or collapsed —
+ * `from < to` is asserted over every block in `properties.test.ts` and holds here too.
+ */
+function settleGrips(grips: readonly GripSpan[], beats: number): readonly GripSpan[] {
+  const merged: GripSpan[] = [];
+  for (const g of grips) {
+    const prev = merged[merged.length - 1];
+    if (
+      prev !== undefined &&
+      prev.hand === g.hand &&
+      prev.grip === g.grip &&
+      Math.abs(g.from - prev.to) <= TOUCHING
+    ) {
+      merged[merged.length - 1] = { ...prev, to: g.to };
+      continue;
+    }
+    merged.push(g);
+  }
+  return merged.map((g) =>
+    g.to >= beats - TOUCHING
+      ? { ...g, to: round(Math.max((g.from + g.to) / 2, g.to - HOLD_RELEASE_BEATS)) }
+      : g,
+  );
+}
+
 /**
  * Flatten a danced sequence into **one motion per dancer** — what the performance
  * stepper wants.
@@ -394,7 +457,7 @@ export function flattenSequence(seq: Sequence): Record<string, Motion> {
     out[key] = {
       beats: seq.beats,
       waypoints,
-      grips,
+      grips: settleGrips(grips, seq.beats),
       entry,
       exit: last.exit,
       momentum: last.momentum,

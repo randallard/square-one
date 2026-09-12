@@ -43,7 +43,7 @@
 
 import { PLUS_Y, normaliseDeg, round, turnOf } from "../geometry.js";
 import type { Motion, Waypoint } from "../types.js";
-import type { Hold } from "./types.js";
+import { holdSpans, type Hold } from "./types.js";
 
 export interface StepPivotParams {
   /** Which way the dancer steps — their **own** left or right. */
@@ -132,9 +132,10 @@ export const stepPivot = {
       // Hands free unless the figure names one. The belle's Partner Trade releases the
       // handhold and takes nothing — the F2 fact that lets a Trade flow into anything is
       // true of this half too. Her California Twirl keeps it, and it is the same step.
-      grips: hold === undefined
-        ? []
-        : [{ hand: hold.hand, grip: hold.grip, from: 0, to: round(beats) }],
+      //
+      // Held to her last beat. Whether the hands come down at the end is the *sequence's*
+      // question, not this block's — see `holdSpans`.
+      grips: holdSpans(hold, beats),
       waypoints,
       entry: { position: { x: entry.x, y: entry.y }, facing: entry.facing },
       exit: { position: { x: exit.x, y: exit.y }, facing: exit.facing },

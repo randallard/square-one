@@ -110,8 +110,12 @@ describe("step-pivot — stepping to one side while turning on the spot", () => 
     expect(held.beats).toBe(free.beats);
     expect(held.momentum.rotation).toBe(free.momentum.rotation);
 
-    // What it does change: one span covering the whole block, and the hand that finished
-    // engaged. F2 reads both.
+    // What it does change: one span, and the hand that finished engaged. F2 reads both.
+    //
+    // 🔴 **The span runs the whole block, and the release is NOT here** (ADR-0026). A block
+    // cannot know whether another call follows it, and one that trimmed its own span dropped
+    // the hands between two California Twirls. `flattenSequence` releases at the end of the
+    // dance, where that is knowable — `sequence.test.ts` is where the release is asserted.
     expect(free.grips).toHaveLength(0);
     expect(free.momentum.lastHand).toBe("none");
     expect(held.grips).toEqual([

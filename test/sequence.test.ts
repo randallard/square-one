@@ -8,6 +8,7 @@ import {
   isZero,
   resolveHome,
 } from "../src/sequence.js";
+import { HOLD_RELEASE_BEATS } from "../src/blocks/index.js";
 import { CALLS, PAIR_A, PAIR_B } from "../src/calls.js";
 import { partnerUp } from "../src/couple.js";
 import { STEP_OUT_RADIUS } from "../src/blocks/arm-turn.js";
@@ -214,17 +215,81 @@ describe("flattening a sequence for the stepper", () => {
   });
 
   it("offsets the grips onto the sequence's axis too", () => {
-    // A California Twirl grips for its whole length, so two of them give two spans —
-    // the second one starting where the first call ended, not at zero again.
+    // The second call's span starts where the first call ended, not at zero again.
+    const flat = flattenSequence(
+      danceCoupleSequence(["california-twirl", "partner-trade"], couple),
+    );
+    const beats = CALLS["california-twirl"].chartBeats;
+    for (const m of Object.values(flat)) {
+      // A Trade holds nothing, so the Twirl's arch is the only span and it keeps its own
+      // edge at the boundary — the hands are free from there, and blending out of the arch
+      // into that is the consumer's business, not something the engine describes.
+      expect(m.grips).toHaveLength(1);
+      expect(m.grips[0]?.from).toBeCloseTo(0, 6);
+      expect(m.grips[0]?.to).toBeCloseTo(beats, 6);
+    }
+  });
+
+  it("🔑 joins two Twirls into ONE arch — the hands do not dip at the boundary", () => {
+    // Ryan, 2026-09-12: *"hands don't always go down in the middle of a sequence … we need a
+    // way to distinguish between the sequence ending and dancers waiting, or the sequence
+    // continuing and the hands position blending into the next move rather than going to the
+    // waiting position."*
+    //
+    // 🔴 This is the assertion that would have caught the first attempt at ADR-0026, which put
+    // the release in the blocks: two Twirls came out as two spans with a half-beat hole
+    // between them, and a couple dancing two Twirls does not lower their hands at the join and
+    // raise them again. Same hand, same grip, touching at the boundary — one hold.
     const flat = flattenSequence(
       danceCoupleSequence(["california-twirl", "california-twirl"], couple),
     );
     const beats = CALLS["california-twirl"].chartBeats;
     for (const m of Object.values(flat)) {
-      expect(m.grips).toHaveLength(2);
+      expect(m.grips).toHaveLength(1);
       expect(m.grips[0]?.from).toBeCloseTo(0, 6);
-      expect(m.grips[1]?.from).toBeCloseTo(beats, 6);
-      expect(m.grips[1]?.to).toBeCloseTo(2 * beats, 6);
+      // Through the join and on to the release at the very end — see the next test.
+      expect(m.grips[0]?.to).toBeGreaterThan(beats);
+    }
+  });
+
+  it("🔑 lets the last hold go before the music stops — the dancers end up waiting", () => {
+    // The other half of the same distinction: a span still live at the final beat is trimmed
+    // by HOLD_RELEASE_BEATS, so the closing half beat is the hands coming down and the dance
+    // ends with the dancers settled rather than frozen mid-hold.
+    //
+    // 🔴 What they settle *into* is not asserted here and cannot be: *"sometimes they'll end in
+    // a wave and the hands will be up, but sometimes they'll end in a line and the hands will
+    // be down."* Which formation a set has landed in is S2's job (formation recognition), and
+    // this module is S1. This says only *when* the hold is given up.
+    for (const calls of [
+      ["california-twirl"],
+      ["california-twirl", "california-twirl"],
+      ["partner-trade", "california-twirl"],
+    ] as const) {
+      const seq = danceCoupleSequence([...calls], couple);
+      const flat = flattenSequence(seq);
+      for (const [key, m] of Object.entries(flat)) {
+        const last = m.grips.at(-1);
+        const where = `${calls.join("+")} ${key}`;
+        expect(last, where).toBeDefined();
+        if (last === undefined) continue;
+        expect(last.to, where).toBeCloseTo(seq.beats - HOLD_RELEASE_BEATS, 6);
+        // Never inverted or collapsed, whatever the trim did.
+        expect(last.from, where).toBeLessThan(last.to);
+      }
+    }
+  });
+
+  it("leaves a hold that ends mid-dance exactly where it ended", () => {
+    // The distinction has to cut both ways: only a span live at the *final* beat is trimmed.
+    // A Twirl followed by a Trade gives up the arch at the boundary because the next call wants
+    // the hand free — that edge is the choreography's and must not be moved by half a beat.
+    const seq = danceCoupleSequence(["california-twirl", "partner-trade"], couple);
+    const flat = flattenSequence(seq);
+    const beats = CALLS["california-twirl"].chartBeats;
+    for (const m of Object.values(flat)) {
+      expect(m.grips[0]?.to).toBeCloseTo(beats, 6);
+      expect(m.grips[0]?.to).toBeLessThan(seq.beats - HOLD_RELEASE_BEATS);
     }
   });
 

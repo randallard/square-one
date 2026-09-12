@@ -49,7 +49,7 @@
 
 import { normaliseDeg, polar, rad2deg, round, turnOf } from "../geometry.js";
 import type { Motion, Waypoint } from "../types.js";
-import type { Hold } from "./types.js";
+import { holdSpans, type Hold } from "./types.js";
 
 export interface OrbitParams {
   /** Which way round. `left` is CCW, matching `arm-turn`'s convention. */
@@ -210,9 +210,8 @@ export const orbit = {
       // F2, which asks whether the hand a following call needs is *available*. A Trade
       // leaves both available, and that is exactly what makes it flow into anything; a
       // California Twirl walks the same arc with the inside hand joined throughout.
-      grips: hold === undefined
-        ? []
-        : [{ hand: hold.hand, grip: hold.grip, from: 0, to: round(beats) }],
+      // Held to his last beat; the release is the sequence's call — see `holdSpans`.
+      grips: holdSpans(hold, beats),
       entry: { position: { x: entry.x, y: entry.y }, facing: entry.facing },
       exit: { position: { x: exit.x, y: exit.y }, facing: exit.facing },
       momentum: {

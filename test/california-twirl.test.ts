@@ -64,6 +64,11 @@ describe("California Twirl", () => {
     for (const key of ["beau", "belle"] as const) {
       expect(m[key]?.grips).toHaveLength(1);
       expect(m[key]?.grips[0]?.from).toBeCloseTo(0, 6);
+      // 🔴 **A bare call holds to its last beat, and that is not the same question as
+      // "how does the figure end".** `applyCallToCouple` is one call's motion, not a dance:
+      // nothing here knows whether another call follows, so nothing here may decide that the
+      // hands come down. `sequence.test.ts` asserts the release, which is where the dance —
+      // and therefore its ending — exists. See ADR-0026.
       expect(m[key]?.grips[0]?.to).toBeCloseTo(californiaTwirl.chartBeats, 6);
       // `arch`, not `forearm`: palms joined and raised clear of the head, high enough to
       // walk beneath. A renderer that drew the arm-turn grip here would draw an Allemande.
@@ -168,6 +173,8 @@ describe("🔴 the equivalence with Partner Trade turned out to be an identity o
       expect(t[key]?.grips).toHaveLength(0);
       expect(t[key]?.momentum.lastHand).toBe("none");
       expect(c[key]?.grips).toHaveLength(1);
+      // 🔑 And this is the field that survives the arch coming down at the end of a dance:
+      // the hand is still in the partner's, which is the fact a following call works around.
       expect(c[key]?.momentum.lastHand).toBe(c[key]?.grips[0]?.hand);
     }
   });
