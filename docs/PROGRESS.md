@@ -35,7 +35,10 @@ up, but sometimes they'll end in a line and the hands will be down."* Which form
 in is **S2's** — this layer says *when* a hold is given up and never *what* replaces it. When waves
 arrive the consumer asks the formation; **do not** widen a span to keep hands up.
 
-**224 tests** (was 221), `tsc` / lint / build clean. Landed in `ea94f98` and **released as v0.5.0**.
+**224 tests** (was 221), `tsc` / lint / build clean. Landed in `ea94f98`, documented in `a202064`,
+**released as `0.5.0`** — breaking for a consumer asserting the old whole-call span, hence a minor
+bump. 🔴 **A tag is local until it is pushed to `origin`**, which is what townage's pin resolves
+against.
 
 #### Do these, in this order
 
