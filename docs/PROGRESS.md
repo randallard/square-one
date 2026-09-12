@@ -36,19 +36,27 @@ in is **S2's** — this layer says *when* a hold is given up and never *what* re
 arrive the consumer asks the formation; **do not** widen a span to keep hands up.
 
 **224 tests** (was 221), `tsc` / lint / build clean. Landed in `ea94f98`, documented in `a202064`,
-**released as `0.5.0`** — breaking for a consumer asserting the old whole-call span, hence a minor
-bump. 🔴 **A tag is local until it is pushed to `origin`**, which is what townage's pin resolves
-against.
+**released as `0.5.0`** (`6e1d3e5`) — breaking for a consumer asserting the old whole-call span,
+hence a minor bump.
+
+✅ **`v0.5.0` IS PUSHED TO `origin` AND TO `data`, AND townage's PIN MOVES WITH IT.** Ryan approved
+both. Unlike v0.3.0 and v0.4.0's first hours, the tag is not sitting local: `git ls-remote --tags
+origin` shows it, which is what townage's pin resolves against.
+
+✅ **Validated against the published tarball, not the co-development symlink.** townage's suite was
+run with `node_modules/square-one` pointed at the fetched `v0.5.0` tarball: **755 tests, 7 failing —
+the same seven it had before**, `tsc` clean, lint 0 errors. That is the check the 08-22 note below
+says had never actually been run, and it has now.
 
 #### Do these, in this order
 
 1. 🔴 **LOOK AT THE TWIRL'S ENDING** in townage — `#review=california-twirl/end/*` — and at
    `#dance`'s `2×`, which should now read as **one continuous arch** with no dip at the join. The
    engine is linked and `dist` is rebuilt, so both show this now.
-2. 🔴 **RELEASE `0.5.0` AND MOVE townage's PIN.** townage pins `v0.4.0` (which *is* on `origin`,
-   unlike what the 08-22 note below feared) and has a test asserting its `end` step falls outside
-   the arch span — **that test fails against v0.4.0.** The co-development symlink is hiding it and
-   CI will not be fooled. Breaking for a consumer asserting the old span, so a minor bump.
+2. ✅ **DONE — `0.5.0` is released and townage's pin is moved.** One thing to know for next time:
+   townage's `pnpm-workspace.yaml` `allowBuilds` key is **keyed by the tarball URL**, so it changes
+   on every tag here — `git rev-parse v<tag>^{}` gives the hash it needs. The install stops with
+   `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED` until it is updated, which is exactly what happened.
 3. ⏳ **A looping consumer gets a release every lap.** townage's `#dance` repeats its sequence, and
    each lap's end is an ending as far as this layer is concerned, so the hands settle and lift
    again. Defensible — the set does arrive and restart — but nobody asked for it, and if it reads
