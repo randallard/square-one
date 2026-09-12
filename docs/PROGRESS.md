@@ -1,10 +1,59 @@
 # Progress & Status
 
-_Last updated: 2026-08-22_
+_Last updated: 2026-09-12_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-08-22) — ✅ THE TWO TWIRLS ARE WATCHED WITH BOTH ACCOMMODATIONS AND ACCEPTED.
+**▶ RIGHT NOW (2026-09-12) — 🔴 A HOLD IS NOW RELEASED BY THE DANCE, NOT BY THE BLOCK. THE PIN HAS
+TO MOVE WITH IT.** Ryan, reviewing townage's pose chart: *"the ending position is always hands back
+down in a normal handhold."* It was not — `orbit` and `step-pivot` gripped to the last beat, so a
+California Twirl ended with the couple standing in their finishing places with their hands over
+their heads. [ADR-0026](adr/0026-the-dance-releases-a-hold-not-the-block.md) ·
+[journal](journal/2026-09-12-the-dance-ends-the-hold-not-the-block-22.md)
+
+🔑 **The engine already agreed with him everywhere else.** `arm-turn`'s `exit: "step-out"` has
+released half a beat early since it was written. The arch became a hold (ADR-0024) months after
+that rule and never got it.
+
+🔴 **The first fix was wrong and Ryan caught it.** I trimmed in the blocks, which made the single
+Twirl right and made *every call boundary* a release: two Twirls came out as two arches with a
+half-beat hole between them, the couple lowering their hands at the join and raising them again.
+*"Hands don't always go down in the middle of a sequence."* A block cannot tell a boundary from an
+ending, so the release moved to **`flattenSequence`**, which can: adjacent spans on the same hand
+in the same grip **merge**, and a span still live at the **final beat** is trimmed by
+`HOLD_RELEASE_BEATS`.
+
+| sequence | arch span |
+|---|---|
+| one Twirl | 0 → 3.5 |
+| two Twirls | **0 → 7.5, one span** |
+| Twirl → Trade | 0 → 4, untrimmed — that edge is the choreography's |
+| bare `applyCallToCouple` | 0 → 4 — one call is not a dance |
+
+🔑 **Where it deliberately stops.** Ryan: *"sometimes they'll end in a wave and the hands will be
+up, but sometimes they'll end in a line and the hands will be down."* Which formation a set landed
+in is **S2's** — this layer says *when* a hold is given up and never *what* replaces it. When waves
+arrive the consumer asks the formation; **do not** widen a span to keep hands up.
+
+**224 tests** (was 221), `tsc` / lint / build clean. Landed in `ea94f98` and **released as v0.5.0**.
+
+#### Do these, in this order
+
+1. 🔴 **LOOK AT THE TWIRL'S ENDING** in townage — `#review=california-twirl/end/*` — and at
+   `#dance`'s `2×`, which should now read as **one continuous arch** with no dip at the join. The
+   engine is linked and `dist` is rebuilt, so both show this now.
+2. 🔴 **RELEASE `0.5.0` AND MOVE townage's PIN.** townage pins `v0.4.0` (which *is* on `origin`,
+   unlike what the 08-22 note below feared) and has a test asserting its `end` step falls outside
+   the arch span — **that test fails against v0.4.0.** The co-development symlink is hiding it and
+   CI will not be fooled. Breaking for a consumer asserting the old span, so a minor bump.
+3. ⏳ **A looping consumer gets a release every lap.** townage's `#dance` repeats its sequence, and
+   each lap's end is an ending as far as this layer is concerned, so the hands settle and lift
+   again. Defensible — the set does arrive and restart — but nobody asked for it, and if it reads
+   wrong the fix belongs to the consumer, which knows it is looping.
+
+---
+
+**▶ PREVIOUS (2026-08-22) — ✅ THE TWO TWIRLS ARE WATCHED WITH BOTH ACCOMMODATIONS AND ACCEPTED.
 🔴 AND `main` HAS MOVED PAST THE TAG the-lot PINS.** Ryan: *"I watched two twirls and it looks good
 with both the resize and the break accommodations."* That was the last thing held for his eyes, in
 either repo. **Nothing on screen is waiting.** **221 tests**, lint / typecheck / build clean.
