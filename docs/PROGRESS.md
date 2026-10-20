@@ -48,6 +48,30 @@ run with `node_modules/square-one` pointed at the fetched `v0.5.0` tarball: **75
 the same seven it had before**, `tsc` clean, lint 0 errors. That is the check the 08-22 note below
 says had never actually been run, and it has now.
 
+🔴 **CI WAS RED, AND NOT BECAUSE OF THE ENGINE — it had been red since v0.4.0's release on 08-22.**
+Ryan: *"check those runs."* `ts fast gates` passed on v0.5.0 (typecheck, lint, all 224 tests); `ts
+supply chain` and `osv-scan` failed, and nothing noticed for three weeks because nobody reads a run
+whose code gates are green.
+
+**The real finding was an ignore standing on an expired reason.** `GHSA-mh99-v99m-4gvg` was waved
+through on *"no patched version is compatible with minimatch@3's API"* — true when written, false
+once brace-expansion was patched **per line** (1.1.18 / 2.1.4 / 5.0.9). townage dropped the same
+ignore on 08-15; this repo kept it a month longer, because nothing fails when an ignore nobody needs
+is still there. It is gone from **both** config formats now. Overrides ported from townage and every
+range **bounded** — an unbounded `>=1.1.18` resolves to 5.0.9 and takes `pnpm lint` down with
+`expand is not a function`, which the old comment here admitted this repo was only escaping because
+its eslint globs have no braces in them. Plus js-yaml `>=4.3.2` (two advisories, one patch apart),
+nanoid `>=3.3.18`, vitest 4.1.11. **`pnpm audit` clean; 224 tests, tsc / lint / build clean.**
+[journal](journal/2026-09-12-2-the-ignore-was-standing-on-a-reason-that-had-expired-23.md)
+
+⚠️ **2026-10-19: THE FIX WENT STALE WHILE IT WAITED.** When I re-checked it before committing, the
+code gates were still green but `pnpm audit` showed **10 new findings**: three brace-expansion
+advisories, each fixed per line, plus source-map-js GHSA-68fv-2mgg-jv7q. The overrides are raised to
+brace-expansion `>=1.1.21 <2` / `>=2.1.7 <3` / `>=5.0.12 <6`, and `source-map-js@1 >=1.2.2 <2` is
+added. **`pnpm audit` clean at all severities; 224 tests, tsc / lint / build clean.** osv-scanner
+was not run locally (no Docker access), so CI is its first run.
+[journal](journal/2026-10-19-the-fix-sat-uncommitted-long-enough-to-go-stale-24.md)
+
 #### Do these, in this order
 
 1. 🔴 **LOOK AT THE TWIRL'S ENDING** in townage — `#review=california-twirl/end/*` — and at
@@ -57,7 +81,10 @@ says had never actually been run, and it has now.
    townage's `pnpm-workspace.yaml` `allowBuilds` key is **keyed by the tarball URL**, so it changes
    on every tag here — `git rev-parse v<tag>^{}` gives the hash it needs. The install stops with
    `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED` until it is updated, which is exactly what happened.
-3. ⏳ **A looping consumer gets a release every lap.** townage's `#dance` repeats its sequence, and
+3. 🔴 **PUSH THE SUPPLY-CHAIN FIX** — re-verified and topped up 2026-10-19, uncommitted and
+   waiting on you. CI stays red until it lands. If it waits again, **re-run `pnpm audit` first**:
+   new brace-expansion advisories kept arriving while it sat.
+4. ⏳ **A looping consumer gets a release every lap.** townage's `#dance` repeats its sequence, and
    each lap's end is an ending as far as this layer is concerned, so the hands settle and lift
    again. Defensible — the set does arrive and restart — but nobody asked for it, and if it reads
    wrong the fix belongs to the consumer, which knows it is looping.

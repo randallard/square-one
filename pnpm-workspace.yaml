@@ -11,28 +11,57 @@
 minimumReleaseAge: 1440
 
 overrides:
-  # GHSA-mh99-v99m-4gvg / CVE-2026-14257 — brace-expansion, unbounded expansion
-  # exhausts memory (High, CVSS 7.5). OSV gives one range: introduced 0, fixed
-  # 5.0.8 — so every version below 5.0.8 is affected and there is no per-line patch.
+  # Every entry here is a **bounded** range, and the bound is load-bearing.
   #
-  # Scoped to the 5.x line ON PURPOSE. brace-expansion 5.x changed its export
-  # shape (1.x exported the function itself), so forcing 5.0.8 onto minimatch@3.1.5
-  # breaks it with `expand is not a function` the moment a pattern contains braces.
-  # A blanket override passes CI here only because this repo's eslint globs happen
-  # to have no braces in them — a latent break, not a fix.
+  # `">=1.1.18"` on its own does not mean "the 1.x line, patched" — semver compares across
+  # majors, so pnpm happily satisfies it with 5.0.9 and every 1.x consumer gets the 5.x export
+  # shape. brace-expansion 1.x exports the function itself and 5.x does not, so that resolution
+  # takes `pnpm lint` down with `TypeError: expand is not a function` the moment a config
+  # pattern contains braces. townage measured this twice — 2026-07-29 with a blanket override
+  # and 2026-08-15 with an unbounded one. Always pin the upper bound.
   #
-  # The residual 1.x/2.x copies stay vulnerable and are ignored in audit config,
-  # with the reason recorded there. Revisit when the toolchain's minimatch@3
-  # dependency is gone.
-  "brace-expansion@5": ">=5.0.8"
+  # All of these are dev-path only (eslint / typescript-eslint / vitest); this package ships
+  # `dist/` and none of them reaches a consumer.
+
+  # GHSA-rgw5-rvv9-x895 — brace-expansion DoS via unbounded intermediate arrays, explicitly a
+  # bypass of the CVE-2026-14257 mitigation. **Patched per line**, which is the fact this
+  # repo's previous stance was built on the absence of: 1.1.18 for the 1.x consumers reached
+  # through minimatch@3, 2.1.4 for 2.x, 5.0.9 for the rest.
+  #
+  # 🔴 **This is why `GHSA-mh99-v99m-4gvg` is no longer ignored below.** That ignore's stated
+  # reason was *"no patched version is compatible with minimatch@3's API"*, which was true when
+  # it was written and stopped being true when the 1.x backport landed. A patched 1.x means the
+  # override reaches everywhere and the ignore reaches nothing. townage removed the same ignore
+  # for the same reason on 2026-08-15; this repo kept it for another month because nothing fails
+  # when an ignore nobody needs is still there — osv-scanner just reports it as filtering
+  # vulnerabilities that an override would have fixed outright.
+  #
+  # Raised 2026-10-19 for three more per-line advisories, the latest fix on each line winning:
+  # GHSA-6j4f-fj2g-mc7p (parseCommaParts recursion; 1.1.19 / 2.1.5 / 5.0.10), GHSA-qhr7-859c-m2p7
+  # (nested-group recursion; 1.1.20 / 2.1.6 / 5.0.11), GHSA-q2hr-2g5m-vwhr (quadratic `{a},b}`
+  # rewrite; 1.1.21 / 2.1.7 / 5.0.12).
+  "brace-expansion@1": ">=1.1.21 <2"
+  "brace-expansion@2": ">=2.1.7 <3"
+  "brace-expansion@5": ">=5.0.12 <6"
+
+  # js-yaml, via eslint's `@eslint/eslintrc`. **Two advisories:** GHSA-5p4m-2wfm-xmqj
+  # (quadratic CPU in `!!omap` resolution) is fixed in 4.3.1, and GHSA-2883-xcg3-v3hh
+  # (`maxTotalMergeKeys` does not limit CPU use for merge keys) in 4.3.2. Satisfy the later one.
+  "js-yaml@4": ">=4.3.2 <5"
+
+  # GHSA-2v37-7h3g-55p8 — nanoid can loop indefinitely with a custom generator. Dev-path only.
+  "nanoid@3": ">=3.3.18 <4"
+
+  # GHSA-68fv-2mgg-jv7q — source-map-js event-loop DoS via indexed source-map section offsets.
+  # Reached through vitest → vite → postcss. Dev-path only.
+  "source-map-js@1": ">=1.2.2 <2"
 
 auditConfig:
-  # Governs `pnpm audit` only. CI also runs osv-scanner, which reads its own
-  # ignores from osv-scanner.toml — the same posture in a second format. Change
-  # one, change the other.
-  ignoreGhsas:
-    # See the overrides note above. Not a quarantine wait and not a severity
-    # judgement: there is no patched version compatible with minimatch@3's API.
-    # Dev-only path (eslint/typescript-eslint/license-checker); this package ships
-    # `dist/` and never carries brace-expansion to a consumer.
-    - GHSA-mh99-v99m-4gvg
+  # Governs `pnpm audit` only. CI also runs osv-scanner, which reads its own ignores from
+  # osv-scanner.toml — the same posture in a second format. Change one, change the other.
+  #
+  # **Empty on purpose, as of 2026-09-12.** The one standing ignore (GHSA-mh99-v99m-4gvg,
+  # brace-expansion) is gone: its reason was that no patched version was compatible with
+  # minimatch@3's API, and the 1.1.18 backport made that false. Both scanners now pass with
+  # nothing waved through. See the overrides above.
+  ignoreGhsas: []
