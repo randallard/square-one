@@ -81,9 +81,10 @@ was not run locally (no Docker access), so CI is its first run.
    townage's `pnpm-workspace.yaml` `allowBuilds` key is **keyed by the tarball URL**, so it changes
    on every tag here — `git rev-parse v<tag>^{}` gives the hash it needs. The install stops with
    `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED` until it is updated, which is exactly what happened.
-3. 🔴 **PUSH THE SUPPLY-CHAIN FIX** — re-verified and topped up 2026-10-19, uncommitted and
-   waiting on you. CI stays red until it lands. If it waits again, **re-run `pnpm audit` first**:
-   new brace-expansion advisories kept arriving while it sat.
+3. ✅ **DONE — the supply-chain fix is pushed and CI is green.** `bb85c57` went to `data` and
+   `origin` on 2026-10-20. CI run 39383839817 passed every job, including `ts supply chain` and
+   `OSV scan`, the first green run since v0.4.0 on 08-22. Lesson for next time: re-run
+   `pnpm audit` before committing a supply-chain change that has sat for more than a few days.
 4. ⏳ **A looping consumer gets a release every lap.** townage's `#dance` repeats its sequence, and
    each lap's end is an ending as far as this layer is concerned, so the hands settle and lift
    again. Defensible — the set does arrive and restart — but nobody asked for it, and if it reads
