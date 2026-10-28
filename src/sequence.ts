@@ -176,6 +176,7 @@ export function resolveHome(start: SetPose, end: SetPose): HomeResolution {
 export function danceSequence(
   calls: readonly CallName[],
   shape: FigureShape = DEFAULT_PAIR_SHAPE,
+  waits: readonly number[] = [],
 ): Sequence {
   const first = applyCallToPair("dosado", shape);
   const start: Record<string, Pose> = { a: first.a.entry, b: first.b.entry };
@@ -184,7 +185,8 @@ export function danceSequence(
   let at: Record<string, Pose> = { ...start };
   let beat = 0;
 
-  for (const call of calls) {
+  for (const [index, call] of calls.entries()) {
+    beat += waitBefore(waits, index);
     // The same shape for every call of the sequence, because it is the dancers' bodies and
     // they do not change between calls — the rule ADR-0019 established for a couple's
     // clearances, applied to the pair that has no `Couple` to carry them on.
@@ -294,6 +296,7 @@ export function danceCoupleSequence(
   calls: readonly CallName[],
   couple: Couple,
   shapeAt?: ShapeAt,
+  waits: readonly number[] = [],
 ): Sequence {
   const start = coupleSet(couple);
   const steps: SequenceStep[] = [];
@@ -301,6 +304,7 @@ export function danceCoupleSequence(
   let beat = 0;
 
   for (const [index, call] of calls.entries()) {
+    beat += waitBefore(waits, index);
     const override = shapeAt?.(index, call);
     const sized =
       override === undefined
@@ -340,11 +344,32 @@ export type ShapeAt = (
   call: CallName,
 ) => Partial<FigureShape> | undefined;
 
+/**
+ * The beats the dancers wait before call `index` is danced: `waits[index]`, or none. A wait is
+ * time the caller leaves, not part of any call, so it shows only as the gap between one step's
+ * end and the next one's `startBeat`. Negative or non-finite waits are refused.
+ */
+function waitBefore(waits: readonly number[], index: number): number {
+  const w = waits[index] ?? 0;
+  if (!Number.isFinite(w) || w < 0) throw new RangeError(`wait before call ${String(index)} must be ≥ 0 beats, got ${String(w)}`);
+  return w;
+}
+
 /** Does this sequence bring the couple back to where it started? */
 export function isCoupleZero(calls: readonly CallName[], couple: Couple): HomeResolution {
   const seq = danceCoupleSequence(calls, couple);
   return resolveHome(seq.start, seq.end);
 }
+
+/**
+ * A gap between two calls this long or longer is a **wait**: the dancers let go of a hold before
+ * it and stand waiting until the next call, the same as at the end of the dance. A shorter one
+ * keeps the hold, and the next call flows out of the last.
+ *
+ * Ryan, 2026-10-27: *"during the chain they don't go all the way to hand hold between moves but
+ * if there's a beat or more after the next call should be called then they go to handhold"*.
+ */
+export const WAIT_BEATS = 1;
 
 /** Beats within which two spans are treated as meeting. Spans are `round`ed to 1e-6, and
  *  call *n*'s end is call *n+1*'s start exactly, so this only absorbs that rounding. */
@@ -386,7 +411,11 @@ const TOUCHING = 1e-6;
  * The trim never takes more than half a span, so a span cannot be inverted or collapsed —
  * `from < to` is asserted over every block in `properties.test.ts` and holds here too.
  */
-function settleGrips(grips: readonly GripSpan[], beats: number): readonly GripSpan[] {
+function settleGrips(
+  grips: readonly GripSpan[],
+  beats: number,
+  waits: readonly number[],
+): readonly GripSpan[] {
   const merged: GripSpan[] = [];
   for (const g of grips) {
     const prev = merged[merged.length - 1];
@@ -394,15 +423,18 @@ function settleGrips(grips: readonly GripSpan[], beats: number): readonly GripSp
       prev !== undefined &&
       prev.hand === g.hand &&
       prev.grip === g.grip &&
-      Math.abs(g.from - prev.to) <= TOUCHING
+      g.from - prev.to > -TOUCHING &&
+      g.from - prev.to < WAIT_BEATS - TOUCHING
     ) {
       merged[merged.length - 1] = { ...prev, to: g.to };
       continue;
     }
     merged.push(g);
   }
+  const releases = (to: number) =>
+    to >= beats - TOUCHING || waits.some((w) => Math.abs(to - w) <= TOUCHING);
   return merged.map((g) =>
-    g.to >= beats - TOUCHING
+    releases(g.to)
       ? { ...g, to: round(Math.max((g.from + g.to) / 2, g.to - HOLD_RELEASE_BEATS)) }
       : g,
   );
@@ -431,6 +463,17 @@ export function flattenSequence(seq: Sequence): Record<string, Motion> {
   const keys = [...new Set(seq.steps.flatMap((s) => Object.keys(s.motions)))];
   const out: Record<string, Motion> = {};
 
+  // Where a call ends and the dancers then wait a beat or more for the next (WAIT_BEATS).
+  const waits = seq.steps
+    .slice(1)
+    .flatMap((step, i) => {
+      const prev = seq.steps[i];
+      /* v8 ignore next -- `i` indexes the step before `step`, which always exists */
+      if (prev === undefined) return [];
+      const end = round(prev.startBeat + prev.beats);
+      return step.startBeat - end >= WAIT_BEATS - TOUCHING ? [end] : [];
+    });
+
   for (const key of keys) {
     const waypoints: Waypoint[] = [];
     const grips: GripSpan[] = [];
@@ -442,7 +485,16 @@ export function flattenSequence(seq: Sequence): Record<string, Motion> {
       if (m === undefined) continue;
       entry ??= m.entry;
       const offset = step.startBeat;
-      const from = waypoints.length === 0 ? 0 : 1;
+      // Standing still through a wait: the previous exit (or the start, before a first call that
+      // waits) is held until this call's own first waypoint. Without a wait the first waypoint
+      // repeats the previous exit's instant and is dropped.
+      const prev = waypoints[waypoints.length - 1];
+      const first = m.waypoints[0];
+      if (prev === undefined && first !== undefined && offset > TOUCHING) {
+        waypoints.push({ ...first, beat: 0 });
+      }
+      const touching = prev !== undefined && Math.abs(offset + (first?.beat ?? 0) - prev.beat) <= TOUCHING;
+      const from = touching ? 1 : 0;
       for (const w of m.waypoints.slice(from)) {
         waypoints.push({ ...w, beat: round(w.beat + offset) });
       }
@@ -457,7 +509,7 @@ export function flattenSequence(seq: Sequence): Record<string, Motion> {
     out[key] = {
       beats: seq.beats,
       waypoints,
-      grips: settleGrips(grips, seq.beats),
+      grips: settleGrips(grips, seq.beats, waits),
       entry,
       exit: last.exit,
       momentum: last.momentum,

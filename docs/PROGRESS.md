@@ -1,8 +1,29 @@
 # Progress & Status
 
-_Last updated: 2026-09-12_
+_Last updated: 2026-10-27_
 
 ## Status / next
+
+**▶ RIGHT NOW (2026-10-27): A WAIT BETWEEN CALLS. Committed (Ryan: "commit both"); next is a
+release (0.6.0) and townage's pin.** [journal 25](journal/2026-10-27-a-wait-between-calls-25.md)
+
+Ryan: *"if there's a beat or more after the next call should be called then they go to
+handhold"*.
+- **`danceSequence` / `danceCoupleSequence` take `waits`:** beats before each call.
+- **`flattenSequence`:** the dancers stand still through a gap.
+- **`WAIT_BEATS` (1):** a gap of a beat or more releases the hold before it, like the end of the
+  dance (ADR-0026's release, applied mid-dance). A shorter gap keeps it.
+- **No ADR yet:** exploratory. ADR-0026 wants a successor once townage's posing settles.
+- **Checks:** 231 tests; `tsc`, lint and build are clean. Watched in townage
+  (`#dance=two-twirls-wait`, `#dance=two-twirls-half`).
+
+⏳ **Next:**
+1. ✅ Committed.
+2. Tag v0.6.0, push it, and move townage's pin. Validate against the tarball, not the symlink,
+   as 09-12 did.
+
+---
+
 
 **▶ RIGHT NOW (2026-09-12) — 🔴 A HOLD IS NOW RELEASED BY THE DANCE, NOT BY THE BLOCK. THE PIN HAS
 TO MOVE WITH IT.** Ryan, reviewing townage's pose chart: *"the ending position is always hands back

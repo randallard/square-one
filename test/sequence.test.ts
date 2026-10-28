@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   HOME_FACING_TOLERANCE,
   HOME_POSITION_TOLERANCE,
+  WAIT_BEATS,
   danceCoupleSequence,
   danceSequence,
   flattenSequence,
@@ -307,5 +308,85 @@ describe("flattening a sequence for the stepper", () => {
 
   it("is empty for an empty sequence rather than throwing", () => {
     expect(flattenSequence(danceCoupleSequence([], couple))).toEqual({});
+  });
+});
+
+describe("a wait between calls (2026-10-27)", () => {
+  // Ryan: *"during the chain they don't go all the way to hand hold between moves but if there's
+  // a beat or more after the next call should be called then they go to handhold"*. A wait is
+  // time the caller leaves before a call; it belongs to no call.
+  const couple = partnerUp("a", "b");
+  const twirl = CALLS["california-twirl"].chartBeats;
+  const twirls = (waits: readonly number[]) =>
+    danceCoupleSequence(["california-twirl", "california-twirl"], couple, undefined, waits);
+
+  it("leaves the gap in the sequence's beats, before the call it was asked for", () => {
+    const seq = twirls([0, 2]);
+    expect(seq.steps[0]?.startBeat).toBe(0);
+    expect(seq.steps[1]?.startBeat).toBeCloseTo(twirl + 2, 6);
+    expect(seq.beats).toBeCloseTo(2 * twirl + 2, 6);
+    // The pair form takes the same list.
+    const pair = danceSequence(["dosado", "dosado"], undefined, [0, 1.5]);
+    expect(pair.steps[1]?.startBeat).toBeCloseTo(CALLS.dosado.chartBeats + 1.5, 6);
+  });
+
+  it("doesn't change where anybody goes: the same zero with or without it", () => {
+    expect(resolveHome(twirls([0, 2]).start, twirls([0, 2]).end)).toEqual(
+      resolveHome(twirls([]).start, twirls([]).end),
+    );
+  });
+
+  it("stands the dancers still through it", () => {
+    const flat = flattenSequence(twirls([0, 2]));
+    for (const m of Object.values(flat)) {
+      const before = m.waypoints.filter((w) => Math.abs(w.beat - twirl) < 1e-6);
+      const after = m.waypoints.filter((w) => Math.abs(w.beat - (twirl + 2)) < 1e-6);
+      expect(before).toHaveLength(1);
+      expect(after).toHaveLength(1);
+      expect(after[0]?.x).toBeCloseTo(before[0]?.x ?? NaN, 5);
+      expect(after[0]?.y).toBeCloseTo(before[0]?.y ?? NaN, 5);
+      expect(after[0]?.facing).toBeCloseTo(before[0]?.facing ?? NaN, 5);
+      // Nothing in between: the stepper holds the pose across the gap.
+      expect(m.waypoints.some((w) => w.beat > twirl + 1e-6 && w.beat < twirl + 2 - 1e-6)).toBe(false);
+      m.waypoints.slice(1).forEach((w, i) => {
+        expect(w.beat).toBeGreaterThan(m.waypoints[i]?.beat ?? Infinity);
+      });
+    }
+  });
+
+  it("🔑 a beat or more: the hold lets go before it, as at the end of the dance", () => {
+    for (const wait of [WAIT_BEATS, 2]) {
+      const seq = twirls([0, wait]);
+      for (const m of Object.values(flattenSequence(seq))) {
+        expect(m.grips).toHaveLength(2);
+        expect(m.grips[0]?.to).toBeCloseTo(twirl - HOLD_RELEASE_BEATS, 6);
+        expect(m.grips[1]?.from).toBeCloseTo(twirl + wait, 6);
+        expect(m.grips[1]?.to).toBeCloseTo(seq.beats - HOLD_RELEASE_BEATS, 6);
+      }
+    }
+  });
+
+  it("🔑 under a beat: the arch is held across it, and the dance flows on", () => {
+    const seq = twirls([0, 0.5]);
+    for (const m of Object.values(flattenSequence(seq))) {
+      expect(m.grips).toHaveLength(1);
+      expect(m.grips[0]?.from).toBeCloseTo(0, 6);
+      expect(m.grips[0]?.to).toBeCloseTo(seq.beats - HOLD_RELEASE_BEATS, 6);
+    }
+  });
+
+  it("a wait before the first call: they stand on their spots until it", () => {
+    const seq = danceCoupleSequence(["california-twirl"], couple, undefined, [2]);
+    for (const m of Object.values(flattenSequence(seq))) {
+      expect(m.waypoints[0]?.beat).toBe(0);
+      expect(m.waypoints[1]?.beat).toBeCloseTo(2, 6);
+      expect({ ...m.waypoints[1], beat: 0 }).toEqual(m.waypoints[0]);
+      expect(m.grips[0]?.from).toBeCloseTo(2, 6);
+    }
+  });
+
+  it("refuses a negative wait", () => {
+    expect(() => twirls([0, -1])).toThrow(RangeError);
+    expect(() => twirls([Number.NaN])).toThrow(RangeError);
   });
 });
