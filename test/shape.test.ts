@@ -12,6 +12,7 @@
  */
 
 import { describe, expect, it } from "vitest";
+import { sampleMotion } from "../src/stepper.js";
 import {
   ALL_CALL_NAMES,
   CALLS,
@@ -173,7 +174,17 @@ describe("the pair calls pass at the room the bodies need", () => {
 
   it("🔴 opens a Pass Thru's lane to exactly the clearance asked for", () => {
     expect(closestInPair("pass-thru", DEFAULT_PAIR_SHAPE)).toBeCloseTo(PASS_CLEARANCE, 6);
-    expect(closestInPair("pass-thru", wide)).toBeCloseTo(HEADS, 6);
+    // At its **closest moment**, between the waypoints, not only at the crossing (2026-10-28):
+    // measured at the waypoints alone this passed while the pair came 6% closer on the way in.
+    const { a, b } = applyCallToPair("pass-thru", wide);
+    let worst = Infinity;
+    for (let t = 0; t <= a.beats; t += 0.005) {
+      const p = sampleMotion(a, t).position;
+      const q = sampleMotion(b, t).position;
+      worst = Math.min(worst, Math.hypot(p.x - q.x, p.y - q.y));
+    }
+    expect(worst).toBeGreaterThan(HEADS - 1e-3);
+    expect(worst).toBeLessThan(HEADS + 2e-3);
   });
 
   it("🔴 opens a Dosado's, and the crossing step with it", () => {

@@ -1,6 +1,7 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { orbit, pullBy, PULL_BY_RELEASE } from "../src/blocks/index.js";
+import { orbit, pass, pullBy, PULL_BY_RELEASE } from "../src/blocks/index.js";
+import { centeredGap } from "../src/blocks/pass.js";
 import { checkChain } from "../src/compose.js";
 import { positionOf } from "../src/couple.js";
 import {
@@ -231,5 +232,27 @@ describe("🧪 the blocks four needed", () => {
     expect(back.momentum.rotation).toBe(fwd.momentum.rotation);
     expect(normaliseDeg(back.exit.facing - fwd.exit.facing)).toBe(180);
     expect(back.momentum.bodyFlow).toBe(fwd.momentum.bodyFlow);
+  });
+});
+
+describe("🧪 a centred pass solved for its closest moment (2026-10-28)", () => {
+  it("gives a body's clearance at the closest moment, not only at the crossing", () => {
+    for (const c of [0.4, 0.6, 0.8]) {
+      const m = pass.generate({ direction: "forward", shoulder: "right", exit: "centered", clearance: c });
+      // The counterpart is this dancer turned half way round the pair centre (0, 0.5).
+      let worst = Infinity;
+      for (let t = 0; t <= 2; t += 0.005) {
+        const p = sampleMotion(m, t).position;
+        worst = Math.min(worst, Math.hypot(2 * p.x, 2 * (p.y - 0.5)));
+      }
+      expect(worst).toBeGreaterThan(c - 1e-3);
+      expect(worst).toBeLessThan(c + 2e-3);
+    }
+  });
+
+  it("leaves the figure as drawn alone", () => {
+    const m = pass.generate({ direction: "forward", shoulder: "right", exit: "centered" });
+    expect(m.waypoints.find((w) => w.beat === 1)?.x).toBeCloseTo(-0.15, 6);
+    expect(centeredGap(0.3, 1)).toBeGreaterThan(0.3);
   });
 });

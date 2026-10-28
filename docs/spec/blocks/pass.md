@@ -122,3 +122,18 @@ counterpart's former spot — facing unchanged, back-to-back with them.
 F3–F5 neutral (no rotation, no sharp turn). Lane discipline is the collision
 property: two dancers `pass`-ing with the same `shoulder` value are provably on
 opposite lanes.
+
+## A centred pass, solved for its closest moment — 2026-10-28
+
+A `centered` pass is a V: the lane opens straight to the crossing and closes straight after it,
+while the two dancers close the separation between them. Between those straight lines the
+closest they get is not the gap at the crossing but `G·s / √(G² + s²)`, reached **on the way in**.
+townage's `solve-all` found it: ember ×4's Pass Thru head to head at t = 0.3, 10.4 cm, with the
+gap at the crossing exactly the clearance asked for. The test that pinned "exactly the
+clearance" measured at the waypoints only, where the crossing is.
+
+So when a body asks for more than the figure's own clearance, the gap at the crossing is
+`centeredGap(c, s) = c·s / √(s² − c²)`, and the pair's **closest** moment is `c`. Below that the
+figure is as drawn (ADR-0021). That figure, at `PASS_CLEARANCE`, dips to 0.287 at its closest,
+and the table above is unchanged. `pull-by` solves the same question for its `sin²` lane
+(`gapAtCrossing`), and the Trade's bow did first (`laneForClearance`).

@@ -4,6 +4,22 @@ _Last updated: 2026-10-28_
 
 ## Status / next
 
+**▶ RIGHT NOW (2026-10-28, 2): 🧪 A CENTRED PASS, SOLVED FOR ITS CLOSEST MOMENT, released as
+`0.8.0`** (Ryan: *"commit it, release and pin"*). [journal 27](journal/2026-10-28-2-a-centred-pass-solved-for-its-closest-moment-27.md)
+
+- `centeredGap(c, s) = c·s / √(s² − c²)`: with a body clearance above `PASS_CLEARANCE`, a Pass Thru's
+  closest moment (on the way in, not at the crossing) is the clearance. The default figure and its
+  fixture are untouched (it dips to 0.287).
+- Found by townage's `solve-all` (ember ×4, 10.4 cm). The old test measured only at waypoints.
+- Left: ember's head is 28 cm forward, so facing embers meet head first; a forward-reach measure
+  would be new.
+- 251 tests; all gates clean.
+
+⏳ **Next:** ✅ committed, tagged `v0.8.0`, pushed to `origin` and `data`; townage's pin moves with
+it. Then: a body's forward reach (ember's head), sequences of four, the next facing-couples calls.
+
+---
+
 **▶ RIGHT NOW (2026-10-28): 🧪 FACING COUPLES AND RIGHT AND LEFT THRU, released as `0.7.0`**
 (Ryan: *"commit it, release and pin"*). S2 begun. Additive: a new module, a new block, new
 optional fields, so a minor bump. [journal 26](journal/2026-10-28-facing-couples-and-right-and-left-thru-26.md)
