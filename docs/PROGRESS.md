@@ -1,11 +1,11 @@
 # Progress & Status
 
-_Last updated: 2026-10-27_
+_Last updated: 2026-10-28_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-10-27): A WAIT BETWEEN CALLS. Committed (Ryan: "commit both"); next is a
-release (0.6.0) and townage's pin.** [journal 25](journal/2026-10-27-a-wait-between-calls-25.md)
+**▶ RIGHT NOW (2026-10-28): A WAIT BETWEEN CALLS, released as `0.6.0`** (Ryan: "do the release
+and pin"). Additive (`waits` defaults to none), so a minor bump. [journal 25](journal/2026-10-27-a-wait-between-calls-25.md)
 
 Ryan: *"if there's a beat or more after the next call should be called then they go to
 handhold"*.
@@ -19,8 +19,10 @@ handhold"*.
 
 ⏳ **Next:**
 1. ✅ Committed.
-2. Tag v0.6.0, push it, and move townage's pin. Validate against the tarball, not the symlink,
-   as 09-12 did.
+2. ✅ Tagged `v0.6.0` and pushed it to `origin` and `data`; townage's pin moves with it, validated
+   against the fetched tarball (see townage's PROGRESS).
+3. Next here: facing couples (S2) and Right and Left Thru, spec first. townage has hand-written
+   paths for it (`whole-move-rlt.ts`, its journal 10-27-8) to swap for the engine's.
 
 ---
 
