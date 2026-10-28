@@ -15,6 +15,19 @@ are the same figure at other radii.
 | `radius` | any positive number | Distance from the shared centre at the arc's **ends** |
 | `lane` | any number, default `0` | How far to bow off `radius` on the way past someone walking the same circle the other way. Positive is **outward**. Zero is a constant-radius arc |
 | `hold` | a hand and a grip style, default **absent** | A hand joined for the whole arc. Absent is the hands-free arc, and that emptiness is a positive F2 fact. Present is the beau's half of a [California Twirl](../calls/california-twirl.md) — **the identical arc**, holding on |
+| `direction` | `forward` / `backward`, default `forward` | Which way the dancer faces on the arc. `backward` backs round it: the left-side dancer's half of a [Courtesy Turn](../calls/right-and-left-thru.md) (2026-10-28) |
+
+## Backing round — 2026-10-28
+
+A Courtesy Turn: *"a couple works as a unit and turns around with the left-side dancer backing up
+and right-side dancer walking forward. The turning point is halfway between the dancers"*
+(CALLERLAB Basic §15). The two of them walk one circle, opposite each other, the same way round,
+so both **turn** the same way. `direction: backward` is that: the same marks, the same rotation,
+every facing turned 180°. Body flow is still the way the dancer travels, which is now behind them.
+
+`hold` may name **more than one** hand for the same reason: the backing beau holds her left in his
+left and has his right in the small of her back for the whole turn. `lastHand` is the one held in
+a hand; a hand on a back is not one a following call waits for.
 
 ## The lane rides inside the arc
 

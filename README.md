@@ -26,8 +26,14 @@ animated. The complete model: [`docs/spec/call-model.md`](docs/spec/call-model.m
 
 ## Status
 
-Pre-code: the repo is bootstrapped, the state model is drafted and under review. See
-[`docs/PROGRESS.md`](docs/PROGRESS.md).
+The engine core exists:
+- the block catalog;
+- the two-dancer calls (Dosado, Pass Thru, Allemande Left, Partner Trade, California Twirl),
+  sized to the bodies dancing them;
+- couples and sequences with waits.
+
+🧪 Since 2026-10-28, the first formation of four, **facing couples**, and its first call,
+**Right and Left Thru** (S2 begun). See [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 ## Development
 

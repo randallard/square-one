@@ -9,7 +9,7 @@
  */
 
 import { round } from "../geometry.js";
-import type { GripSpan, GripStyle, Motion, Pose } from "../types.js";
+import type { GripSpan, GripStyle, Motion, Pose, Relation } from "../types.js";
 
 /**
  * A hand held through a block — the parameter that turns a walk into a *joined* walk.
@@ -30,6 +30,8 @@ export interface Hold {
   readonly hand: "right" | "left";
   /** How it is held, and therefore how it is drawn. */
   readonly grip: GripStyle;
+  /** Who with, in a formation of more than two (`Relation`). Absent in a pair or a couple. */
+  readonly relation?: Relation;
 }
 
 /**
@@ -72,7 +74,15 @@ export const HOLD_RELEASE_BEATS = 0.5;
  */
 export function holdSpans(hold: Hold | undefined, beats: number): readonly GripSpan[] {
   if (hold === undefined) return [];
-  return [{ hand: hold.hand, grip: hold.grip, from: 0, to: round(beats) }];
+  return [
+    {
+      hand: hold.hand,
+      grip: hold.grip,
+      from: 0,
+      to: round(beats),
+      ...(hold.relation === undefined ? {} : { relation: hold.relation }),
+    },
+  ];
 }
 
 

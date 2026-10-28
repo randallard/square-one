@@ -4,6 +4,36 @@ _Last updated: 2026-10-28_
 
 ## Status / next
 
+**▶ RIGHT NOW (2026-10-28): 🧪 FACING COUPLES AND RIGHT AND LEFT THRU, released as `0.7.0`**
+(Ryan: *"commit it, release and pin"*). S2 begun. Additive: a new module, a new block, new
+optional fields, so a minor bump. [journal 26](journal/2026-10-28-facing-couples-and-right-and-left-thru-26.md)
+
+Ryan: *"go with 2"*: spec facing couples and Right and Left Thru here, and swap townage's
+hand-written paths for the engine's.
+- **`src/facing-couples.ts`**: `FacingCouples` (with the set's own clearance), `faceCouples`,
+  `setFacingCouples`, `roomToFace`, `relative`, `applyCallToFacingCouples`,
+  `reformFacingCouples`. It has its own catalog, `FACING_COUPLES_CALLS`, apart from `CALLS`.
+- **Right and Left Thru:** 6 beats (the chart, from facing couples). A Right Pull By, where each
+  passing pair's gap is solved for its closest moment and both couples spread for the belles.
+  Then a Courtesy Turn, closing to the couple's clearance and back out, turning as a unit.
+- **New block `pull-by`** (spec + live fixture). **`orbit`**: `direction: "backward"`, a list of
+  holds, `unit: true`. **Grips:** `palm`, `back`, `relation`, `with`.
+- **Specs:** `spec/formations/facing-couples.md`, `spec/calls/right-and-left-thru.md`,
+  `spec/blocks/pull-by.md`, `orbit.md`'s backing section.
+- **Checks:** 249 tests (incl. a property over any bodies and spacing); `tsc`, lint, build,
+  docs-hygiene clean. Watched in townage, `#review2=right-and-left-thru/<pairing>`: all 25 sets
+  solve clean.
+- **For review:** the Courtesy Turn closes in (townage's finding, not CALLERLAB's); the lady is
+  level with him (townage adds her lead itself); 6 beats where townage had 8.
+
+⏳ **Next:**
+1. ✅ Committed, tagged `v0.7.0`, pushed to `origin` and `data`; townage's pin moves with it,
+   validated against the fetched tarball (see townage's PROGRESS).
+2. Sequences of four (with the end-of-dance release), recognition, and the next calls from
+   facing couples (Star Thru, Square Thru, Ladies Chain).
+
+---
+
 **▶ RIGHT NOW (2026-10-28): A WAIT BETWEEN CALLS, released as `0.6.0`** (Ryan: "do the release
 and pin"). Additive (`waits` defaults to none), so a minor bump. [journal 25](journal/2026-10-27-a-wait-between-calls-25.md)
 

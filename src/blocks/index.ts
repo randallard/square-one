@@ -5,10 +5,11 @@ import type { Motion } from "../types.js";
 import { armTurn, type ArmTurnParams } from "./arm-turn.js";
 import { orbit, type OrbitParams } from "./orbit.js";
 import { pass, type PassParams } from "./pass.js";
+import { pullBy, type PullByParams } from "./pull-by.js";
 import { slide, type SlideParams } from "./slide.js";
 import { stepPivot, type StepPivotParams } from "./step-pivot.js";
 
-export { armTurn, orbit, pass, slide, stepPivot };
+export { armTurn, orbit, pass, pullBy, slide, stepPivot };
 
 /**
  * The body-agnostic constants a block is drawn with — **the floors a consumer's own
@@ -29,12 +30,14 @@ export {
   STEP_OUT_FRACTION,
   STEP_OUT_RADIUS,
 } from "./arm-turn.js";
-export { LANE_OFFSET, PASS_CLEARANCE } from "./pass.js";
+export { LANE_OFFSET, PAIR_SEPARATION, PASS_CLEARANCE } from "./pass.js";
+export { PULL_BY_BEATS, PULL_BY_RELEASE } from "./pull-by.js";
 export { SLIDE_DISTANCE } from "./slide.js";
 export type {
   ArmTurnParams,
   OrbitParams,
   PassParams,
+  PullByParams,
   SlideParams,
   StepPivotParams,
 };
@@ -48,7 +51,8 @@ export type CatalogCall =
   | { readonly block: "slide"; readonly params: SlideParams }
   | { readonly block: "arm-turn"; readonly params: ArmTurnParams }
   | { readonly block: "orbit"; readonly params: OrbitParams }
-  | { readonly block: "step-pivot"; readonly params: StepPivotParams };
+  | { readonly block: "step-pivot"; readonly params: StepPivotParams }
+  | { readonly block: "pull-by"; readonly params: PullByParams };
 
 export const BLOCK_NAMES = [
   "pass",
@@ -56,6 +60,7 @@ export const BLOCK_NAMES = [
   "arm-turn",
   "orbit",
   "step-pivot",
+  "pull-by",
 ] as const;
 export type BlockName = (typeof BLOCK_NAMES)[number];
 
@@ -71,6 +76,8 @@ export function generateBlock(call: CatalogCall): Motion {
       return orbit.generate(call.params);
     case "step-pivot":
       return stepPivot.generate(call.params);
+    case "pull-by":
+      return pullBy.generate(call.params);
   }
 }
 
@@ -86,5 +93,7 @@ export function blockBeats(call: CatalogCall): number {
       return orbit.beats(call.params);
     case "step-pivot":
       return stepPivot.beats(call.params);
+    case "pull-by":
+      return pullBy.beats();
   }
 }

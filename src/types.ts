@@ -79,10 +79,31 @@ export interface Momentum {
  * (the-lot infers it from the live placements, `touchingSide`). A grip span is for a
  * hold the **figure** imposes, which the placements cannot reveal — and an arch is
  * exactly that, because two dancers with their hands over their heads are standing
- * where two dancers with their hands down would be. Palm grips for Right and Left
- * Grand arrive when that call does.
+ * where two dancers with their hands down would be.
+ * - `palm` — hands joined palm to palm, low and in front: a Pull By's right hands, as if to
+ *   shake, and a Courtesy Turn's left in left (2026-10-28, Right and Left Thru — the first
+ *   call for four).
+ * - `back` — a hand placed **on the other dancer**, not in their hand: the beau's right in
+ *   the small of the belle's back through a Courtesy Turn. CALLERLAB also allows his right in
+ *   her right behind her hip; the small of the back is the one the definitions describe when
+ *   her hand is busy, and the one that needs drawing.
+ *
+ * Right and Left Grand's alternating pull-bys are `palm` too, when that call arrives.
  */
-export type GripStyle = "forearm" | "arch";
+export type GripStyle = "forearm" | "arch" | "palm" | "back";
+
+/**
+ * Who a hand is held **with**, relative to the dancer holding it — the formation's words
+ * rather than a dancer's key, because a block knows the figure and not the cast.
+ *
+ * - `partner` — the other dancer of the same couple.
+ * - `opposite` — the dancer of the other couple straight across a facing-couples set: the one
+ *   a Pull By passes.
+ *
+ * A two-dancer formation never needed this: a pair or a couple has exactly one other dancer
+ * in it. Four is where a grip has to say whose hand.
+ */
+export type Relation = "partner" | "opposite";
 
 /**
  * A span of beats during which one of this dancer's hands is engaged in a grip.
@@ -95,6 +116,12 @@ export interface GripSpan {
   readonly grip: GripStyle;
   readonly from: number;
   readonly to: number;
+  /** Who it is held with, when the formation has more than one other dancer. Absent in a
+   *  pair or a couple, where there is only one. */
+  readonly relation?: Relation;
+  /** The key of the dancer it is held with — {@link relation} resolved against the set, by
+   *  the formation that danced it (`applyCallToFacingCouples`). */
+  readonly with?: string;
 }
 
 /** What applying a block or a call yields. */

@@ -61,9 +61,12 @@ Add a table when it pins down something a rule alone wouldn't.
 | `pass` | direction (forward/backward), shoulder (right/left), exit (lane/centered) | Dosado; Pass Thru | [pass.md](pass.md) |
 | `slide` | side (right/left) | Dosado | [slide.md](slide.md) |
 | `arm-turn` | hand (right/left), fraction, exit (step-out/hold) | Allemande Left | [arm-turn.md](arm-turn.md) |
+| `orbit` | turn, fraction, radius, lane, hold, direction (forward/backward) | Partner Trade; Courtesy Turn | [orbit.md](orbit.md) |
+| `step-pivot` | side, distance, turn, fraction, hold | Partner Trade's belle | [step-pivot.md](step-pivot.md) |
+| `pull-by` | hand (right/left), distance, clearance, drift | Right and Left Thru | [pull-by.md](pull-by.md) |
 
 Anticipated from the remaining starter calls (specced when their call is):
-`pull-by` (hand — R&L Grand, Square Thru), `face-turn` (direction, fraction —
+`face-turn` (direction, fraction —
 turning in place; Square Thru corners), `arc-walk` (Partner Trade),
 `twirl-arch` (California Twirl, Star Thru), `promenade-step`. Townage's
 taught gestures (fist bump, arm turn) live in the same model — the game's

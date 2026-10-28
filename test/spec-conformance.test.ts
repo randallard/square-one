@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { armTurn, orbit, pass, slide, stepPivot } from "../src/blocks/index.js";
+import { armTurn, orbit, pass, pullBy, slide, stepPivot } from "../src/blocks/index.js";
 import { compose } from "../src/compose.js";
 import { CALLS, PAIR_A } from "../src/calls.js";
 import type { Motion } from "../src/types.js";
@@ -52,6 +52,8 @@ function invoke(v: SpecVector): Motion {
         turn: c as "right" | "left",
         fraction: Number(v.args[3] ?? 0.5),
       });
+    case "pull-by":
+      return pullBy.generate({ hand: a as "right" | "left" });
     default:
       throw new Error(`${v.file}: unknown block \`${v.block}\` in the catalog`);
   }

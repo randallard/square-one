@@ -82,7 +82,30 @@ export interface OrbitParams {
    * not change** — which is the point, and is why this is a parameter here rather than
    * a block of its own.
    */
-  readonly hold?: Hold;
+  readonly hold?: Hold | readonly Hold[];
+  /**
+   * Which way the dancer faces while walking the arc: `forward` (the default, and every use
+   * before 2026-10-28) faces the way they travel; `backward` faces the other way and backs
+   * round it.
+   *
+   * The left-side dancer's half of a **Courtesy Turn**: *"a couple works as a unit and turns
+   * around with the left-side dancer backing up and right-side dancer walking forward. The
+   * turning point is halfway between the dancers"* (CALLERLAB Basic §15). The two of them walk
+   * one circle, opposite each other, the same way round, so both turn the same way: the facing
+   * rotates exactly as it does walking forward, and only the bearing of travel is reversed.
+   */
+  readonly direction?: "forward" | "backward";
+  /**
+   * Turning **as a unit** with someone opposite on the same circle: facing stays square to the
+   * centre — the circle's tangent — however the radius bows, rather than following the path.
+   *
+   * A Courtesy Turn's *"a couple works as a unit and turns around"*. Its circle bows in and back
+   * out (the couple closes up to turn), and facing the path walked turned the couple 4° in the
+   * half beat at its middle and **67° in its last beat** (2026-10-28, townage's four-dancer solve:
+   * the gent's arm flipped over trying to keep a hand on her back). Two people turning together
+   * stay side by side, square to the line between them.
+   */
+  readonly unit?: boolean;
 }
 
 /** A full circle takes the same 8 beats an `arm-turn` does — the timing charts do not
@@ -140,7 +163,10 @@ export const orbit = {
   beats: (params: OrbitParams): number => params.fraction * BEATS_PER_TURN,
 
   generate(params: OrbitParams): Motion {
-    const { turn, fraction, radius, lane = 0, hold } = params;
+    const { turn, fraction, radius, lane = 0, hold, direction = "forward", unit = false } = params;
+    const holds: readonly Hold[] = hold === undefined ? [] : "hand" in hold ? [hold] : hold;
+    /** Backing round faces away from the travel; the rotation is the same either way. */
+    const back = direction === "backward" ? 180 : 0;
     if (fraction <= 0) throw new Error("orbit: fraction must be positive");
     if (radius <= 0) throw new Error("orbit: radius must be positive");
     if (radius + Math.min(0, lane) <= 0) {
@@ -174,7 +200,7 @@ export const orbit = {
      * radial)`, and the crab is how far that sits off the pure tangent.
      */
     const facingAt = (turns: number): number => {
-      const radial = radialRate(turns);
+      const radial = unit ? 0 : radialRate(turns);
       const tangential = dir * 2 * Math.PI * radiusAt(turns);
       const crab =
         radial === 0 ? 0 : rad2deg(Math.atan2(tangential, radial)) - dir * 90;
@@ -193,7 +219,7 @@ export const orbit = {
         // that to 359.999…, which `round` then reported as a facing of `360`. Outside
         // `normaliseDeg`'s own `[0, 360)` contract, and it made an exit facing that
         // should have been identical to the lane-free one differ by a whole turn.
-        facing: normaliseDeg(round(facingAt(turns))),
+        facing: normaliseDeg(round(facingAt(turns) + back)),
       };
     };
 
@@ -211,15 +237,18 @@ export const orbit = {
       // leaves both available, and that is exactly what makes it flow into anything; a
       // California Twirl walks the same arc with the inside hand joined throughout.
       // Held to his last beat; the release is the sequence's call — see `holdSpans`.
-      grips: holdSpans(hold, beats),
+      grips: holds.flatMap((h) => holdSpans(h, beats)),
       entry: { position: { x: entry.x, y: entry.y }, facing: entry.facing },
       exit: { position: { x: exit.x, y: exit.y }, facing: exit.facing },
       momentum: {
         rotation,
         roll: turnOf(rotation),
-        bodyFlow: exit.facing,
-        // What *finished* engaged, which is the hand held to the last beat, or none.
-        lastHand: hold?.hand ?? "none",
+        // The way they are travelling, which is behind them when backing.
+        bodyFlow: normaliseDeg(round(exit.facing - back)),
+        // What *finished* engaged, which is the hand held to the last beat, or none. With two
+        // held (a Courtesy Turn's beau: left in her left, right on her back) it is the one in
+        // a hand: a hand on a back is not a hand a following call has to wait for.
+        lastHand: (holds.find((h) => h.grip !== "back") ?? holds[0])?.hand ?? "none",
       },
     };
   },
