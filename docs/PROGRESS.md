@@ -4,6 +4,20 @@ _Last updated: 2026-10-28_
 
 ## Status / next
 
+**▶ RIGHT NOW (2026-10-28, 4): 🧪 THE ALLEMANDE WALKS ITS CIRCLE, released as `0.10.0`** (Ryan:
+*"commit it, release and pin"*). [journal 29](journal/2026-10-28-4-the-allemande-walks-its-circle-29.md)
+
+- `arm-turn` walks the arc: a mark every 7.5° between the spec's quarter rows (ADR-0022's rule,
+  which this block never got). The pair used to close to 0.707 of the grip mid-quarter.
+- `step-out` holds the circle until the grip lets go at `beats − 0.5`, then opens.
+- Found by townage's whole-move solve: no arm could hold the forearm grip through either. 254
+  tests; all gates clean.
+
+⏳ **Next:** ✅ committed, tagged `v0.10.0`, pushed to `origin` and `data`; townage's pin moves with
+it. Then: sequences of four, the next facing-couples calls.
+
+---
+
 **▶ RIGHT NOW (2026-10-28, 3): 🧪 HEADS AHEAD OF THEIR BODIES, released as `0.9.0`** (Ryan:
 *"commit pin and release"*). [journal 28](journal/2026-10-28-3-heads-ahead-of-their-bodies-28.md)
 

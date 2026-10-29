@@ -71,7 +71,8 @@ function gripRadii(shape: FigureShape): { standoff: number; orbit: number; out: 
   const r = (x: number, y: number): number => Math.hypot(x, y);
   return {
     standoff: -m.entry.position.y,
-    orbit: Math.max(...m.waypoints.slice(1, -1).map((w) => r(w.x, w.y))),
+    // The turn proper: from the grip to the last quarter mark, before the step-out blends in.
+    orbit: Math.max(...m.waypoints.filter((w) => w.beat >= 1 && w.beat <= m.beats - 1).map((w) => r(w.x, w.y))),
     out: r(m.exit.position.x, m.exit.position.y),
   };
 }
@@ -290,10 +291,32 @@ describe("an Allemande Left is turned by the arms that grip it", () => {
     const long = generateBlock(
       nth(chainFor(CALLS["allemande-left"], shapeOf({ gripRadius: LONG })), 0),
     );
-    // Every waypoint after the step-in is on the grip's own circle about the pivot.
-    for (const w of long.waypoints.slice(1, -1)) {
+    // Every waypoint of the turn proper is on the grip's own circle about the pivot.
+    for (const w of long.waypoints.filter((x) => x.beat >= 1 && x.beat <= long.beats - 1)) {
       expect(Math.hypot(w.x, w.y)).toBeCloseTo(LONG, 6);
     }
+  });
+
+  it("🔴 walks the arc, not its chords, and holds it until the grip lets go (2026-10-28)", () => {
+    // ADR-0022's finding for `orbit`, which `arm-turn` never got: a mark every quarter turn and a
+    // straight line between them sagged to cos 45° = 0.707 of the grip mid-quarter, the two
+    // gripping dancers breathing in by 29% every two beats. townage's whole-move solve: no arm
+    // held the grip through it. Sampled continuously, the path stays on the circle.
+    const m = generateBlock(nth(chainFor(CALLS["allemande-left"], shapeOf({ gripRadius: LONG })), 0));
+    // The whole grip, release included: the step out starts when the forearms let go, not half a
+    // beat before (it opened from beat 7 while they were held to 7.5: up to 4× an upper arm).
+    const grip = m.grips[0];
+    expect(grip?.to).toBe(m.beats - 0.5);
+    let low = Infinity;
+    let high = 0;
+    for (let beat = 1; beat <= (grip?.to ?? 0) + 1e-9; beat += 1 / 64) {
+      const p = sampleMotion(m, beat).position;
+      low = Math.min(low, Math.hypot(p.x, p.y));
+      high = Math.max(high, Math.hypot(p.x, p.y));
+    }
+    // A forty-eighth of a turn still sags r(1 − cos 3.75°), 0.2%; the quarter-mark chords sagged 29%.
+    expect(low).toBeGreaterThan(LONG * 0.995);
+    expect(high).toBeLessThan(LONG * (1 + 1e-6));
   });
 
   it("🔴 steps out proportionally rather than to a fixed radius", () => {

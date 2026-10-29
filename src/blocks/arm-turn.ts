@@ -68,6 +68,9 @@ export const STEP_OUT_FRACTION = (STEP_OUT_RADIUS - ORBIT_RADIUS) / (ENTRY_RADIU
 
 /** A full turn is 8 beats; the chart's fraction rows are linear in that. */
 export const BEATS_PER_TURN = 8;
+/** How often a waypoint is emitted between the quarter marks, in turns: `orbit`'s 7.5° (ADR-0022). */
+const SAMPLE_TURNS = 1 / 48;
+
 /** The beat at which forearms join and rotation starts. */
 const CONTACT_BEAT = 1;
 
@@ -114,20 +117,53 @@ export const armTurn = {
     // A mark every quarter turn, then the final one. The last quarter is
     // compressed when it would overrun the block: the departure step is blended
     // into the closing beat rather than added to it.
+    const anchors: { beat: number; turns: number; radius: number }[] = [
+      { beat: CONTACT_BEAT, turns: 0, radius: gripRadius },
+    ];
     for (let turns = 0.25; turns < fraction - 1e-9; turns += 0.25) {
-      const p = polar(gripRadius, angleAt(turns));
-      waypoints.push({
-        beat: CONTACT_BEAT + turns * BEATS_PER_TURN,
-        x: round(p.x),
-        y: round(p.y),
-        facing: round(normaliseDeg(facingAt(turns))),
-      });
+      anchors.push({ beat: CONTACT_BEAT + turns * BEATS_PER_TURN, turns, radius: gripRadius });
     }
-
     const endRadius = exit === "step-out" ? stepOutRadius : gripRadius;
+    // 🧪 The step out starts when the grip lets go, not before (2026-10-28). The radius used to
+    // open from the last quarter mark while the forearms were still joined for half a beat, and
+    // townage's arms measured it: up to 4× an upper arm to keep the hold. Same angular pace; only
+    // where the radius starts opening moves.
+    const release = Math.max(CONTACT_BEAT, round(beats - 0.5));
+    const lastQuarter = anchors[anchors.length - 1];
+    /* v8 ignore next -- anchors starts with the contact mark */
+    if (lastQuarter === undefined) throw new Error("arm-turn: no anchors");
+    if (exit === "step-out" && release > lastQuarter.beat + 1e-9 && release < beats - 1e-9) {
+      const u = (release - lastQuarter.beat) / (beats - lastQuarter.beat);
+      anchors.push({ beat: release, turns: lastQuarter.turns + u * (fraction - lastQuarter.turns), radius: gripRadius });
+    }
+    anchors.push({ beat: beats, turns: fraction, radius: endRadius });
+
+    // 🧪 **Walked as the arc, not its chords** (2026-10-28, ADR-0022's finding for `orbit`, which
+    // this block never got). `sampleMotion` runs a straight line between waypoints, and a chord
+    // across a quarter turn sags to cos 45° = 0.707 of the radius: two gripping dancers closed
+    // in by 29% and opened again every two beats. townage's whole-move solve found it: no arm
+    // could hold the grip through it. Between the quarter marks the spec's rows name, a mark
+    // every forty-eighth of a turn, angle, radius and facing each linear in the beat.
+    for (let k = 1; k < anchors.length; k++) {
+      const a = anchors[k - 1];
+      const b = anchors[k];
+      /* v8 ignore next -- anchors is built non-empty above; a type narrowing only */
+      if (a === undefined || b === undefined) continue;
+      const n = Math.max(1, Math.round((b.turns - a.turns) / SAMPLE_TURNS));
+      for (let j = 1; j <= n; j++) {
+        const u = j / n;
+        const turns = a.turns + u * (b.turns - a.turns);
+        const p = polar(a.radius + u * (b.radius - a.radius), angleAt(turns));
+        waypoints.push({
+          beat: j === n ? b.beat : round(a.beat + u * (b.beat - a.beat)),
+          x: round(p.x),
+          y: round(p.y),
+          facing: round(normaliseDeg(facingAt(turns))),
+        });
+      }
+    }
     const end = polar(endRadius, angleAt(fraction));
     const endFacing = round(normaliseDeg(facingAt(fraction)));
-    waypoints.push({ beat: beats, x: round(end.x), y: round(end.y), facing: endFacing });
 
     return {
       beats,
@@ -140,7 +176,7 @@ export const armTurn = {
           hand,
           grip: "forearm",
           from: CONTACT_BEAT,
-          to: exit === "hold" ? beats : Math.max(CONTACT_BEAT, round(beats - 0.5)),
+          to: exit === "hold" ? beats : release,
         },
       ],
       // Grip-centred frame: the pivot is the origin and the dancer stands off it.

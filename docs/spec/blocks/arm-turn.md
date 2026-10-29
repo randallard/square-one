@@ -67,6 +67,14 @@ pair would finish an Allemande Left by stepping **in** (ADR-0020).
 - Mirror transform gives the other hand; fractions truncate the orbit and exit
   from that point.
 - Counterpart is the 180° rotation, as always.
+- 🧪 **The rows are anchors, not the whole path** (2026-10-28, [journal 29](../../journal/2026-10-28-4-the-allemande-walks-its-circle-29.md)).
+  Between them the block emits a mark every forty-eighth of a turn (7.5°), angle, radius and
+  facing each linear in the beat — ADR-0022's rule for `orbit`, which this block never got. With
+  only the rows, `sampleMotion`'s straight lines closed the pair to cos 45° = 0.707 of the grip
+  mid-quarter. Every integer beat is still a mark, so the rows read as before.
+- 🧪 **`step-out` holds the circle until the grip lets go** (same day). The radius opens from the
+  release at `beats − 0.5` (beat 7.5 here, 7/8 of the way round), not from the last quarter mark:
+  it used to open while the forearms were still joined. Beat 7 and 8 are unchanged.
 
 ## Exit pose
 
