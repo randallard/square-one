@@ -395,6 +395,8 @@ const PASS_THRU_CHAIN_AT = (shape: FigureShape): readonly CatalogCall[] => [
       shoulder: "right",
       exit: "centered",
       ...sized("clearance", PASS_CLEARANCE, shape.clearance),
+      // 🧪 Heads ahead of their bodies meet first (`FigureShape.forward`, 2026-10-28).
+      ...(shape.forward !== undefined && shape.forward > 0 ? { forward: shape.forward } : {}),
     },
   },
 ];

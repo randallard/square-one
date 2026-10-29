@@ -4,6 +4,19 @@ _Last updated: 2026-10-28_
 
 ## Status / next
 
+**▶ RIGHT NOW (2026-10-28, 3): 🧪 HEADS AHEAD OF THEIR BODIES, released as `0.9.0`** (Ryan:
+*"commit pin and release"*). [journal 28](journal/2026-10-28-3-heads-ahead-of-their-bodies-28.md)
+
+- `FigureShape.forward` (optional): how much nearer two dancers' widest parts come than their
+  centres, facing. `reformCouple` carries it.
+- `centeredGap(c, s, f) = c·s / √((s − f)² − c²)`: Pass Thru widens so the heads keep the clearance.
+- townage's ember ×4 Pass Thru is clean (its head is 28 cm forward). 253 tests; all gates clean.
+
+⏳ **Next:** ✅ committed, tagged `v0.9.0`, pushed to `origin` and `data`; townage's pin moves with
+it. Then: sequences of four, the next facing-couples calls (townage's Allemande fold is its own).
+
+---
+
 **▶ RIGHT NOW (2026-10-28, 2): 🧪 A CENTRED PASS, SOLVED FOR ITS CLOSEST MOMENT, released as
 `0.8.0`** (Ryan: *"commit it, release and pin"*). [journal 27](journal/2026-10-28-2-a-centred-pass-solved-for-its-closest-moment-27.md)
 

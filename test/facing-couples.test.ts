@@ -18,6 +18,8 @@ import {
 } from "../src/facing-couples.js";
 import { MINUS_Y, PLUS_Y, normaliseDeg } from "../src/geometry.js";
 import { partnerUp } from "../src/couple.js";
+import { applyCallToCouple } from "../src/calls.js";
+import { reformCouple } from "../src/sequence.js";
 import { sampleMotion } from "../src/stepper.js";
 import type { Motion } from "../src/types.js";
 
@@ -254,5 +256,32 @@ describe("🧪 a centred pass solved for its closest moment (2026-10-28)", () =>
     const m = pass.generate({ direction: "forward", shoulder: "right", exit: "centered" });
     expect(m.waypoints.find((w) => w.beat === 1)?.x).toBeCloseTo(-0.15, 6);
     expect(centeredGap(0.3, 1)).toBeGreaterThan(0.3);
+  });
+});
+
+describe("🧪 heads ahead of their bodies (FigureShape.forward, 2026-10-28)", () => {
+  it("gives the heads the clearance, when they meet before the bodies do", () => {
+    // Each dancer's head `f / 2` ahead of them: A faces +y, its counterpart −y about (0, 0.5).
+    for (const [c, f] of [[0.44, 0.25], [0.6, 0.1], [0.3, 0.2]] as const) {
+      const m = pass.generate({ direction: "forward", shoulder: "right", exit: "centered", clearance: c, forward: f });
+      let heads = Infinity;
+      let bodies = Infinity;
+      for (let t = 0; t <= 2; t += 0.002) {
+        const p = sampleMotion(m, t).position;
+        const q = { x: -p.x, y: 1 - p.y };
+        bodies = Math.min(bodies, Math.hypot(p.x - q.x, p.y - q.y));
+        heads = Math.min(heads, Math.hypot(p.x - q.x, p.y + f / 2 - (q.y - f / 2)));
+      }
+      expect(heads).toBeGreaterThan(c - 2e-3);
+      expect(bodies).toBeGreaterThan(c - 2e-3);
+    }
+    expect(centeredGap(0.4, 1, 0)).toBeCloseTo(centeredGap(0.4, 1), 9);
+  });
+
+  it("is a body measurement, so a couple carries it across a call", () => {
+    const c = partnerUp("a", "b", undefined, undefined, { width: 0.4, clearance: 0.3, forward: 0.12 });
+    expect(c.forward).toBe(0.12);
+    expect(reformCouple(c, applyCallToCouple("partner-trade", c)).forward).toBe(0.12);
+    expect(partnerUp("a", "b").forward).toBeUndefined();
   });
 });

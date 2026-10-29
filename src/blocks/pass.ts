@@ -40,6 +40,12 @@ export interface PassParams {
    * which is the opposite failure.
    */
   readonly clearance?: number;
+  /**
+   * 🧪 How much nearer the two dancers' widest parts come than their centres, facing
+   * (`FigureShape.forward`, 2026-10-28). `centered` only: a Pass Thru's dancers face each other
+   * until they're past. Default 0.
+   */
+  readonly forward?: number;
 }
 
 /** Half the gap between the two lanes. A right-shoulder pass shifts each dancer
@@ -107,10 +113,17 @@ function travelFor(exit: PassParams["exit"], separation: number, clearance: numb
  * Only for a clearance a body asks for above the figure's own (ADR-0021). The figure as drawn, at
  * {@link PASS_CLEARANCE}, dips to 0.287 at its closest and stays as the spec draws it. A clearance
  * of the whole separation or more can't be met by any lane; it's held at 95% of it.
+ *
+ * 🧪 **`forward`** (2026-10-28): when the two dancers' widest parts sit ahead of their centres —
+ * townage's ember carries its head 28 cm forward — those parts meet `forward` sooner, so the line
+ * they travel is shifted by it and their closest is `G·(s − f) / √(G² + s²)`. Solved:
+ * `G = c·s / √((s − f)² − c²)`. With `f = 0` it is the formula above; the bodies, behind their
+ * heads, are then further apart than `c` and need nothing more.
  */
-export function centeredGap(clearance: number, separation: number): number {
-  const c = Math.min(clearance, 0.95 * separation);
-  return (c * separation) / Math.sqrt(separation * separation - c * c);
+export function centeredGap(clearance: number, separation: number, forward = 0): number {
+  const room = separation - Math.max(0, forward);
+  const c = Math.min(clearance, 0.95 * room);
+  return (c * separation) / Math.sqrt(room * room - c * c);
 }
 
 export const pass = {
@@ -121,8 +134,11 @@ export const pass = {
     // Right shoulders pass ⇒ each dancer shifts to their own left ⇒ -x. Half the
     // clearance each, because both of them step: the pair end `clearance` apart.
     const wanted = atLeast(PASS_CLEARANCE, params.clearance);
+    const ahead = params.forward ?? 0;
     const offset =
-      (params.exit === "centered" && wanted > PASS_CLEARANCE ? centeredGap(wanted, PAIR_SEPARATION) : wanted) / 2;
+      (params.exit === "centered" && (wanted > PASS_CLEARANCE || ahead > 0)
+        ? centeredGap(wanted, PAIR_SEPARATION, ahead)
+        : wanted) / 2;
     const lane = (params.shoulder === "right" ? -1 : 1) * offset;
     // A backward lane pass holds its lane and travels dead straight. The veer
     // into the lane is not this block's job: per the entry contract the dancer

@@ -274,13 +274,14 @@ export function reformCouple(couple: Couple, motions: Record<string, Motion>): C
     couple.belle,
     { x: (beau.position.x + belle.position.x) / 2, y: (beau.position.y + belle.position.y) / 2 },
     beau.facing,
-    Math.hypot(
-      belle.position.x - beau.position.x,
-      belle.position.y - beau.position.y,
-    ),
-    couple.clearance,
-    couple.archClearance,
-    couple.gripRadius,
+    {
+      width: Math.hypot(belle.position.x - beau.position.x, belle.position.y - beau.position.y),
+      clearance: couple.clearance,
+      archClearance: couple.archClearance,
+      gripRadius: couple.gripRadius,
+      // A body measurement, so carried across the call as the clearances are (ADR-0019).
+      ...(couple.forward === undefined ? {} : { forward: couple.forward }),
+    },
   );
 }
 

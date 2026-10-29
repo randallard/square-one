@@ -149,6 +149,16 @@ export interface FigureShape {
    * frame fact rather than this one.
    */
   readonly gripRadius: number;
+  /**
+   * 🧪 How much nearer two dancers' widest parts come than their centres when they **face** each
+   * other: how far ahead of each body's centre line its head (or whatever is widest) sits, the
+   * two added (2026-10-28). Optional, `0` when absent, which is every body before this.
+   *
+   * townage's ember carries its head 28 cm forward. Two embers facing each other in a Pass Thru
+   * met **head first**: bodies 109 cm apart, heads 72 cm, 92 needed. A side-by-side clearance
+   * can't say that; this can. `pass`'s centred exit reads it (`centeredGap`).
+   */
+  readonly forward?: number;
 }
 
 /**
@@ -196,7 +206,8 @@ export function shapeOf(
 ): FigureShape {
   const shape: FigureShape = { ...base, ...overrides };
   for (const [key, value] of Object.entries(shape)) {
-    if (!(value > 0)) throw new Error(`shapeOf: ${key} must be positive`);
+    // `forward` may be 0: a body whose head is over its centre, which is most of them.
+    if (key === "forward" ? !(value >= 0) : !(value > 0)) throw new Error(`shapeOf: ${key} must be positive`);
   }
   // 🔴 Deliberately **not** rounded, unlike everything a block emits. A shape is an input —
   // somebody's measurement of somebody's body — and rounding it here would mean

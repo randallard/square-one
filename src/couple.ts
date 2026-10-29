@@ -194,15 +194,17 @@ export function partnerUp(
     clearance: given.clearance ?? width / 2,
     archClearance: given.archClearance ?? given.clearance ?? width / 2,
     gripRadius: given.gripRadius ?? DEFAULT_SHAPE.gripRadius,
+    ...(given.forward === undefined ? {} : { forward: given.forward }),
   };
   for (const [key, value] of Object.entries(measured)) {
-    if (!(value > 0)) throw new Error(`partnerUp: ${key} must be positive`);
+    if (key === "forward" ? !(value >= 0) : !(value > 0)) throw new Error(`partnerUp: ${key} must be positive`);
   }
   return {
     width: round(measured.width),
     clearance: round(measured.clearance),
     archClearance: round(measured.archClearance),
     gripRadius: round(measured.gripRadius),
+    ...(measured.forward === undefined ? {} : { forward: round(measured.forward) }),
     center: { x: round(center.x), y: round(center.y) },
     facing: round(normaliseDeg(facing)),
     beau,

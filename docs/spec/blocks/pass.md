@@ -137,3 +137,10 @@ So when a body asks for more than the figure's own clearance, the gap at the cro
 figure is as drawn (ADR-0021). That figure, at `PASS_CLEARANCE`, dips to 0.287 at its closest,
 and the table above is unchanged. `pull-by` solves the same question for its `sin²` lane
 (`gapAtCrossing`), and the Trade's bow did first (`laneForClearance`).
+
+### Heads ahead of their bodies — 2026-10-28 (3)
+
+`forward` (from `FigureShape.forward`): when the two dancers' widest parts sit ahead of their
+centres (townage's ember carries its head 28 cm forward), those parts meet that much sooner, and
+the centred pass widens for them: `centeredGap(c, s, f) = c·s / √((s − f)² − c²)`. Absent or 0,
+nothing changes.
