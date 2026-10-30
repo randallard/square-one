@@ -10,6 +10,22 @@
 # it silently — and so the value is visible to anyone reading the repo.
 minimumReleaseAge: 1440
 
+# ADR-1016: the rest of the supply-chain posture, explicit for the same reason.
+# Refuse a release whose provenance or trusted-publisher evidence is weaker than an earlier one's.
+trustPolicy: no-downgrade
+# One reviewed exception, pinned to the exact version so a later 6.x release is still checked.
+# hosted-git-info 6.1.3 is npm's own backport on the 6.x line, published 2024-11-21 by an npm CLI
+# maintainer by hand, the day after 8.0.1 went out from npm-cli-ops with SLSA provenance, so it
+# reads as a downgrade. (the-lot excepts semver@6.3.1 for the same shape.) It arrives via
+# license-checker-rseidelsohn → normalize-package-data@5, the CI licence check, dev-path only.
+# Retire this when that chain moves off hosted-git-info@6.
+trustPolicyExclude:
+  - hosted-git-info@6.1.3
+# A transitive dependency may not come from git or a tarball URL, only the registry.
+blockExoticSubdeps: true
+# The build allowlist: no dependency runs an install script. Add one only after reading it.
+allowBuilds: {}
+
 overrides:
   # Every entry here is a **bounded** range, and the bound is load-bearing.
   #

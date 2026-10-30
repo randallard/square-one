@@ -97,6 +97,7 @@ describe("Partner Trade", () => {
       const r = ((w.facing - 90) * Math.PI) / 180;
       return (other.x - w.x) * Math.cos(r) + (other.y - w.y) * Math.sin(r);
     };
+    // Casts (ADR-0027, docs/any-registry.md): both were just asserted defined; `expect` doesn't narrow.
     expect(toTheRightOf(beau as Waypoint, belle as Waypoint)).toBeGreaterThan(0);
     expect(toTheRightOf(belle as Waypoint, beau as Waypoint)).toBeGreaterThan(0);
 

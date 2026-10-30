@@ -217,6 +217,7 @@ describe("🔴 the bow survives a call boundary", () => {
       expect(room).toHaveLength(2);
       for (const r of room) expect(r).toBeGreaterThan(want - 1e-5);
       // And the two are the *same* figure, not merely both adequate.
+      // Cast (any-registry): `room` has length 2 (asserted above), so `room[0]` is a number.
       expect(room[1]).toBeCloseTo(room[0] as number, 6);
     }
   });
