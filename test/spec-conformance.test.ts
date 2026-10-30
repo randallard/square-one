@@ -51,6 +51,9 @@ function invoke(v: SpecVector): Motion {
         distance: Number(b),
         turn: c as "right" | "left",
         fraction: Number(v.args[3] ?? 0.5),
+        // 🧪 Star Thru's walk and chart timing (10-29), optional as in the block.
+        ...(v.args[4] === undefined ? {} : { forward: Number(v.args[4]) }),
+        ...(v.args[5] === undefined ? {} : { beats: Number(v.args[5]) }),
       });
     case "pull-by":
       return pullBy.generate({ hand: a as "right" | "left" });

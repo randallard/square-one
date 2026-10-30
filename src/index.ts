@@ -14,4 +14,7 @@ export * from "./calls.js";
 export * from "./couple.js";
 export * from "./sequence.js";
 export * from "./facing-couples.js";
+export * from "./star-thru.js";
 export * from "./stepper.js";
+export * from "./formations.js";
+export * from "./standard-applications.js";

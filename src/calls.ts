@@ -323,6 +323,8 @@ function sized<K extends string>(
   figure: number,
   wanted: number,
 ): Partial<Record<K, number>> {
+  // Cast (ADR-0027, docs/any-registry.md): the computed key widens to `{ [x: string]: number }`,
+  // but `key` is a `K`, so this is exactly one `K` key holding a number.
   return wanted > figure ? ({ [key]: wanted } as Record<K, number>) : {};
 }
 
@@ -492,6 +494,7 @@ export type CallName = keyof typeof CALLS;
  * to be able to name it. A call added without the property fails the assertion, which is
  * the difference between a rule and a habit.
  */
+// Cast (any-registry): `Object.keys` returns `string[]`; CALLS is a const object, so its keys are exactly `CallName`.
 export const ALL_CALL_NAMES = Object.keys(CALLS) as readonly CallName[];
 
 /**

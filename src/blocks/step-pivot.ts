@@ -64,6 +64,51 @@ export interface StepPivotParams {
    * why the hold is a parameter and not a second block.
    */
   readonly hold?: Hold;
+  /**
+   * 🧪 How far the dancer walks **forward**, along the facing they entered with, while they
+   * pivot (2026-10-29, Star Thru). Absent is `0`: the Trade's belle steps across and goes
+   * nowhere forward.
+   *
+   * Star Thru's two dancers each walk `(separation + width) / 2` straight along their own
+   * facing while turning a quarter, one left and one right (`docs/spec/calls/star-thru.md`).
+   * Linear in the beat like `distance`, so the two together are one straight line.
+   */
+  readonly forward?: number;
+  /**
+   * 🧪 The step's length in beats, when the **chart** times it rather than the rotation
+   * (2026-10-29, Star Thru). Absent is the shared rotation budget, `fraction × BEATS_PER_TURN`.
+   *
+   * A quarter turn on the budget is 2 beats; a Star Thru is 4 on CALLERLAB's timing chart, and
+   * all of it is this one block. The turn is the smaller part of a Star Thru, the walk forward
+   * the larger, so the walk sets the pace. Only a figure that travels says so: a pivot whose
+   * time is its turn keeps the budget, which is what `slide`'s warning was about.
+   */
+  readonly beats?: number;
+  /**
+   * 🧪 A sideways bow to the dancer's **own left**, out and back, peaking at {@link bowAt} of the
+   * step (2026-10-29, Star Thru). Absent is `0`: straight.
+   *
+   * Star Thru's two walk at each other and are level three quarters through. The arch takes the
+   * held arm over her head, which is the clearance Ryan chose (vertical); the **bodies** still
+   * need room to pass right shoulders, so each bows to their own left by half the pair's passing
+   * clearance. Back to the line at both ends, so where the step finishes is unchanged.
+   */
+  readonly bow?: number;
+  /**
+   * Where in the step (0–1) the bow peaks: where the two dancers are level. Default `0.5`. A Star
+   * Thru's is `0.5 / forward` of the pair frame, 0.75 at the engine's width.
+   */
+  readonly bowAt?: number;
+}
+
+/**
+ * The bow's profile: `sin²` up to the peak and `cos²` down from it, so it starts and ends on the
+ * line with no sideways speed, and is flat at the peak whichever side of the middle it is.
+ */
+export function bowProfile(t: number, at: number): number {
+  if (t <= 0 || t >= 1) return 0;
+  if (t <= at) return Math.sin((Math.PI / 2) * (t / at)) ** 2;
+  return Math.cos((Math.PI / 2) * ((t - at) / (1 - at))) ** 2;
 }
 
 /** The catalog's shared rotation budget: a full turn is 8 beats, a half 4. Same number
@@ -89,17 +134,23 @@ const SAMPLE_TURNS = 1 / 48;
 export const stepPivot = {
   name: "step-pivot",
 
-  beats: (params: StepPivotParams): number => params.fraction * BEATS_PER_TURN,
+  beats: (params: StepPivotParams): number => params.beats ?? params.fraction * BEATS_PER_TURN,
 
   generate(params: StepPivotParams): Motion {
     const { side, distance, turn, fraction, hold } = params;
+    const forward = params.forward ?? 0;
+    const bow = params.bow ?? 0;
+    const bowAt = params.bowAt ?? 0.5;
+    if (bow < 0) throw new Error("step-pivot: bow must not be negative — it is always to the dancer's own left");
+    if (bowAt <= 0 || bowAt >= 1) throw new Error("step-pivot: bowAt must be inside the step");
     if (fraction <= 0) throw new Error("step-pivot: fraction must be positive");
+    if (params.beats !== undefined && params.beats <= 0) throw new Error("step-pivot: beats must be positive");
     if (distance < 0) {
       throw new Error("step-pivot: distance must not be negative — use `side` for direction");
     }
 
     const dir = turn === "left" ? 1 : -1;
-    const beats = fraction * BEATS_PER_TURN;
+    const beats = params.beats ?? fraction * BEATS_PER_TURN;
     const rotation = dir * fraction * 360;
     // A dancer facing `+y` has their left toward `−x`.
     const dx = (side === "right" ? 1 : -1) * distance;
@@ -107,9 +158,10 @@ export const stepPivot = {
     const at = (turns: number): Waypoint => {
       const t = turns / fraction;
       return {
-        beat: round(turns * BEATS_PER_TURN),
-        x: round(dx * t),
-        y: 0,
+        beat: round(t * beats),
+        // Her own left is `−x` in this frame.
+        x: round(dx * t - bow * bowProfile(t, bowAt)),
+        y: round(forward * t),
         // Rounded before normalising, for the reason `orbit` gives: a closing facing that
         // lands a float's breath below its cardinal normalises to 359.999… and rounds to
         // a facing of 360, outside `normaliseDeg`'s own contract.
@@ -119,7 +171,9 @@ export const stepPivot = {
 
     // `k / n` rather than an accumulated `+=`, for the reason `orbit` gives: the fixtures look
     // their rows up by exact beat, and repeated addition of a forty-eighth does not land on one.
-    const n = Math.max(1, Math.round(fraction / SAMPLE_TURNS));
+    // A bowed step isn't a straight line, so it's marked four times as often: every twelfth of a
+    // beat on a Star Thru, where a chord's sag off the bow is under a thousandth of the bow.
+    const n = Math.max(1, Math.round(fraction / SAMPLE_TURNS)) * (bow > 0 ? 4 : 1);
     const waypoints: Waypoint[] = [];
     for (let k = 0; k < n; k++) waypoints.push(at((k * fraction) / n));
     waypoints.push(at(fraction));

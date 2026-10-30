@@ -16,6 +16,9 @@ lateral **on purpose**. Introduced by
 | `turn` | `left` / `right` | Which way they turn. **`left` is CCW**, matching [`orbit`](orbit.md) and [`arm-turn`](arm-turn.md) |
 | `fraction` | quarter multiples — `0.25`, `0.5`, `0.75`, `1`, … | How much of a turn |
 | `hold` | a hand and a grip style, default **absent** | A hand joined for the whole step. Absent is a Partner Trade's belle, who lets go; present is a California Twirl's, whose step across **is** the duck under the arch ([ADR-0017](../../adr/0017-a-california-twirl-is-a-partner-trade-holding-on.md)) |
+| `forward` | any non-negative number, default **0** | 🧪 How far they walk **forward**, along the facing they entered with, while they pivot (2026-10-29, [Star Thru](../calls/star-thru.md)). Linear in the beat, like `distance` |
+| `bow`, `bowAt` | a non-negative distance, default **0**; where it peaks, 0–1, default **0.5** | 🧪 A sideways bow to the dancer's **own left**, out and back, `sin²` up to `bowAt` and `cos²` down from it (Star Thru: right shoulders pass the pair's clearance apart where they're level) |
+| `beats` | a positive number, default **absent** | 🧪 The step's length when the **chart** times it, not the rotation (Star Thru). Absent is the rotation budget below |
 
 ## Why this is not `slide`
 
@@ -38,6 +41,12 @@ A half turn is 4 beats — a Partner Trade entire.
 The distance rides inside that budget the way ADR-0013's lane rides inside an arc, and costs
 nothing. A wider couple's belle covers more ground in the same beats, which is what stepping
 across a wider couple *is*.
+
+🧪 **Unless the figure travels and the chart says otherwise** (2026-10-29). A Star Thru is a
+quarter turn, 2 beats on the budget, and the chart gives it 4: each dancer walks two thirds of a
+unit forward while turning, and the walk is the larger part. So `beats` sets the pace when it is
+given, and it is given only with a `forward`: a pivot whose time is its turn keeps the budget,
+which is the line `slide`'s warning draws.
 
 ## Lateral travel is not sway, when the dancer is turning
 
@@ -122,3 +131,14 @@ The degenerate case, a pivot on the spot.
 
 `distance: 0` is legal and `distance < 0` is not: direction is `side`'s job, and a block with two
 ways to say "left" is a block that can be told to go both ways at once.
+
+🧪 Star Thru's woman (2026-10-29): a quarter turn left while walking forward two thirds of a unit,
+timed by the chart rather than the turn. `side` is moot at `distance` 0.
+
+`step-pivot(left, 0, left, 0.25, 0.666667, 4)` — 4 beats:
+
+| Beat | x | y | Facing | Doing |
+|---|---|---|---|---|
+| 0 | 0 | 0 | +y | facing the man, hands joined in the arch |
+| 2 | 0 | 0.333334 | | an eighth turned, halfway along (half of the rounded 0.666667) |
+| 4 | 0 | 0.666667 | −x | a quarter turned left, on the far side of where he stood |

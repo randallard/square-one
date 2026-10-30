@@ -1,6 +1,6 @@
 # Star Thru
 
-_Status: **draft, for review** (2026-08-21). No code yet — this is the talk-first artifact
+_Status: **🧪 built 2026-10-29** (`src/star-thru.ts`, `applyStarThru`; journal 31), uncommitted for Ryan's look. Was: draft, for review (2026-08-21). No code yet — this is the talk-first artifact
 (ADR-0009): the derivation, the two things it forces, and the two questions only Ryan can settle.
 Nothing in `src/` implements this call and the catalog does not list it._
 
@@ -112,6 +112,26 @@ the figure needs, all of it spent in the wrong place.
    answer may be that the join sits off to the named-hand side (`−x` here) and the couple finishes
    displaced toward it — which is a real Star Thru's "you end up over there" feel. **This changes
    where every subsequent call happens**, so it wants deciding before any geometry is written.
+   **Proposed answer (Claude, 2026-10-29, from the CALLERLAB references; for Ryan's check):
+   the hands are offset during the call, but the couple ends on the pair's own spots.**
+   - *Basic definitions, #24 Star Thru, Styling:* "Hands are joined in raised position at
+     approximately eye level … The arch will be offset to the man's right and woman's left." So
+     mid-call the join sits to the named-hand side (`−x` here), not at the midpoint.
+   - *Standard Basic Applications, #24:* Star Thru is standard from **Facing Lines** and **Eight
+     Chain Thru**, which put pairs side by side one spot apart. A couple displaced toward the
+     hand side would land on the next pair's couple, so each couple must finish on its own pair's
+     two spots: **the two dancers swap spots**, and the pair's centre stays where it was. The
+     derivation's ending stands.
+   - *Choreographic guidelines:* "SLIDE THRU is just like a STAR THRU, except you don't use hands",
+     from normal facing couples. Same ending spots, so the hands decide nothing about where the
+     couple ends.
+   - It follows that they **pass right shoulders**: he walks past her with her on his right, and
+     his right arm reaches across, over her, to her left hand on her far side. That's the "under
+     the arch". The Mainstream California Twirl definition says the same of its own arch ("the
+     Woman walk[s] forward and under the arch … passing right shoulders").
+
+   **Answered (Ryan, 2026-10-29): she goes under; the clearance is vertical.** (Question 2.)
+
 2. **What profile carries the lateral clearance?** Given the crossing is at `t = 0.75`, the
    candidates are: a `sin²` bow sized to deliver at 0.75 (simple, wasteful, peaks in the wrong
    place); a profile whose peak is placed at the crossing (right-looking, a new shape in the
@@ -123,7 +143,7 @@ the figure needs, all of it spent in the wrong place.
 
 | # | Block | Beats | Notes |
 |---|---|---|---|
-| 1 | [`step-pivot`](../blocks/step-pivot.md)`(side, distance, turn, 0.25, hold)` | 4 | **needs a `forward` parameter it does not have** — today it travels laterally only |
+| 1 | [`step-pivot`](../blocks/step-pivot.md)`(side, 0, turn, 0.25, hold, forward, beats: 4, bow, bowAt)` | 4 | 🧪 built 10-29: `forward` = `(1 + width) / 2`; `beats` from the chart (the turn alone would be 2); `bow` = `clearance / 2` to the dancer's own left, peaking at `bowAt` = `0.5 / forward` where they're level. The man turns right, the woman left; each holds the arch hand |
 
 Beats sum to the chart's 4 ✓, and the quarter turn is 0.25 × the shared 8-beat rotation budget,
 which is 2 beats — so the timing wants checking against the chart's own row rather than assumed

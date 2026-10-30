@@ -33,7 +33,9 @@ The engine core exists:
 - couples and sequences with waits.
 
 🧪 Since 2026-10-28, the first formation of four, **facing couples**, and its first call,
-**Right and Left Thru** (S2 begun). See [`docs/PROGRESS.md`](docs/PROGRESS.md).
+**Right and Left Thru** (S2 begun). 🧪 Since 2026-10-29 (uncommitted), **Star Thru**, the first
+call that changes formation: a facing pair walks into a couple (`applyStarThru`). See
+[`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 ## Development
 
