@@ -1,10 +1,22 @@
 # Progress & Status
 
-_Last updated: 2026-10-28_
+_Last updated: 2026-10-30_
 
 ## Status / next
 
-**▶ RIGHT NOW (2026-10-28, 4): 🧪 THE ALLEMANDE WALKS ITS CIRCLE, released as `0.10.0`** (Ryan:
+**Standards:** last compliance review 2026-10-30 ([note](compliance/2026-10-30.md)): meets the standard. Its 2 small gaps fixed the same day: the 5 unregistered casts are registered (inline and in `docs/any-registry.md`), ADR-0027 and ADR-0028 Accepted (Ryan: "all that"). Committed: standards batch `70f4dc5`; first stance review 2026-10-29 ([record](reviews/2026-10-29-stance-review.md))
+
+**▶ 2026-10-30 (2): RELEASED `0.11.0`** (Ryan: *"all that and commit"*, after the 10-30 compliance review). Three commits: the standards batch (`70f4dc5`), Star Thru + Standard Applications for 94 calls (`df24c29`), and this release. Tagged `v0.11.0`, pushed to `origin` and `data`; the-lot re-pins to it. ⏳ **Next:** the-lot's voice test is the consumer; Star Thru's keyframes (Ryan, in the-lot `#review2`); the next facing-couples calls.
+
+**▶ 2026-10-30 (1): 🧪 THE FAMILY MEMBERS JOIN, committed in `df24c29`** — [journal 33](journal/2026-10-30-1-the-family-members-join-33.md). 19 more calls in `STANDARD_APPLICATIONS` (Chain Down the Line, Trade, Wrong Way Promenade, Rollaway, the thars, Quarter/Three-Quarter Tag…): 94, matching the-lot's vocabulary. 272 tests.
+
+**▶ 2026-10-30: 🧪 STANDARD APPLICATIONS AS DATA, uncommitted for Ryan's look** — [journal 32](journal/2026-10-30-standard-applications-as-data-32.md), [spec](spec/standard-applications.md). `src/formations.ts` (42 named formations, handedness in the id, units like "any facing couples") and `src/standard-applications.ts` (the 75 Basic + Mainstream calls the-lot's voice test knows: 335 CALLERLAB standard starting formations, 172 endings worked from the definitions, `callsFrom`, `endingsFrom`). Plain data; the engine dances 5 of them. Why: the voice test's misses were all spellings, and narrowing to what's legal next replaces a per-caller spelling list. 272 tests. Next: the-lot's chain mode and loose matching use `callsFrom`; endings filled in as needed.
+
+**▶ 2026-10-29 (2): 🧪 STAR THRU BUILT, uncommitted for Ryan's look** — [journal 31](journal/2026-10-29-2-star-thru-built-31.md). `step-pivot` gains `forward`, `beats`, `bow`; `src/star-thru.ts` (`applyStarThru`: a facing pair into a couple, swapping spots, right shoulders passing a clearance apart under the arch). the-lot is linked to this checkout and draws it. Next: Ryan's look and keyframes → commit, release, pin.
+
+**▶ 2026-10-29 (1): the standards batch, uncommitted for Ryan's look** — [journal 30](journal/2026-10-29-1-the-standards-batch-comes-in-30.md). Next: **Star Thru**, end to end (spec questions below, then blocks, then the-lot's solve).
+
+**▶ PREVIOUSLY (2026-10-28, 4): 🧪 THE ALLEMANDE WALKS ITS CIRCLE, released as `0.10.0`** (Ryan:
 *"commit it, release and pin"*). [journal 29](journal/2026-10-28-4-the-allemande-walks-its-circle-29.md)
 
 - `arm-turn` walks the arc: a mark every 7.5° between the spec's quarter rows (ADR-0022's rule,
