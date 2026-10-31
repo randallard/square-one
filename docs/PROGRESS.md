@@ -6,6 +6,8 @@ _Last updated: 2026-10-30_
 
 **Standards:** last compliance review 2026-10-30 ([note](compliance/2026-10-30.md)): meets the standard. Its 2 small gaps fixed the same day: the 5 unregistered casts are registered (inline and in `docs/any-registry.md`), ADR-0027 and ADR-0028 Accepted (Ryan: "all that"). Committed: standards batch `70f4dc5`; first stance review 2026-10-29 ([record](reviews/2026-10-29-stance-review.md))
 
+**▶ 2026-10-31: dependency advisories** (dev tooling only, no release needed). Two advisories published 2026-10-30 23:09 UTC, fixed only in new majors: glob GHSA-3g3m-2fjr-6pw4 (license-checker-rseidelsohn 4.4.2 → 5.0.1, the-lot's version, and glob 13 overridden to 14) and minimatch GHSA-g3hv-75wg-m249 (ignored in both scanners with reason and retirement condition: eslint needs minimatch 3). 272 tests; license check, lint, build clean.
+
 **▶ 2026-10-30 (2): RELEASED `0.11.0`** (Ryan: *"all that and commit"*, after the 10-30 compliance review). Three commits: the standards batch (`70f4dc5`), Star Thru + Standard Applications for 94 calls (`df24c29`), and this release. Tagged `v0.11.0`, pushed to `origin` and `data`; the-lot re-pins to it. ⏳ **Next:** the-lot's voice test is the consumer; Star Thru's keyframes (Ryan, in the-lot `#review2`); the next facing-couples calls.
 
 **▶ 2026-10-30 (1): 🧪 THE FAMILY MEMBERS JOIN, committed in `df24c29`** — [journal 33](journal/2026-10-30-1-the-family-members-join-33.md). 19 more calls in `STANDARD_APPLICATIONS` (Chain Down the Line, Trade, Wrong Way Promenade, Rollaway, the thars, Quarter/Three-Quarter Tag…): 94, matching the-lot's vocabulary. 272 tests.
