@@ -1,10 +1,10 @@
 # Progress & Status
 
-_Last updated: 2026-10-30_
+_Last updated: 2026-10-31_
 
 ## Status / next
 
-**Standards:** last compliance review 2026-10-30 ([note](compliance/2026-10-30.md)): meets the standard. Its 2 small gaps fixed the same day: the 5 unregistered casts are registered (inline and in `docs/any-registry.md`), ADR-0027 and ADR-0028 Accepted (Ryan: "all that"). Committed: standards batch `70f4dc5`; first stance review 2026-10-29 ([record](reviews/2026-10-29-stance-review.md))
+**Standards:** last compliance review 2026-10-31: meets the standard; its 3 small gaps fixed the same day (2 casts registered, the `ci.yml` SHA-pin comment, the date). Nothing open. The minimatch ignore (GHSA-g3hv-75wg-m249) stays until eslint/typescript-eslint use minimatch ≥ 11.0.1 or 3.x/10.x get a backport ([note](compliance/2026-10-31.md))
 
 **▶ 2026-10-31: dependency advisories** (dev tooling only, no release needed). Two advisories published 2026-10-30 23:09 UTC, fixed only in new majors: glob GHSA-3g3m-2fjr-6pw4 (license-checker-rseidelsohn 4.4.2 → 5.0.1, the-lot's version, and glob 13 overridden to 14) and minimatch GHSA-g3hv-75wg-m249 (ignored in both scanners with reason and retirement condition: eslint needs minimatch 3). 272 tests; license check, lint, build clean.
 

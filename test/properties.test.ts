@@ -271,6 +271,7 @@ describe("call vectors from the specs", () => {
   });
 
   it("the pair is point-symmetric: B is always A rotated 180°", () => {
+    // Cast (any-registry): `Object.keys` returns `string[]`; CALLS is a const object, so its keys are exactly its key type.
     for (const name of Object.keys(CALLS) as (keyof typeof CALLS)[]) {
       const { a, b } = applyCallToPair(name);
       a.waypoints.forEach((w, i) => {

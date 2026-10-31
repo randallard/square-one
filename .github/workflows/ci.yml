@@ -199,8 +199,8 @@ jobs:
       actions: read
     # No timeout-minutes here (ADR-1005's one exception): GitHub rejects it on a job that calls a
     # reusable workflow; the called workflow's own jobs carry their limits.
-    # Reusable workflow — pinned by tag because `uses:` on a reusable workflow
-    # resolves a ref in that repo the same way; bump deliberately.
+    # Reusable workflow, pinned to the commit SHA like every action here; the trailing
+    # comment is its tag. Bump both together, deliberately.
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
 
   # Runs on every project, with or without a manifest: a secret can be committed to any repo.

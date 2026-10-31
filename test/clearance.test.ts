@@ -238,6 +238,7 @@ describe("🔴 the bow survives a call boundary", () => {
     const [trade, twirl] = seq.steps.map((step) => closest(step.motions));
     expect(trade).toBeCloseTo(HEADS, 5);
     expect(twirl).toBeGreaterThan(ARCH - 1e-5);
+    // Cast (ADR-0027, docs/any-registry.md): `toBeCloseTo` above has already failed if `trade` were undefined.
     expect(twirl).toBeGreaterThan(trade as number);
   });
 });
