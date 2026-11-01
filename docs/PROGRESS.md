@@ -6,6 +6,8 @@ _Last updated: 2026-11-01_
 
 **Standards:** last compliance review 2026-11-01 ([note](compliance/2026-11-01.md)): its one gap, ADR-1018, is fixed. Stance review 2026-11-01 ([review](reviews/2026-11-01-stance-review.md)): pnpm 12 evaluated and now adopted (12.16.1, after OSV v2.7.0); ADR-1019 copied in (n/a, no HTTP API). The minimatch ignore is retired via eslint 10 (below).
 
+**▶ 2026-11-01 (4): ADR-1022 from the template, Node 26 as the floor** ([journal 37](journal/2026-11-01-4-node-26-floor-37.md)). `engines` `>=26.0.0`, `@types/node` 26.6.6, and ADR-1021's `renovate.json`. Local gates passed. **Next (Ryan):** install the Renovate app on this repo; until then the file does nothing. No release needed yet; the next one carries the new floor.
+
 **▶ 2026-11-01 (3): ESLint 10, and the minimatch ignore retired** ([journal 36](journal/2026-11-01-3-eslint-10-36.md)). ESLint 10.14.0, typescript-eslint 8.72.1, `minimatch@10` → 11; GHSA-g3hv-75wg-m249 gone from both scanners. All gates pass locally; OSV ran only in CI (Docker needs sudo here). No release needed.
 
 **▶ 2026-11-01 (2): ADR-1020 from the template** ([journal 35](journal/2026-11-01-2-adr-1020-node-26-in-ci-35.md)). CI on Node 26; `engines` and `@types/node` stay 24; ADR-1013 superseded. No code change, no release. Two machines adopted it separately, and the merge keeps this journal entry and drops the duplicate (`202bdf6` has it). CI is green on Node 26, and OSV reads 316 packages, which settles (1)'s check. the-lot is on 1020 too (`2656a04`). **Next:** nothing open from this.
