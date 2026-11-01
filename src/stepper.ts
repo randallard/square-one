@@ -133,14 +133,11 @@ export function sampleMotion(motion: Motion, beat: number): { position: Vec2; fa
 }
 
 export function createPerformance(init: PerformanceInit): Performance {
-  const coefficients: Coefficients = { ...IDEAL, ...init.coefficients };
   const driven = new Set(init.externallyDriven ?? []);
   const keys = Object.keys(init.motions);
   const totalBeats = keys.reduce((m, k) => Math.max(m, init.motions[k]?.beats ?? 0), 0);
 
-  // Present but unused while every dial is off — the pursuit model reads them.
-  void coefficients;
-  void init.seed;
+  // init.coefficients and init.seed are unused while every dial is off: the pursuit model reads them.
 
   let beat = 0;
   let lastInputs: Readonly<Record<DancerKey, DriveInput>> = {};

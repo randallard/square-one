@@ -102,10 +102,9 @@ describe("spec conformance — the docs are the fixtures", () => {
 });
 
 describe("call composition matches the chart", () => {
-  for (const [name, def] of Object.entries(CALLS)) {
+  for (const def of Object.values(CALLS)) {
     it(`${def.name}: block chain sums to the chart's ${String(def.chartBeats)} beats`, () => {
       expect(compose(def.chain).beats).toBe(def.chartBeats);
-      void name;
     });
   }
 
