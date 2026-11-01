@@ -6,6 +6,8 @@ _Last updated: 2026-11-01_
 
 **Standards:** last compliance review 2026-11-01 ([note](compliance/2026-11-01.md)): its one gap, ADR-1018, is fixed. Stance review 2026-11-01 ([review](reviews/2026-11-01-stance-review.md)): pnpm 12 evaluated and now adopted (12.16.1, after OSV v2.7.0); ADR-1019 copied in (n/a, no HTTP API). Open: the minimatch ignore (GHSA-g3hv-75wg-m249) can retire via eslint 10 + a 10→11 override (proposed; its written condition, eslint/typescript-eslint on minimatch ≥ 11.0.1, is still false).
 
+**▶ 2026-11-01 (2): ADR-1020 from the template** ([journal 35](journal/2026-11-01-2-adr-1020-node-26-in-ci-35.md)). CI on Node 26; `engines` and `@types/node` stay 24; ADR-1013 superseded. No code change, no release. **Next:** as (1); the-lot takes 1020 too.
+
 **▶ 2026-11-01 (1): OSV v2.7.0, then pnpm 12** ([journal 34](journal/2026-11-01-1-osv-v2-7-and-pnpm-12-34.md)). ADR-1018 and 1019 came in from the template; `packageManager` is now `pnpm@12.16.1`, and the lockfile has two documents. All gates pass locally. **Next:** check that the CI OSV run's package count matches the tree (~316, not pnpm's ~16); then the-lot moves to pnpm 12 alongside. No release needed.
 
 **▶ 2026-10-31: dependency advisories** (dev tooling only, no release needed). Two advisories published 2026-10-30 23:09 UTC, fixed only in new majors: glob GHSA-3g3m-2fjr-6pw4 (license-checker-rseidelsohn 4.4.2 → 5.0.1, the-lot's version, and glob 13 overridden to 14) and minimatch GHSA-g3hv-75wg-m249 (ignored in both scanners with reason and retirement condition: eslint needs minimatch 3). 272 tests; license check, lint, build clean.
