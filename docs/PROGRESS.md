@@ -4,7 +4,7 @@ _Last updated: 2026-10-31_
 
 ## Status / next
 
-**Standards:** last compliance review 2026-10-31: meets the standard; its 3 small gaps fixed the same day (2 casts registered, the `ci.yml` SHA-pin comment, the date). Nothing open. The minimatch ignore (GHSA-g3hv-75wg-m249) stays until eslint/typescript-eslint use minimatch ≥ 11.0.1 or 3.x/10.x get a backport ([note](compliance/2026-10-31.md))
+**Standards:** last compliance review 2026-11-01: meets the standard except 1 new gap, template ADR-1018 (OSV v2.7.0) not adopted ([note](compliance/2026-11-01.md)). Stance review 2026-11-01 ([review](reviews/2026-11-01-stance-review.md)): pnpm 12 evaluated, passes, but **ADR-1018 (OSV v2.7.0) first**; the minimatch ignore can retire via eslint 10 + an override. The minimatch ignore (GHSA-g3hv-75wg-m249) stays until eslint/typescript-eslint use minimatch ≥ 11.0.1 or 3.x/10.x get a backport ([note](compliance/2026-10-31.md))
 
 **▶ 2026-10-31: dependency advisories** (dev tooling only, no release needed). Two advisories published 2026-10-30 23:09 UTC, fixed only in new majors: glob GHSA-3g3m-2fjr-6pw4 (license-checker-rseidelsohn 4.4.2 → 5.0.1, the-lot's version, and glob 13 overridden to 14) and minimatch GHSA-g3hv-75wg-m249 (ignored in both scanners with reason and retirement condition: eslint needs minimatch 3). 272 tests; license check, lint, build clean.
 
