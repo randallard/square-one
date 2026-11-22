@@ -1,12 +1,14 @@
 # Progress & Status
 
-_Last updated: 2026-11-01_
+_Last updated: 2026-11-21_
 
 ## Status / next
 
 **Standards:** last compliance review 2026-11-01 ([note](compliance/2026-11-01.md)): its one gap, ADR-1018, is fixed. Stance review 2026-11-01 ([review](reviews/2026-11-01-stance-review.md)): pnpm 12 evaluated and now adopted (12.16.1, after OSV v2.7.0); ADR-1019 copied in (n/a, no HTTP API). The minimatch ignore is retired via eslint 10 (below).
 
-**▶ 2026-11-01 (4): ADR-1022 from the template, Node 26 as the floor** ([journal 37](journal/2026-11-01-4-node-26-floor-37.md)). `engines` `>=26.0.0`, `@types/node` 26.6.6, and ADR-1021's `renovate.json`. Local gates passed. **Next (Ryan):** install the Renovate app on this repo; until then the file does nothing. No release needed yet; the next one carries the new floor.
+**▶ 2026-11-21 (1): ADR-1023 from the template, routine Renovate updates merge themselves** ([journal 38](journal/2026-11-21-1-adr-1023-renovate-automerge-38.md)). Minor and patch updates of 1.0+ packages, plus digest, pin and lockfile updates, automerge once CI passes. Majors and 0.x minors stay manual. `main` now has branch protection with 7 required checks (it had none). **Next:** confirm the first automerge; triage the majors still open (#19 vitest 5, #18 setup-node v7); #15 cargo-deny-action v2.1.3 is held in the template too (cargo-deny 0.22, a 0.x minor).
+
+**2026-11-01 (4): ADR-1022 from the template, Node 26 as the floor** ([journal 37](journal/2026-11-01-4-node-26-floor-37.md)). `engines` `>=26.0.0`, `@types/node` 26.6.6, and ADR-1021's `renovate.json`. Local gates passed. **Next (Ryan):** install the Renovate app on this repo; until then the file does nothing. No release needed yet; the next one carries the new floor.
 
 **▶ 2026-11-01 (3): ESLint 10, and the minimatch ignore retired** ([journal 36](journal/2026-11-01-3-eslint-10-36.md)). ESLint 10.14.0, typescript-eslint 8.72.1, `minimatch@10` → 11; GHSA-g3hv-75wg-m249 gone from both scanners. All gates pass locally; OSV ran only in CI (Docker needs sudo here). No release needed.
 
