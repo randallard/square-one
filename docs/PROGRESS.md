@@ -1,12 +1,14 @@
 # Progress & Status
 
-_Last updated: 2026-11-22_
+_Last updated: 2026-11-26_
 
 ## Status / next
 
-**Standards:** last compliance review 2026-11-01 ([note](compliance/2026-11-01.md)): its one gap, ADR-1018, is fixed. Stance review 2026-11-01 ([review](reviews/2026-11-01-stance-review.md)): pnpm 12 evaluated and now adopted (12.16.1, after OSV v2.7.0); ADR-1019 copied in (n/a, no HTTP API). The minimatch ignore is retired via eslint 10 (below).
+**Standards:** last compliance review 2026-11-26: meets the standard apart from 2 small gaps (a `project-conventions` line behind ADR-1024, a stale next step), both fixed the same day ([journal 40](journal/2026-11-26-1-compliance-review-and-its-fixes-40.md)); the 11-01 gap is closed ([note](compliance/2026-11-26.md)). Stance review 2026-11-01, due by 2026-12-01.
 
-**▶ 2026-11-22 (1): ADR-1024 from the template, an explicit `deny.toml`** ([journal 39](journal/2026-11-22-1-adr-1024-explicit-deny-toml-39.md)). The ADR and the template's `deny.toml` (`unmaintained = "all"`), on branch `adr-1024-explicit-deny-toml`, PR set to auto-merge (*Allow auto-merge* on since 11-22). **Next:** confirm it merged and `gr sync square-one`. The cargo-deny-action v2.1.3 pin is Renovate #15 (green, automerge on); merge it by hand if it hasn't gone in by then.
+**▶ 2026-11-26 (1): compliance review, two docs fixes** ([journal 40](journal/2026-11-26-1-compliance-review-and-its-fixes-40.md)). The `project-conventions` line from ADR-1024 taken; `main` fast-forwarded to `origin/main` (`52c4db6`); no Kiro agent (Ryan: Kiro is court-only). On branch `compliance-2026-11-26`. **Next:** merge that branch (a PR, since `main` is protected). Then the engine waits on the-lot's dance-screens playtest (`#review`, `#solve4`, `#review2`, `#voice-test`), which names the next engine work. Renovate #17/#20 rebase and merge themselves; #34 (vitest 5.1.2) conflicts and Renovate will rebase it.
+
+**▶ 2026-11-22 (1): ADR-1024 from the template, an explicit `deny.toml`** ([journal 39](journal/2026-11-22-1-adr-1024-explicit-deny-toml-39.md)). The ADR and the template's `deny.toml` (`unmaintained = "all"`), on branch `adr-1024-explicit-deny-toml`, PR set to auto-merge (*Allow auto-merge* on since 11-22). Merged as `29ecdde`; #15 (cargo-deny-action v2.1.3) merged too.
 
 **2026-11-21 (1): ADR-1023 from the template, routine Renovate updates merge themselves** ([journal 38](journal/2026-11-21-1-adr-1023-renovate-automerge-38.md)). Minor and patch updates of 1.0+ packages, plus digest, pin and lockfile updates, automerge once CI passes. Majors and 0.x minors stay manual. `main` now has branch protection with 7 required checks (it had none). **Next:** confirm the first automerge; triage the majors still open (#19 vitest 5, #18 setup-node v7); #15 cargo-deny-action v2.1.3 is held in the template too (cargo-deny 0.22, a 0.x minor).
 
